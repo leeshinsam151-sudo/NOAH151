@@ -320,8 +320,15 @@
     return buildSheet(HUMAN, HUMAN_LEGS, 14, pal, (rows, dir) => applyHumanStyle(rows, dir, p));
   }
   function cat(p) {
-    const pal = { o: p.outline || '#2a2430', f: p.fur, n: p.patch || p.fur, w: p.white || '#f5f5f5', k: '#f29aa8', e: p.eye || '#3a3020' };
-    return buildSheet(CAT, CAT_LEGS, 14, pal);
+    const pal = { o: p.outline || '#2a2430', f: p.fur, n: p.patch || p.fur, w: p.white || '#f5f5f5', k: '#f29aa8', e: p.eye || '#3a3020', s: p.stripes ? p.stripes.color : p.fur };
+    // 줄무늬: data 의 stripes.{down,up,left} 좌표에 털(f/n) 칸만 칠한다
+    const styler = p.stripes
+      ? (rows, dir) => {
+          for (const [x, y] of p.stripes[dir] || []) if (rows[y] && 'fn'.includes(rows[y][x])) setPx(rows, x, y, 's');
+          return rows;
+        }
+      : null;
+    return buildSheet(CAT, CAT_LEGS, 14, pal, styler);
   }
   function dog(p) {
     const pal = { o: p.outline || '#3a2a1a', f: p.fur, w: p.white || '#fff6e0', k: '#f29aa8', e: '#2a1e10', n: '#2a1e10', r: p.collar || p.white || '#fff6e0' };

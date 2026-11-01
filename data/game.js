@@ -23,6 +23,14 @@ GameData.defineConfig({
     막히면 메뉴의 <b>할 일</b>을 확인하세요.`,
 });
 
+/* 감투 줄무늬 좌표 [x, y] (16x16 칸 기준, 오른쪽 모습은 왼쪽을 뒤집어 만든다) */
+var GAMTU_STRIPES = {
+  color: '#9a5222',
+  down: [[6, 6], [7, 6], [8, 6], [9, 6], [7, 7], [8, 7], [4, 10], [11, 10]],
+  up: [[6, 6], [7, 6], [8, 6], [9, 6], [5, 7], [7, 7], [8, 7], [10, 7], [7, 8], [8, 8], [7, 9], [8, 9], [7, 10], [8, 10], [7, 11], [8, 11], [7, 12], [8, 12], [5, 9], [10, 9], [5, 11], [10, 11], [13, 11], [13, 12]],
+  left: [[2, 8], [3, 8], [4, 8], [5, 8], [6, 8], [4, 9], [7, 10], [8, 10], [9, 10], [10, 10], [11, 10], [12, 10], [8, 11], [10, 11], [12, 11], [14, 7], [14, 8]],
+};
+
 GameData.defineSprites({
   jaehee: { type: 'human', hair: '#4a2e1e', cloth: '#ff7f9e', pants: '#3e4f8f', style: 'pigtail', ribbon: '#ffd34d', shoes: '#ffffff' },
   littleJaehee: { type: 'human', hair: '#4a2e1e', cloth: '#ffd34d', pants: '#ffb84d', style: 'pigtail', ribbon: '#ff6f91', shoes: '#ff6f91' },
@@ -32,8 +40,9 @@ GameData.defineSprites({
   ijang: { type: 'human', hair: '#9a9aa0', cloth: '#8a6a3a', pants: '#4a4a4a', style: 'bald', skin: '#e8c09a', mustache: '#d0d0d0' },
   geumsun: { type: 'human', hair: '#2a1e1e', cloth: '#5aa86a', pants: '#3a3a5a', style: 'apron', apron: '#fff2d8' },
   minsu: { type: 'human', hair: '#2a1e1e', cloth: '#4a9ae8', pants: '#3a3a3a', style: 'cap', ribbon: '#e84a4a' },
-  gamtu: { type: 'cat', fur: '#f2a24a', patch: '#f2a24a', white: '#f7c27a', outline: '#5a2e14' },
-  kitten: { type: 'cat', fur: '#f2a24a', patch: '#f2a24a', white: '#f7c27a', outline: '#5a2e14' },
+  // 감투: 올치즈 고양이 + 머리와 등의 갈색 줄무늬, 정수리부터 꼬리까지 진한 등줄기 (시안 C)
+  gamtu: { type: 'cat', fur: '#f2a24a', patch: '#f2a24a', white: '#f7c27a', outline: '#5a2e14', stripes: GAMTU_STRIPES },
+  kitten: { type: 'cat', fur: '#f2a24a', patch: '#f2a24a', white: '#f7c27a', outline: '#5a2e14', stripes: GAMTU_STRIPES },
   bori: { type: 'dog', fur: '#e8c27a', white: '#fff4dc' },
   boriCollar: { type: 'dog', fur: '#e8c27a', white: '#fff4dc', collar: '#d03a3a' },
   jaeheeSleep: { type: 'proc', draw: 'sleeper', hair: '#4a2e1e', quilt: '#f08aa8' },
