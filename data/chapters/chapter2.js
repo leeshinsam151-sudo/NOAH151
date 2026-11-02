@@ -440,17 +440,15 @@ GameData.defineScripts({
     ['fadeOut', 2200],
     ['bgm', 'clear', 0],
     ['chapterCard', '2장 끝', '캄캄한 동굴의 반딧불', { hold: 3800 }],
-    ['caption', ['감투의 용기가 한 칸 더 자랐다.', '3장 「시계탑의 부엉이」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
+    ['caption', ['감투의 용기가 한 칸 더 자랐다.'], { hold: 2200 }],
     ['flag', 'c2_end'],
-    ['chapter', 3, '3장 · 시계탑의 부엉이 (준비 중)'],
+    ['chapter', 3, '3장 · 시계탑의 부엉이'],
     ['tone', '', 0],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
     ['weather', null],
-    ['goal', '3장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(2장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c3_start'],
   ],
 });
 
@@ -459,43 +457,43 @@ GameData.addEvents('village', [
   {
     id: 'gm2', x: 6, y: 13,
     pages: [
-      { cond: { chapterMin: 2 }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 손전등 챙겼제? 깜깜한 데선 서두르지 말고, 천천히.'] },
-      { cond: { flag: 'c2_frag' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 반딧불이 참 곱제. 오래 살고 볼 일이다.', '할머니 : 순길이 순남이한테 전화 한번 해야겠다. 번호가… 어디 적어 놨더라.'] },
+      { cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 손전등 챙겼제? 깜깜한 데선 서두르지 말고, 천천히.'] },
+      { cond: { flag: 'c2_frag', notFlag: 'c3_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 반딧불이 참 곱제. 오래 살고 볼 일이다.', '할머니 : 순길이 순남이한테 전화 한번 해야겠다. 번호가… 어디 적어 놨더라.'] },
     ],
   },
   {
     id: 'zelkova2', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 2 }, sprite: 'zelkova', noTurn: true, script: 'c2_tree' },
-      { cond: { chapterMin: 2, flag: 'c2_tree' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 동쪽 골짜기는 마을 동쪽 끝 길을 따라가면 된다.', '느티나무: 어둠 속에서는 서두르지 말거라. 눈을 뜨는 데는 원래 시간이 걸리는 법이란다.'] },
-      { cond: { flag: 'c2_frag' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 허허, 방울 소리가 또 한결 맑아졌구나.', '느티나무: 다음 조각은 옛 학교의 멈춘 시계탑 꼭대기에서 기다리고 있다. 오늘은 반딧불 구경이나 하거라.'] },
+      { cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'zelkova', noTurn: true, script: 'c2_tree' },
+      { cond: { chapterMin: 2, flag: 'c2_tree', notFlag: 'c3_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 동쪽 골짜기는 마을 동쪽 끝 길을 따라가면 된다.', '느티나무: 어둠 속에서는 서두르지 말거라. 눈을 뜨는 데는 원래 시간이 걸리는 법이란다.'] },
+      { cond: { flag: 'c2_frag', notFlag: 'c3_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 허허, 방울 소리가 또 한결 맑아졌구나.', '느티나무: 다음 조각은 옛 학교의 멈춘 시계탑 꼭대기에서 기다리고 있다. 오늘은 반딧불 구경이나 하거라.'] },
     ],
   },
   {
     id: 'ijang2', x: 33, y: 15,
     pages: [{
-      cond: { chapterMin: 2 }, sprite: 'ijang', dir: 'down',
+      cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'ijang', dir: 'down',
       script: [['if', { flag: 'c2_frag' }, ['이장님: 반딧불이 다시 돌아왔다고? 허허, 내 어릴 적엔 여름밤마다 저랬지.'], ['이장님: 동쪽 골짜기? 거긴 물살이 세서 다리가 떠내려갔어. 옛날엔 쓰러진 통나무를 걸쳐서 건너곤 했지.']]],
     }],
   },
   {
     id: 'bori2', x: 35, y: 13,
     pages: [{
-      cond: { chapterMin: 2 }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 },
+      cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 },
       script: [['se', 'bark'], ['if', { flag: 'c2_frag' }, ['보리: 감투! 동굴에서 앞장섰다며? 깍순이가 다 말해 줬어! 월월!', '감투: …소식 진짜 빠르다.'], ['보리: 동굴 간다며? 거긴 냄새가 안 통해서 내 코가 소용없어… 대신 마을은 내가 지킬게! 월!', '감투: …나도 마을 지키는 거 하고 싶다. 그게 덜 무서울 것 같아.', '보리: 크하하!']]],
     }],
   },
   {
     id: 'minsu2', x: 16, y: 21,
     pages: [{
-      cond: { chapterMin: 2 }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 },
+      cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 },
       script: [['if', { flag: 'c2_frag' }, ['민수: 누나! 어젯밤에 반딧불 봤어? 엄마가 그러는데 반딧불은 깨끗한 데만 산대!'], ['민수: 누나 동쪽 골짜기 동굴 가? 거기 도깨비 산대! 밤마다 도깨비불이 깜빡깜빡한대!', '감투: (도깨비불…? 도깨비는 감투 쓰면 안 보인다며. 그럼 안 보이는 도깨비가 있다는 거잖아….)']]],
     }],
   },
   {
     id: 'kkachi2', x: 23, y: 9,
     pages: [{
-      cond: { chapterMin: 2 }, sprite: 'magpie',
+      cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'magpie',
       script: [['se', 'caw'], ['if', { flag: 'c2_frag' }, ['깍순이: 깍깍! 빅뉴스! 꺼진불이 반짝불이 됐대! 반딧불들이 다 축제래!'], ['깍순이: 깍깍! 새 소식! 동굴 입구 근처에서 아주 작은 불빛 하나가 훌쩍훌쩍 운대! 박쥐 할멈이 그러더라!']]],
     }],
   },
@@ -506,7 +504,7 @@ GameData.addEvents('shop', [
   {
     id: 'geumsun2', x: 2, y: 3,
     pages: [{
-      cond: { chapterMin: 2 }, sprite: 'geumsun', dir: 'down',
+      cond: { chapterMin: 2, notFlag: 'c3_started' }, sprite: 'geumsun', dir: 'down',
       script: [['if', { flag: 'c2_frag' }, ['금순 아줌마: 건전지 들어왔어! 할머니 손전등에 넣어 드려. 이번엔 공짜야, 호호.'], ['금순 아줌마: 어서 와~ 오늘 아침엔 손님들 이름도 다 기억났어!', '금순 아줌마: 근데 건전지가 어제 다 팔렸지 뭐야. 동네 사람들이 죄다 손전등을 찾더라고.', '재희: (건전지…. 할머니 손전등은 괜찮겠지?)']]],
     }],
   },

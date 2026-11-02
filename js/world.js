@@ -237,6 +237,7 @@
       const t = G.tiles.get(this.tile(x, y));
       if (t.cat) return kind === 'gamtu';
       if (t.catEye) return kind === 'gamtu' && !!G.game.state.abilities.cateye;
+      if (t.beamWalk) return kind === 'gamtu' && !!G.game.state.abilities.beam;
       return !!t.pass;
     }
     refresh() {

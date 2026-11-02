@@ -310,6 +310,8 @@
         return;
       }
       if (landing && a.kind === 'jaehee') Game.bumpScript('jaehee_water');
+      // 들보: 감투는 '들보 걷기'를 배워야 건널 수 있다
+      if (t.beamWalk) Game.bumpScript(a.kind === 'gamtu' ? 'fear_height' : 'jaehee_beam');
       return;
     }
     a._landing = false;

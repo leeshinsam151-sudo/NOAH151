@@ -113,6 +113,78 @@
     return { hits, misses };
   });
 
+  /* ---------- 시계 맞추기 ----------
+   * 좌우 방향키로 시침을 돌리고 Z 로 결정한다. 고른 시(1~12)를 돌려준다. */
+  M.register('clock', async (opt, root) => {
+    root.innerHTML = `
+      <div class="mg-box">
+        <div class="mg-title">${opt.title || '시계 바늘을 맞추자'}</div>
+        <canvas width="120" height="120" style="width:calc(var(--u)*120px);height:calc(var(--u)*120px)"></canvas>
+        <div class="mg-line">${opt.line || ''}</div>
+        <div class="mg-help">${G.input.touch ? '◀ ▶ 터치: 시침 돌리기 · 가운데 터치: 결정' : '◀ ▶ : 시침 돌리기 · Z : 결정 · X : 그만두기'}</div>
+      </div>`;
+    const cv = root.querySelector('canvas'),
+      g = cv.getContext('2d');
+    let hour = opt.start || 12,
+      shown = hour,
+      picked = null;
+    cv.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const r = cv.getBoundingClientRect(),
+        x = (e.clientX - r.left) / r.width;
+      if (x < 0.33) hour = ((hour + 10) % 12) + 1;
+      else if (x > 0.66) hour = (hour % 12) + 1;
+      else picked = hour;
+      G.audio.se('cursor');
+    });
+    for (;;) {
+      await G.nextFrame();
+      if (G.debug.autoMinigame && opt.answer) picked = opt.answer;
+      if (I.hit('left')) {
+        hour = ((hour + 10) % 12) + 1;
+        G.audio.se('cursor');
+      }
+      if (I.hit('right')) {
+        hour = (hour % 12) + 1;
+        G.audio.se('cursor');
+      }
+      if (I.hit('ok')) picked = hour;
+      if (I.hit('cancel')) picked = 0;
+      // 바늘이 부드럽게 따라 돈다
+      let d = hour - shown;
+      if (d > 6) d -= 12;
+      if (d < -6) d += 12;
+      shown += d * 0.3;
+      g.clearRect(0, 0, 120, 120);
+      G.sprites.ellipse(g, 60, 60, 54, 54, '#c8b890');
+      G.sprites.ellipse(g, 60, 60, 50, 50, '#f8f0dc');
+      g.fillStyle = '#3a2a1a';
+      g.font = 'bold 12px sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      for (let h = 1; h <= 12; h++) {
+        const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+        g.fillText(String(h), 60 + Math.cos(a) * 40, 60 + Math.sin(a) * 40);
+      }
+      const hand = (ang, len, w) => {
+        g.strokeStyle = '#2a1a10';
+        g.lineWidth = w;
+        g.lineCap = 'round';
+        g.beginPath();
+        g.moveTo(60, 60);
+        g.lineTo(60 + Math.cos(ang) * len, 60 + Math.sin(ang) * len);
+        g.stroke();
+      };
+      hand((shown / 12) * Math.PI * 2 - Math.PI / 2, 24, 5);
+      hand(-Math.PI / 2, 36, 2);
+      G.sprites.ellipse(g, 60, 60, 3, 3, '#c0a040');
+      if (picked !== null) break;
+    }
+    G.audio.se(picked ? 'ok' : 'cancel');
+    await G.wait(300);
+    return picked;
+  });
+
   function drawHeart(g, cx, cy, r, col) {
     g.fillStyle = col;
     for (let y = -r; y <= r; y++)

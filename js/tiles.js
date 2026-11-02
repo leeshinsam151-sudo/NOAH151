@@ -502,6 +502,20 @@
       },
     },
     V: { pass: false, chasm: true, draw: (g, n) => chasm(g, n) },
+    /* 들보: 허공 위에 걸친 좁은 나무 기둥 (감투만, '들보 걷기' 이후) */
+    l: {
+      pass: false,
+      chasm: true,
+      beamWalk: true,
+      draw: (g, n) => {
+        chasm(g, (dx, dy) => (dy === 0 ? 'V' : n(dx, dy) === 'l' ? 'V' : n(dx, dy)));
+        rect(g, 0, 6, 16, 5, '#6a4424');
+        rect(g, 0, 6, 16, 2, '#9a6a3a');
+        rect(g, 0, 11, 16, 1, '#3a2410');
+        px(g, 4, 8, '#4a2e14');
+        px(g, 11, 9, '#4a2e14');
+      },
+    },
     I: { pass: false, chasm: true, catEye: true, draw: (g, n) => chasm(g, n) },
     A: {
       pass: true,

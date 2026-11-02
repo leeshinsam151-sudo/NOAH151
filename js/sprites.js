@@ -789,8 +789,118 @@
         rect(g, 5, 7, 2, 1, '#8fb0ff');
       }),
     }),
+    /* ---- 3장 ---- */
+    owl: () => ({
+      // 똑딱 선생 (시안 A: 갈색 수리부엉이 + 동그란 안경)
+      w: 16, h: 18, fps: 1,
+      frames: frames(2, 16, 18, (g, f) => {
+        rect(g, 3, 1, 2, 3, '#6a4a2a');
+        rect(g, 11, 1, 2, 3, '#6a4a2a');
+        ellipse(g, 8, 10, 6, 7, '#8a5e36');
+        ellipse(g, 8, 12, 4, 4, '#d8c09a');
+        for (let i = 0; i < 3; i++) {
+          px(g, 6 + i * 2, 11, '#8a5e36');
+          px(g, 7 + i * 2, 13, '#8a5e36');
+        }
+        ellipse(g, 5, 7, 3, 3, '#f0e0b0');
+        ellipse(g, 11, 7, 3, 3, '#f0e0b0');
+        if (f) {
+          rect(g, 4, 7, 3, 1, '#1a1a1a');
+          rect(g, 10, 7, 3, 1, '#1a1a1a');
+        } else {
+          px(g, 5, 7, '#1a1a1a');
+          px(g, 11, 7, '#1a1a1a');
+        }
+        g.strokeStyle = '#d0a020';
+        g.lineWidth = 1;
+        g.beginPath();
+        g.arc(5.5, 7.5, 3.2, 0, 7);
+        g.stroke();
+        g.beginPath();
+        g.arc(11.5, 7.5, 3.2, 0, 7);
+        g.stroke();
+        rect(g, 8, 9, 1, 2, '#e0a030');
+        rect(g, 5, 17, 2, 1, '#e0a030');
+        rect(g, 9, 17, 2, 1, '#e0a030');
+      }),
+    }),
+    gear: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          rect(g, Math.round(8 + Math.cos(a) * 6) - 1, Math.round(9 + Math.sin(a) * 6) - 1, 3, 3, '#8a7a5a');
+        }
+        ellipse(g, 8, 9, 5, 5, '#b0a070');
+        ellipse(g, 8, 9, 2, 2, '#4a3a20');
+        px(g, 6, 6, '#e0d0a0');
+      }),
+    }),
+    basket: () => ({
+      w: 16, h: 24, fps: 0,
+      frames: frames(1, 16, 24, (g) => {
+        rect(g, 7, 0, 2, 10, '#c8b090');
+        rect(g, 2, 10, 12, 12, '#8a5a30');
+        for (let y = 12; y < 22; y += 3) rect(g, 2, y, 12, 1, '#6a4020');
+        for (let x = 4; x < 14; x += 3) rect(g, x, 10, 1, 12, '#a07040');
+        rect(g, 1, 9, 14, 2, '#5a3a1a');
+      }),
+    }),
+    lever: () => lever(false),
+    leverOn: () => lever(true),
+    clockFace: () => ({
+      w: 32, h: 32, fps: 1,
+      frames: frames(2, 32, 32, (g, f) => {
+        ellipse(g, 16, 16, 15, 15, '#6a4a2a');
+        ellipse(g, 16, 16, 13, 13, '#f0e6cc');
+        for (let h = 0; h < 12; h++) {
+          const a = (h / 12) * Math.PI * 2;
+          px(g, Math.round(16 + Math.cos(a) * 11), Math.round(16 + Math.sin(a) * 11), '#3a2a1a');
+        }
+        rect(g, 16, 6, 1, 10, '#2a1a10');
+        rect(g, 16, 16, 6, 1, '#2a1a10');
+        ellipse(g, 16, 16, 1, 1, '#c0a040');
+        void f;
+      }),
+    }),
+    clockFace4: () => ({
+      w: 32, h: 32, fps: 2,
+      frames: frames(2, 32, 32, (g, f) => {
+        ellipse(g, 16, 16, 15, 15, '#6a4a2a');
+        ellipse(g, 16, 16, 13, 13, f ? '#fff8dc' : '#f0e6cc');
+        for (let h = 0; h < 12; h++) {
+          const a = (h / 12) * Math.PI * 2;
+          px(g, Math.round(16 + Math.cos(a) * 11), Math.round(16 + Math.sin(a) * 11), '#3a2a1a');
+        }
+        rect(g, 16, 5, 1, 11, '#2a1a10');
+        for (let i = 0; i < 7; i++) px(g, 16 + i, 16 + Math.round(i * 0.58), '#2a1a10');
+        ellipse(g, 16, 16, 1, 1, '#c0a040');
+      }),
+    }),
+    phone: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 2, 8, 12, 6, '#c03a3a');
+        rect(g, 3, 6, 10, 3, '#d84a4a');
+        rect(g, 2, 5, 3, 2, '#2a2a2a');
+        rect(g, 11, 5, 3, 2, '#2a2a2a');
+        rect(g, 4, 4, 8, 2, '#2a2a2a');
+        ellipse(g, 8, 11, 2, 2, '#f0e6cc');
+      }),
+    }),
     none: () => ({ w: 16, h: 16, fps: 0, frames: [U.canvas(16, 16)] }),
   };
+  function lever(on) {
+    return {
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 4, 11, 8, 4, '#5a4a3a');
+        rect(g, 4, 11, 8, 1, '#7a6a5a');
+        for (let i = 0; i < 7; i++) px(g, on ? 8 + Math.round(i * 0.6) : 8 - Math.round(i * 0.6), 11 - i, '#8a8a90');
+        ellipse(g, on ? 12 : 4, 4, 2, 2, '#d84a4a');
+      }),
+    };
+  }
   function mirrorStone(back) {
     return {
       w: 16, h: 16, fps: 0,
