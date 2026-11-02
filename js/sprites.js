@@ -690,8 +690,132 @@
         for (const [x, y] of [[3, 5], [6, 3], [10, 3], [13, 5]]) ellipse(g, x, y, 1, 2, '#ffffff');
       }),
     }),
+    /* ---- 2장 ---- */
+    firefly: () => ({
+      // 깜빡이 (시안 A: 연두빛 동글이)
+      w: 16, h: 16, fps: 3,
+      frames: frames(2, 16, 16, (g, f) => {
+        ellipse(g, 8, 8, 6, 6, `rgba(230,255,120,${f ? 0.35 : 0.2})`);
+        ellipse(g, 8, 6, 3, 3, '#3a3a2a');
+        px(g, 7, 6, '#fff');
+        px(g, 9, 6, '#fff');
+        ellipse(g, 8, 10, 3, 3, f ? '#f6ff8a' : '#d8f060');
+        px(g, 8, 11, '#ffffff');
+        rect(g, 4, 6, 2, 2, 'rgba(255,255,255,0.7)');
+        rect(g, 10, 6, 2, 2, 'rgba(255,255,255,0.7)');
+        px(g, 6, 3, '#3a3a2a');
+        px(g, 10, 3, '#3a3a2a');
+        px(g, 5, 2, '#3a3a2a');
+        px(g, 11, 2, '#3a3a2a');
+      }),
+    }),
+    bat: () => ({
+      w: 16, h: 16, fps: 6,
+      frames: frames(2, 16, 16, (g, f) => {
+        ellipse(g, 8, 7, 3, 3, '#1a1420');
+        if (f) {
+          rect(g, 1, 4, 5, 2, '#1a1420');
+          rect(g, 10, 4, 5, 2, '#1a1420');
+          px(g, 1, 6, '#1a1420');
+          px(g, 14, 6, '#1a1420');
+        } else {
+          rect(g, 2, 7, 4, 2, '#1a1420');
+          rect(g, 10, 7, 4, 2, '#1a1420');
+          px(g, 2, 9, '#1a1420');
+          px(g, 13, 9, '#1a1420');
+        }
+        px(g, 7, 6, '#ff4a4a');
+        px(g, 9, 6, '#ff4a4a');
+        px(g, 6, 4, '#1a1420');
+        px(g, 10, 4, '#1a1420');
+      }),
+    }),
+    mirrorA: () => mirrorStone(false),
+    mirrorB: () => mirrorStone(true),
+    crystal: () => crystal(false),
+    crystalLit: () => crystal(true),
+    lightCrack: () => ({
+      w: 16, h: 16, fps: 3,
+      frames: frames(2, 16, 16, (g, f) => {
+        rect(g, 6, 2, 4, 12, f ? '#fff6c0' : '#ffe680');
+        rect(g, 7, 0, 2, 16, '#ffffff');
+        ellipse(g, 8, 8, 7, 7, 'rgba(255,240,150,0.25)');
+      }),
+    }),
+    gateRock: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 0, 0, 16, 16, '#3a3346');
+        ellipse(g, 8, 8, 7, 7, '#4a4258');
+        rect(g, 3, 4, 10, 1, '#2a2433');
+        rect(g, 5, 9, 8, 1, '#2a2433');
+        ellipse(g, 8, 8, 2, 2, '#5ab0e0');
+      }),
+    }),
+    log: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 0, 7, 16, 6, '#7a4a28');
+        rect(g, 0, 7, 16, 1, '#9a6a3a');
+        ellipse(g, 14, 10, 2, 3, '#c08a52');
+        px(g, 14, 10, '#7a4a28');
+        rect(g, 4, 5, 1, 2, '#4caf50');
+      }),
+    }),
+    plank: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 0, 3, 16, 10, '#8a5a30');
+        rect(g, 0, 3, 16, 1, '#b07a45');
+        rect(g, 0, 8, 16, 1, '#6a4020');
+        ellipse(g, 2, 8, 1, 3, '#c08a52');
+      }),
+    }),
+    candle: () => ({
+      w: 16, h: 16, fps: 4,
+      frames: frames(2, 16, 16, (g, f) => {
+        rect(g, 6, 9, 4, 6, '#f6f0e0');
+        rect(g, 5, 14, 6, 2, '#c08a52');
+        ellipse(g, 8, 6 - f, 2, 3, '#ffb04a');
+        px(g, 8, 6 - f, '#fff6c0');
+      }),
+    }),
+    flashlightIcon: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 3, 6, 8, 4, '#3a6ae8');
+        rect(g, 11, 5, 3, 6, '#c0c4cc');
+        rect(g, 14, 6, 1, 4, '#fff6a0');
+        rect(g, 5, 7, 2, 1, '#8fb0ff');
+      }),
+    }),
     none: () => ({ w: 16, h: 16, fps: 0, frames: [U.canvas(16, 16)] }),
   };
+  function mirrorStone(back) {
+    return {
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        ellipse(g, 8, 12, 6, 3, '#4a4258');
+        ellipse(g, 8, 11, 6, 3, '#7a7a8a');
+        for (let i = 0; i < 9; i++) {
+          const x = back ? 4 + i : 12 - i;
+          rect(g, x, 2 + i, 2, 1, '#bfe8ff');
+          px(g, x + 2, 2 + i, '#5a7a9a');
+        }
+      }),
+    };
+  }
+  function crystal(lit) {
+    return {
+      w: 16, h: 16, fps: lit ? 4 : 0,
+      frames: frames(lit ? 2 : 1, 16, 16, (g, f) => {
+        if (lit) ellipse(g, 8, 8, 8, 8, `rgba(150,220,255,${f ? 0.4 : 0.25})`);
+        ellipse(g, 8, 8, 5, 7, lit ? '#9fe0ff' : '#4a6a8a');
+        ellipse(g, 7, 6, 2, 3, lit ? '#ffffff' : '#7a9aba');
+        rect(g, 4, 14, 8, 2, '#3a3346');
+      }),
+    };
+  }
   S.PROC = PROC;
 
   /** 키로 스프라이트 시트를 얻는다 (지연 생성 + 캐시) */

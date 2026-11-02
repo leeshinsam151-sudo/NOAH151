@@ -26,8 +26,8 @@ GameData.defineMap('village', {
     "#,..........vv#.YY.::.PpP.#,.........,#T",
     "#..,.....,....#....::.....#...........#T",
     "#######:#######....::.....######:######T",
-    "T::::::::::::::::::::::::::::::::::::::T",
-    "T::::::::::::::::::::::::::::::::::::::T",
+    "T:::::::::::::::::::::::::::::::::::::::",
+    "T:::::::::::::::::::::::::::::::::::::::",
     "T..,...............::..,...............T",
     "T.ffffffff.........::...rrrrrrrr.......T",
     "T.fvfvfvff.....w...::...rrrrrrrr..t.t..T",
@@ -44,6 +44,14 @@ GameData.defineMap('village', {
   ],
   events: [
     // 출입구
+    // 동쪽 골짜기로 가는 길 (2장부터 열린다)
+    {
+      id: 'toValley', x: 39, y: 15, area: [1, 2],
+      pages: [
+        { trigger: 'touch', script: ['동쪽 골짜기로 이어지는 길이다. 지금은 갈 일이 없다.', ['move', 'player', 'L']] },
+        { cond: { chapterMin: 2, flag: 'c2_tree' }, warp: ['valley', 1, 8, 'right', { se: 'whoosh' }] },
+      ],
+    },
     { id: 'toBus', x: 18, y: 29, area: [4, 1], warp: ['busstop', 10, 1, 'down', { se: 'whoosh' }] },
     { id: 'grandmaDoor', x: 7, y: 11, warp: ['house', 8, 9, 'up'] },
     { id: 'shopDoor', x: 28, y: 20, warp: ['shop', 5, 7, 'up'] },

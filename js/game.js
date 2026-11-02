@@ -41,7 +41,9 @@
 
   function makeActor(id) {
     const def = GameData.config.party[id];
-    const a = new G.Actor({ id, sprite: def.sprite, kind: def.kind || id, speed: def.speed || 5 });
+    const a = new G.Actor({ id, sprite: def.sprite, kind: def.kind || id, speed: def.speed || 5, offset: def.offset });
+    a.float = !!def.float;
+    a.lightR = def.light || 0;
     a.onMoveStart = (actor, fx, fy) => Game.trail(actor, fx, fy);
     a.onArrive = (actor) => Game.arrived(actor);
     a.mapId = null;
@@ -54,18 +56,26 @@
   Game.controlled = () => Game.actor(Game.state.control || 'jaehee');
   Game.partyHere = () => Game.state.party.map((id) => Game.actor(id)).filter((a) => a.mapId === (Game.map && Game.map.id));
 
-  /** 따라오는 동료들 (재희를 조작 중일 때만) */
+  /** 앞장서는 캐릭터: 보통은 재희, flags.gamtuLeads 일 때는 감투가 앞장서고 재희가 따라온다 */
+  Game.leader = function () {
+    const s = Game.state;
+    if (s.control === 'jaehee') return 'jaehee';
+    if (s.control === 'gamtu' && s.flags.gamtuLeads) return 'gamtu';
+    return null;
+  };
+  /** 따라오는 동료들 */
   Game.chain = function () {
     const s = Game.state;
-    if (s.control !== 'jaehee') return [];
-    return s.party
-      .slice(1)
+    const lead = Game.leader();
+    if (!lead) return [];
+    const order = lead === 'jaehee' ? s.party.slice(1) : ['jaehee', ...s.party.filter((id) => id !== 'jaehee' && id !== 'gamtu')];
+    return order
       .filter((id) => s.follow[id] !== false)
       .map((id) => Game.actor(id))
       .filter((a) => a.mapId === Game.map.id && a.visible);
   };
   Game.trail = function (actor, fx, fy) {
-    if (actor.id !== 'jaehee' || Game.state.control !== 'jaehee' || actor.jumping) return;
+    if (actor.id !== Game.leader() || actor.jumping) return;
     let px = fx,
       py = fy;
     for (const f of Game.chain()) {
@@ -192,8 +202,8 @@
   Game.trySwitch = function () {
     const s = Game.state;
     if (!s.flags.canSwitch || !s.party.includes('gamtu')) return;
-    if (s.noSwitch || Game.map.def.noSwitch) {
-      G.dialog.toast('지금은 바꿀 수 없다.');
+    if (s.noSwitch || s.flags.gamtuLeads || (Game.map.def.noSwitch && !Game.resolve(Game.map.def.allowSwitch))) {
+      G.dialog.toast(Game.map.def.noSwitchMsg || '지금은 바꿀 수 없다.');
       return;
     }
     if (s.control === 'jaehee') {
@@ -234,6 +244,7 @@
       Game.shake.t -= dt;
       if (Game.shake.t <= 0) Game.shake = null;
     }
+    Game.updateBeams();
     Game.updateParticles(dt);
     Game.updateCamera(dt);
   };
@@ -551,6 +562,7 @@
     }
     const layer = m.layers[Math.floor(G.time / 500) % 2];
     g.drawImage(layer, -cx, -cy);
+    drawBeams(g, cx, cy);
 
     const list = [];
     for (const e of m.events) {
@@ -569,23 +581,123 @@
     }
     g.globalAlpha = 1;
     drawWeather(g);
-    if (m.def.dark) drawDark(g, m.def.dark, cx, cy);
+    const dark = Game.darkLevel();
+    if (dark) drawDark(g, dark, cx, cy);
+    drawCatEye(g, cx, cy);
   };
+
+  /** 어둠 정도: 스크립트 지정값(screen.dark) > 맵 설정. 정전(flags.blackout)이면 더 어둡다 */
+  Game.darkLevel = function () {
+    const s = Game.state;
+    if (s.screen.dark !== undefined && s.screen.dark !== null) return s.screen.dark;
+    const d = Game.map.def.dark || 0;
+    return d && s.flags.blackout && Game.map.def.lights === 'party' ? 0.96 : d;
+  };
+
+  /* 빛 반사 퍼즐: beam 이벤트에서 나온 빛이 mirror 이벤트에서 꺾여 beamTarget 에 닿으면 플래그가 켜진다 */
+  Game.updateBeams = function () {
+    const m = Game.map,
+      s = Game.state;
+    Game.beams = [];
+    for (const src of m.events) {
+      if (!src.active || !src.page.beam) continue;
+      let x = src.x,
+        y = src.y,
+        dir = src.page.beam;
+      const pts = [[x, y]];
+      for (let i = 0; i < 80; i++) {
+        const [dx, dy] = U.DIRS[dir];
+        x += dx;
+        y += dy;
+        const ev = m.eventsAt(x, y).find((e) => e.page.mirror || e.page.beamTarget);
+        const t = G.tiles.get(m.tile(x, y));
+        if (!ev && !t.pass && !t.water && !t.chasm) {
+          pts.push([x - dx * 0.5, y - dy * 0.5]);
+          break;
+        }
+        if (ev && ev.page.beamTarget) {
+          pts.push([x, y]);
+          if (!s.flags[ev.page.beamTarget]) {
+            s.flags[ev.page.beamTarget] = true;
+            G.audio.se('sparkle');
+            m.refresh();
+          }
+          break;
+        }
+        if (ev && ev.page.mirror) {
+          pts.push([x, y]);
+          const back = !!s.vars[ev.page.mirror]; // 0 = '/', 1 = '\'
+          const R = back ? { right: 'down', down: 'right', left: 'up', up: 'left' } : { right: 'up', up: 'right', left: 'down', down: 'left' };
+          dir = R[dir];
+        }
+      }
+      Game.beams.push(pts);
+    }
+  };
+  function drawBeams(g, cx, cy) {
+    if (!Game.beams || !Game.beams.length) return;
+    g.save();
+    g.lineCap = 'round';
+    for (const pts of Game.beams) {
+      for (const [w, c] of [[5, 'rgba(255,240,150,0.25)'], [2, 'rgba(255,250,210,0.95)']]) {
+        g.lineWidth = w;
+        g.strokeStyle = c;
+        g.beginPath();
+        pts.forEach(([x, y], i) => (i ? g.lineTo : g.moveTo).call(g, x * 16 + 8 - cx, y * 16 + 8 - cy));
+        g.stroke();
+      }
+    }
+    g.restore();
+  }
+  Game._drawBeams = drawBeams;
+
+  /** 고양이 눈: 감투를 조작 중이면 숨은 발판(I 타일)이 초록 테두리로 보인다 */
+  function drawCatEye(g, cx, cy) {
+    const s = Game.state;
+    if (!s.abilities.cateye || s.control !== 'gamtu') return;
+    const m = Game.map;
+    const x0 = Math.floor(cx / 16),
+      y0 = Math.floor(cy / 16);
+    const a = 0.55 + 0.35 * Math.sin(G.time / 250);
+    g.fillStyle = `rgba(150,255,200,${a})`;
+    for (let y = y0; y <= y0 + 16; y++)
+      for (let x = x0; x <= x0 + 21; x++) {
+        if (!G.tiles.get(m.tile(x, y)).catEye) continue;
+        const px = x * 16 - cx,
+          py = y * 16 - cy;
+        for (let i = 2; i < 14; i += 3) {
+          g.fillRect(px + i, py + 2, 2, 1);
+          g.fillRect(px + i, py + 13, 2, 1);
+          g.fillRect(px + 2, py + i, 1, 2);
+          g.fillRect(px + 13, py + i, 1, 2);
+        }
+      }
+  }
 
   function drawActor(g, a, cx, cy) {
     const sh = G.sprites.get(a.sprite);
     if (!sh) return;
     const img = G.sprites.frame(sh, a.dir, a.animStep(), G.time);
+    if (!img) {
+      if (!drawActor.warned) console.warn('프레임 없음', a.id, a.sprite, a.dir, a.animStep(), G.time);
+      drawActor.warned = true;
+      return;
+    }
     const off = a.offset || [0, 0];
     let dx = Math.round(a.px - cx + 8 - sh.w / 2 + off[0]);
-    const dy = Math.round(a.py - cy + 16 - sh.h + off[1] - a.jumpH);
+    const dy = Math.round(a.py - cy + 16 - sh.h + off[1] - a.jumpH + (a.float ? Math.sin(G.time / 300) * 2 : 0));
     if (a.shiver > 0) dx += G.frame % 4 < 2 ? 1 : -1;
     if (a.jumpH > 1) {
       g.fillStyle = 'rgba(0,0,0,0.25)';
       g.fillRect(Math.round(a.px - cx + 4), Math.round(a.py - cy + 13), 8, 2);
     }
     g.globalAlpha = a.alpha;
-    g.drawImage(img, dx, dy);
+    try {
+      g.drawImage(img, dx, dy);
+    } catch (e) {
+      if (!drawActor.warned2) console.warn('그리기 실패', a.id, a.sprite, a.dir, a.animStep(), Object.prototype.toString.call(img), Array.isArray(img) ? img.length : '');
+      drawActor.warned2 = true;
+    }
     g.globalAlpha = 1;
   }
 
@@ -659,15 +771,28 @@
     d.fillStyle = `rgba(5,5,15,${level})`;
     d.fillRect(0, 0, G.W, G.H);
     d.globalCompositeOperation = 'destination-out';
-    const a = Game.controlled();
-    if (a && !Game.state.hideParty) {
-      const x = a.px - cx + 8,
-        y = a.py - cy + 8;
-      const gr = d.createRadialGradient(x, y, 8, x, y, 64);
-      gr.addColorStop(0, 'rgba(0,0,0,1)');
+    const hole = (x, y, r, inner = 8, core = 1) => {
+      const gr = d.createRadialGradient(x, y, Math.min(inner, r * 0.5), x, y, r);
+      gr.addColorStop(0, `rgba(0,0,0,${core})`);
       gr.addColorStop(1, 'rgba(0,0,0,0)');
       d.fillStyle = gr;
       d.fillRect(0, 0, G.W, G.H);
+    };
+    const s = Game.state;
+    if (!s.hideParty) {
+      if (Game.map.def.lights === 'party') {
+        // 손전등을 든 재희, 빛나는 동료
+        for (const p of Game.partyHere()) {
+          if (!p.visible) continue;
+          let r = p.lightR ? s.vars.flyLight || p.lightR : 0;
+          if (p.id === 'jaehee' && s.flags.flashlight && !s.flags.blackout) r = Math.max(r, 70);
+          if (p.id === 'gamtu' && s.abilities.cateye && s.control === 'gamtu') r = Math.max(r, 24); // 고양이 눈: 감투 주변이 조금 보인다
+          if (r) hole(p.px - cx + 8, p.py - cy + 8 + (p.offset ? p.offset[1] : 0), r);
+        }
+      } else {
+        const a = Game.controlled();
+        if (a) hole(a.px - cx + 8, a.py - cy + 8, 64);
+      }
     }
     for (const e of Game.map.events) {
       if (!e.active || !e.page.light) continue;

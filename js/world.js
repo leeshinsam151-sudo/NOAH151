@@ -233,8 +233,10 @@
       return this.grid[y][x];
     }
     tilePass(x, y, kind) {
+      if (this.events.some((e) => e.active && e.page.bridge && e.covers(x, y))) return true;
       const t = G.tiles.get(this.tile(x, y));
       if (t.cat) return kind === 'gamtu';
+      if (t.catEye) return kind === 'gamtu' && !!G.game.state.abilities.cateye;
       return !!t.pass;
     }
     refresh() {

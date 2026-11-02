@@ -154,6 +154,7 @@
     var: ([name, opr, v], ctx, g, s) => {
       if (opr === '+') s.vars[name] = (s.vars[name] || 0) + v;
       else if (opr === '-') s.vars[name] = (s.vars[name] || 0) - v;
+      else if (opr === 'toggle') s.vars[name] = s.vars[name] ? 0 : 1;
       else s.vars[name] = v;
     },
     item: ([id, n = 1, opt = {}], ctx, g, s, D) => {
@@ -197,6 +198,9 @@
     shake: ([power = 3, ms = 500]) => {
       G.game.shake = { power, t: ms / 1000 };
     },
+    dark: ([v], ctx, g, s) => {
+      s.screen.dark = v;
+    },
     gray: async ([v, ms = 1200], ctx, g, s) => {
       s.screen.gray = v;
       g.applyScreen(ms);
@@ -207,7 +211,7 @@
     },
     weather: ([name], ctx, g) => g.setWeather(name),
     warp: async ([map, x, y, dir, opt = {}], ctx, g, s, D) => {
-      if (s.control === 'gamtu' && !opt.cat) {
+      if (s.control === 'gamtu' && !opt.cat && !s.flags.gamtuLeads) {
         await D.say('감투', GameData.config.cantLeaveLine || '재희를 두고 갈 수는 없어.');
         D.hide();
         ctx.stop = true;

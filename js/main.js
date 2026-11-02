@@ -42,8 +42,12 @@
       G.game.update(realDt);
     }
     G.input.hits = hits;
-    if (G.game.scene === 'title') G.ui.renderTitle(ctx);
-    else G.game.render(ctx);
+    try {
+      if (G.game.scene === 'title') G.ui.renderTitle(ctx);
+      else G.game.render(ctx);
+    } catch (e) {
+      console.error(e); // 그리기 오류가 나도 게임 진행은 멈추지 않는다
+    }
     for (const r of waiters) r();
   }
 

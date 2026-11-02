@@ -480,6 +480,39 @@
         }
       },
     },
+    /* ---- 동굴 ---- */
+    U: {
+      pass: false,
+      draw: (g, n, f, r) => {
+        rect(g, 0, 0, 16, 16, '#2a2433');
+        if (n(0, 1) !== 'U') {
+          rect(g, 0, 11, 16, 5, '#3a3346');
+          rect(g, 0, 15, 16, 1, '#1c1824');
+        }
+        px(g, Math.floor(r(1) * 14), Math.floor(r(2) * 10), '#4a4258');
+        px(g, Math.floor(r(3) * 14), Math.floor(r(4) * 10), '#1c1824');
+      },
+    },
+    u: {
+      pass: true,
+      draw: (g, n, f, r) => {
+        rect(g, 0, 0, 16, 16, '#5a5068');
+        for (let i = 0; i < 6; i++) px(g, Math.floor(r(i) * 16), Math.floor(r(i + 9) * 16), i % 2 ? '#4a4258' : '#6a6078');
+        if (n(0, -1) === 'U') rect(g, 0, 0, 16, 2, 'rgba(0,0,0,0.25)');
+      },
+    },
+    V: { pass: false, chasm: true, draw: (g, n) => chasm(g, n) },
+    I: { pass: false, chasm: true, catEye: true, draw: (g, n) => chasm(g, n) },
+    A: {
+      pass: true,
+      draw: (g, n, f, r) => {
+        grassBase(g, r);
+        ellipse(g, 8, 9, 8, 8, '#5f666c');
+        ellipse(g, 8, 10, 6, 7, '#141018');
+        rect(g, 2, 10, 12, 6, '#141018');
+        px(g, 4, 6, '#8e959c');
+      },
+    },
     B: {
       pass: false,
       draw: (g, n, f, r) => {
@@ -492,6 +525,16 @@
     },
   };
 
+  function chasm(g, n) {
+    rect(g, 0, 0, 16, 16, '#07060c');
+    const edge = (c) => !'VI'.includes(c);
+    if (edge(n(0, -1))) {
+      rect(g, 0, 0, 16, 3, '#3a3346');
+      rect(g, 0, 3, 16, 1, '#1c1824');
+    }
+    if (edge(n(-1, 0))) rect(g, 0, 0, 1, 16, '#1c1824');
+    if (edge(n(1, 0))) rect(g, 15, 0, 1, 16, '#1c1824');
+  }
   function roof(g, n, ch, base, dark, light) {
     rect(g, 0, 0, 16, 16, base);
     for (let y = 2; y < 16; y += 4) {

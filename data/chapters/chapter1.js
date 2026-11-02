@@ -669,16 +669,14 @@ GameData.defineScripts({
     ['fadeOut', 2200],
     ['bgm', 'clear', 0],
     ['chapterCard', '1장 끝', '다리 위의 큰 개', { hold: 3800 }],
-    ['caption', ['감투의 용기가 한 칸 자랐다.', '2장 「캄캄한 동굴의 반딧불」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
-    ['chapter', 2, '2장 · 캄캄한 동굴의 반딧불 (준비 중)'],
+    ['caption', ['감투의 용기가 한 칸 자랐다.'], { hold: 2200 }],
+    ['chapter', 2, '2장 · 캄캄한 동굴의 반딧불'],
     ['tone', '', 0],
     ['gray', 0.4, 0],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
-    ['goal', '2장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(1장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c2_start'],
   ],
 });
 
@@ -687,10 +685,10 @@ GameData.addEvents('village', [
   {
     id: 'zelkova1', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 1 }, sprite: 'zelkova', noTurn: true, script: 'c1_tree' },
-      { cond: { chapterMin: 1, flag: 'c1_tree' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 조각은 개울 건너 뒷산 그루터기에 있단다.', ['if', { flag: 'c1_bridge', notFlag: 'c1_bori_friend' }, ['느티나무: 다리 위의 녀석은… 겁이 많아서 짖는 게다. 이름을 잃어버리면 누구라도 불안해지는 법이지.']]] },
-      { cond: { flag: 'c1_frag' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 장하구나, 고양이야. 방울 소리가 한결 맑아졌어.', '감투: 헤헤… 들려요? 나 오늘 진짜 무서웠는데.'] },
-      { cond: { flag: 'c1_end' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 다음 조각은 동쪽 골짜기, 깊은 동굴 속에서 깜빡이고 있다.', '느티나무: 오늘은 푹 쉬거라. 용기도 쉬어야 자라는 법이란다.'] },
+      { cond: { chapterMin: 1, notFlag: 'c2_started' }, sprite: 'zelkova', noTurn: true, script: 'c1_tree' },
+      { cond: { chapterMin: 1, flag: 'c1_tree', notFlag: 'c2_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 조각은 개울 건너 뒷산 그루터기에 있단다.', ['if', { flag: 'c1_bridge', notFlag: 'c1_bori_friend' }, ['느티나무: 다리 위의 녀석은… 겁이 많아서 짖는 게다. 이름을 잃어버리면 누구라도 불안해지는 법이지.']]] },
+      { cond: { flag: 'c1_frag', notFlag: 'c2_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 장하구나, 고양이야. 방울 소리가 한결 맑아졌어.', '감투: 헤헤… 들려요? 나 오늘 진짜 무서웠는데.'] },
+      { cond: { flag: 'c1_end', notFlag: 'c2_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 다음 조각은 동쪽 골짜기, 깊은 동굴 속에서 깜빡이고 있다.', '느티나무: 오늘은 푹 쉬거라. 용기도 쉬어야 자라는 법이란다.'] },
     ],
   },
   {
@@ -698,7 +696,7 @@ GameData.addEvents('village', [
     pages: [
       { cond: { chapter: 1, notFlag: 'c1_frag' }, sprite: 'ijang', dir: 'down', script: 'c1_ijang' },
       {
-        cond: { flag: 'c1_frag' }, sprite: 'ijang', dir: 'down',
+        cond: { flag: 'c1_frag', notFlag: 'c2_started' }, sprite: 'ijang', dir: 'down',
         script: ['이장님: 우리 개 녀석이 목걸이를 차고 돌아왔더라. 이름표를 보니께 생각이 나더라고. 그래, [보리]! 보리였어!', '이장님: 이름 하나 잊어버렸다고 그 녀석이 얼마나 서운했을꼬. 앞으로는 하루에 열 번씩 불러 줄 거여.'],
       },
     ],
@@ -712,7 +710,7 @@ GameData.addEvents('village', [
   {
     id: 'boriHome', x: 35, y: 13,
     pages: [{
-      cond: { flag: 'c1_return' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 },
+      cond: { flag: 'c1_return', notFlag: 'c2_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 },
       script: [['se', 'bark'], '보리: 월! 이장님이 목걸이를 보시더니 "아이고, 보리야!" 하고 불러 주셨어! 내 이름! 헤헤헤.', '보리: 감투, 다음에 또 무서운 데 가면 나도 불러! 짖어 줄게! 크게!', ['if', { inParty: 'gamtu' }, ['감투: …크게는 안 된다니까.']]],
     }],
   },
@@ -731,7 +729,7 @@ GameData.addEvents('village', [
           ['flag', 'c1_minsu'],
         ],
       },
-      { cond: { flag: 'c1_frag' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: ['민수: 누나! 하늘 색이 아까보다 조금 돌아온 것 같아!', '민수: 엄마도 내 이름 맞혔어. 민수! 한 번에!'] },
+      { cond: { flag: 'c1_frag', notFlag: 'c2_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: ['민수: 누나! 하늘 색이 아까보다 조금 돌아온 것 같아!', '민수: 엄마도 내 이름 맞혔어. 민수! 한 번에!'] },
     ],
   },
   {
@@ -758,7 +756,7 @@ GameData.addEvents('village', [
           ]],
         ],
       },
-      { cond: { flag: 'c1_frag' }, sprite: 'magpie', script: [['se', 'caw'], '깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 그림자 늑대를 쫓아냈대! 벌써 온 동네 새들이 다 알아!', '감투: …그렇게 빨리?', '깍순이: 소식통이라니까! 깍깍!'] },
+      { cond: { flag: 'c1_frag', notFlag: 'c2_started' }, sprite: 'magpie', script: [['se', 'caw'], '깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 그림자 늑대를 쫓아냈대! 벌써 온 동네 새들이 다 알아!', '감투: …그렇게 빨리?', '깍순이: 소식통이라니까! 깍깍!'] },
     ],
   },
   { id: 'c1ReturnAuto', x: 0, y: 1, pages: [{ cond: { flag: 'c1_return', notFlag: 'c1_reunion' }, trigger: 'auto', script: 'c1_reunion' }] },
@@ -773,7 +771,7 @@ GameData.addEvents('village', [
           ]],
         ],
       },
-      { cond: { flag: 'c1_end' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 우리 재희, 감투 대감. 오늘도 고생 많았다.', '할머니 : 배고프면 언제든 들어오너라. 된장찌개 데워 놓을게.'] },
+      { cond: { flag: 'c1_end', notFlag: 'c2_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 우리 재희, 감투 대감. 오늘도 고생 많았다.', '할머니 : 배고프면 언제든 들어오너라. 된장찌개 데워 놓을게.'] },
     ],
   },
   { id: 'pinEv', x: 31, y: 3, pages: [{ cond: { chapterMin: 1, notFlag: 'c1_pin' }, sprite: 'sparkle', through: true, trigger: 'touch', script: 'c1_pin' }] },
@@ -820,7 +818,7 @@ GameData.addEvents('shop', [
     id: 'geumsun1', x: 2, y: 3,
     pages: [
       { cond: { chapter: 1, notFlag: 'c1_frag' }, sprite: 'geumsun', dir: 'down', script: 'c1_geumsun' },
-      { cond: { flag: 'c1_frag' }, sprite: 'geumsun', dir: 'down', script: ['금순 아줌마: 라면이 천 원이었지! 이제야 생각났네. 호호호.', '금순 아줌마: 재희야, 창고 정리해 준 거 고마웠어. 다음에 사탕 하나 더 줄게.'] },
+      { cond: { flag: 'c1_frag', notFlag: 'c2_started' }, sprite: 'geumsun', dir: 'down', script: ['금순 아줌마: 라면이 천 원이었지! 이제야 생각났네. 호호호.', '금순 아줌마: 재희야, 창고 정리해 준 거 고마웠어. 다음에 사탕 하나 더 줄게.'] },
     ],
   },
   {
