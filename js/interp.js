@@ -198,6 +198,10 @@
     shake: ([power = 3, ms = 500]) => {
       G.game.shake = { power, t: ms / 1000 };
     },
+    lights: ([v], ctx, g, s) => {
+      s.screen.lights = v;
+    },
+    lightning: (a, ctx, g) => g.lightning(true),
     dark: ([v], ctx, g, s) => {
       s.screen.dark = v;
     },

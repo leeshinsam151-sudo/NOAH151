@@ -391,16 +391,14 @@ GameData.defineScripts({
     ['fadeOut', 2200],
     ['bgm', 'clear', 0],
     ['chapterCard', '3장 끝', '시계탑의 부엉이', { hold: 3800 }],
-    ['caption', ['감투의 용기가 또 한 칸 자랐다.', '4장 「천둥 치는 밤」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
+    ['caption', ['감투의 용기가 또 한 칸 자랐다.'], { hold: 2200 }],
     ['flag', 'c3_end'],
-    ['chapter', 4, '4장 · 천둥 치는 밤 (준비 중)'],
+    ['chapter', 4, '4장 · 천둥 치는 밤'],
     ['tone', '', 0],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
-    ['goal', '4장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(3장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c4_start'],
   ],
 });
 
@@ -409,40 +407,40 @@ GameData.addEvents('village', [
   {
     id: 'gm3', x: 6, y: 13,
     pages: [
-      { cond: { chapterMin: 3 }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 시계가 멈추니까 하루가 길어서 좋네. 허허. …그래도 밥때는 알아야 할 텐데.'] },
-      { cond: { flag: 'c3_frag' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 분교 종소리 들었나? 아이고, 몇십 년 만에 듣는지.', '할머니 : 저 종이 네 번 치면… 할미가 니 엄마 데리러 학교 가던 시간이다. 허허, 그게 갑자기 생각나네.'] },
+      { cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 시계가 멈추니까 하루가 길어서 좋네. 허허. …그래도 밥때는 알아야 할 텐데.'] },
+      { cond: { flag: 'c3_frag', notFlag: 'c4_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 분교 종소리 들었나? 아이고, 몇십 년 만에 듣는지.', '할머니 : 저 종이 네 번 치면… 할미가 니 엄마 데리러 학교 가던 시간이다. 허허, 그게 갑자기 생각나네.'] },
     ],
   },
   {
     id: 'zelkova3', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 3 }, sprite: 'zelkova', noTurn: true, script: 'c3_tree' },
-      { cond: { chapterMin: 3, flag: 'c3_tree' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 옛 분교는 마을 서쪽 끝 길을 따라가면 된다.', '느티나무: 높은 곳에선 아래가 아니라, 가야 할 곳을 보거라.'] },
-      { cond: { flag: 'c3_frag' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 종소리가 들리는구나. 마을의 시간이 돌아왔어.', '느티나무: 다음 조각은… 폭풍우 치는 밤에 찾아올 게다. 감투야, 그 밤은 네 기억과도 이어져 있단다.'] },
+      { cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'zelkova', noTurn: true, script: 'c3_tree' },
+      { cond: { chapterMin: 3, flag: 'c3_tree', notFlag: 'c4_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 옛 분교는 마을 서쪽 끝 길을 따라가면 된다.', '느티나무: 높은 곳에선 아래가 아니라, 가야 할 곳을 보거라.'] },
+      { cond: { flag: 'c3_frag', notFlag: 'c4_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 종소리가 들리는구나. 마을의 시간이 돌아왔어.', '느티나무: 다음 조각은… 폭풍우 치는 밤에 찾아올 게다. 감투야, 그 밤은 네 기억과도 이어져 있단다.'] },
     ],
   },
   {
     id: 'ijang3', x: 33, y: 15,
     pages: [{
-      cond: { chapterMin: 3 }, sprite: 'ijang', dir: 'down',
+      cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'ijang', dir: 'down',
       script: [['if', { flag: 'c3_frag' }, ['이장님: 분교 종소리가 울리니께 시계가 다시 가더라. 신기한 일이여.'], ['이장님: 내 시계가 멈췄어. 해를 보니 대충 열두 시… 아니 세 시… 아이고 모르겠다.', '이장님: 보리 녀석은 아침부터 분교 쪽으로 뛰어가던디.']]],
     }],
   },
   {
     id: 'bori3', x: 35, y: 13,
-    pages: [{ cond: { flag: 'c3_frag' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 내가 받아 준다고 한 거 들었지? 나 진짜 받을 수 있었어!', '감투: …탑 밖에서?', '보리: …….'] }],
+    pages: [{ cond: { flag: 'c3_frag', notFlag: 'c4_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 내가 받아 준다고 한 거 들었지? 나 진짜 받을 수 있었어!', '감투: …탑 밖에서?', '보리: …….'] }],
   },
   {
     id: 'minsu3', x: 16, y: 21,
     pages: [{
-      cond: { chapterMin: 3 }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 },
+      cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 },
       script: [['if', { flag: 'c3_frag' }, ['민수: 누나! 종소리 들었어? 엄마가 이제 학교 늦지 말래. 히잉.'], ['민수: 누나, 지금 학교 끝났어? 아니면 시작했어? 엄마도 모른대!']]],
     }],
   },
   {
     id: 'kkachi3', x: 23, y: 9,
     pages: [{
-      cond: { chapterMin: 3 }, sprite: 'magpie',
+      cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'magpie',
       script: [['se', 'caw'], ['if', { flag: 'c3_frag' }, ['깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 들보를 건넜대! 안경 쓴 부엉이 영감이 동네방네 자랑하고 다녀!'], ['깍순이: 깍깍! 분교 시계탑에 안경 쓴 부엉이 영감이 사는데, 요즘 시간을 몽땅 까먹었대! 깍깍!']]],
     }],
   },
@@ -452,7 +450,7 @@ GameData.addEvents('shop', [
   {
     id: 'geumsun3', x: 2, y: 3,
     pages: [{
-      cond: { chapterMin: 3 }, sprite: 'geumsun', dir: 'down',
+      cond: { chapterMin: 3, notFlag: 'c4_started' }, sprite: 'geumsun', dir: 'down',
       script: [['if', { flag: 'c3_frag' }, ['금순 아줌마: 시계가 다시 가니까 손님들이 다 제시간에 오네. 호호.'], ['금순 아줌마: 가게 문을 몇 시에 열었더라…. 아이고, 오늘은 그냥 계속 열어 둘래.']]],
     }],
   },

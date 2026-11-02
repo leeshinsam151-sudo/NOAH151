@@ -138,8 +138,9 @@
   };
 
   Game.gather = function () {
-    const lead = Game.actors.jaehee;
-    const others = Game.state.party.slice(1).map((id) => Game.actor(id)).filter((a) => a.visible);
+    const leadId = Game.leader() || 'jaehee';
+    const lead = Game.actor(leadId);
+    const others = Game.chain().length ? Game.chain() : Game.state.party.filter((id) => id !== leadId).map((id) => Game.actor(id)).filter((a) => a.visible);
     Game.placeBehind(lead, others);
   };
 
@@ -245,6 +246,7 @@
       if (Game.shake.t <= 0) Game.shake = null;
     }
     Game.updateBeams();
+    Game.updateStorm(dt);
     Game.updateParticles(dt);
     Game.updateCamera(dt);
   };
@@ -261,6 +263,7 @@
     const I = G.input,
       s = Game.state;
     if (s.hideParty) return;
+    if (Game.freezeT > 0) return; // 천둥에 얼어붙음
     const lead = Game.controlled();
     if (!lead || lead.moving || lead.route || lead.mapId !== Game.map.id) return;
     if (I.hit('cancel')) {
@@ -582,18 +585,60 @@
       g.fillRect(Math.round(p.x - cx), Math.round(p.y - cy), 2, 2);
     }
     g.globalAlpha = 1;
-    drawWeather(g);
+    if (Game.weather.type !== 'rain') drawWeather(g);
     const dark = Game.darkLevel();
     if (dark) drawDark(g, dark, cx, cy);
+    if (Game.weather.type === 'rain') drawWeather(g); // 비는 어둠 위에서도 보인다
+    if (Game.flashAmt > 0) {
+      g.fillStyle = `rgba(230,236,255,${Game.flashAmt * 0.3})`;
+      g.fillRect(0, 0, G.W, G.H);
+    }
     drawCatEye(g, cx, cy);
+  };
+
+  Game.lightsMode = () => Game.state.screen.lights || Game.map.def.lights;
+
+  /* 폭풍우: flags.storm 이 켜져 있으면 몇 초마다 번개가 친다.
+   * '폭풍 속 달리기'를 배우기 전에는 천둥이 칠 때마다 감투가 얼어붙어 잠깐 움직일 수 없다. */
+  Game.updateStorm = function (dt) {
+    const s = Game.state;
+    Game.flashAmt = Math.max(0, (Game.flashAmt || 0) - dt * 2.2);
+    if (Game.freezeT > 0) Game.freezeT -= dt;
+    if (!s.flags.storm || Game.busy || G.ui.menuOpen) return;
+    Game.stormT = (Game.stormT === undefined ? 3 : Game.stormT) - dt;
+    if (Game.stormT <= 0) {
+      Game.stormT = 5 + Math.random() * 5;
+      Game.lightning();
+    }
+  };
+  Game.lightning = function (silentFreeze) {
+    const s = Game.state;
+    Game.flashAmt = 1;
+    G.audio.se('thunder');
+    Game.shake = { power: 2, t: 0.4 };
+    const c = Game.actors.gamtu;
+    if (!c || c.mapId !== Game.map.id || !s.party.includes('gamtu')) return;
+    if (!s.abilities.storm) {
+      if (!silentFreeze) Game.freezeT = 1.3;
+      c.shiver = 1.3;
+      c.emote = { type: '!', t: 1 };
+      if (!s.flags.thunderTip) {
+        s.flags.thunderTip = true;
+        G.dialog.toast('천둥이 칠 때마다 감투가 얼어붙어 꼼짝도 못 한다!');
+      }
+    } else if (!s.flags.thunderOk) {
+      s.flags.thunderOk = true;
+      G.dialog.toast('천둥이 쳐도… 감투는 멈추지 않는다!', 'courage');
+    }
   };
 
   /** 어둠 정도: 스크립트 지정값(screen.dark) > 맵 설정. 정전(flags.blackout)이면 더 어둡다 */
   Game.darkLevel = function () {
     const s = Game.state;
-    if (s.screen.dark !== undefined && s.screen.dark !== null) return s.screen.dark;
+    const f = 1 - (Game.flashAmt || 0) * 0.92; // 번개가 치면 잠깐 환해진다
+    if (s.screen.dark !== undefined && s.screen.dark !== null) return s.screen.dark * f;
     const d = Game.map.def.dark || 0;
-    return d && s.flags.blackout && Game.map.def.lights === 'party' ? 0.96 : d;
+    return (d && s.flags.blackout && Game.lightsMode() === 'party' ? 0.96 : d) * f;
   };
 
   /* 빛 반사 퍼즐: beam 이벤트에서 나온 빛이 mirror 이벤트에서 꺾여 beamTarget 에 닿으면 플래그가 켜진다 */
@@ -782,7 +827,7 @@
     };
     const s = Game.state;
     if (!s.hideParty) {
-      if (Game.map.def.lights === 'party') {
+      if (Game.lightsMode() === 'party') {
         // 손전등을 든 재희, 빛나는 동료
         for (const p of Game.partyHere()) {
           if (!p.visible) continue;

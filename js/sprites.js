@@ -888,6 +888,56 @@
         ellipse(g, 8, 11, 2, 2, '#f0e6cc');
       }),
     }),
+    /* ---- 4장 ---- */
+    kittenB: () => ({
+      // 아기 감투 (시안 B: 동글동글 솜뭉치 + 큰 눈)
+      w: 16, h: 16, fps: 3,
+      frames: frames(2, 16, 16, (g, f) => {
+        const o = f ? 1 : 0;
+        ellipse(g, 8, 10 + o, 5, 5 - o, '#5a2e14');
+        ellipse(g, 8, 10 + o, 4, 4 - o, '#f2a24a');
+        rect(g, 4, 4 + o, 2, 3, '#5a2e14');
+        rect(g, 10, 4 + o, 2, 3, '#5a2e14');
+        px(g, 5, 6 + o, '#f29aa8');
+        px(g, 10, 6 + o, '#f29aa8');
+        rect(g, 6, 9 + o, 2, 2, '#2a1a10');
+        rect(g, 9, 9 + o, 2, 2, '#2a1a10');
+        px(g, 6, 9 + o, '#fff');
+        px(g, 9, 9 + o, '#fff');
+        px(g, 8, 11 + o, '#f29aa8');
+        rect(g, 7, 6 + o, 2, 1, '#9a5222');
+        ellipse(g, 8, 13 + o, 2, 1, '#f7c27a');
+      }),
+    }),
+    umbrellaJaehee: () => ({
+      w: 16, h: 24, fps: 0,
+      frames: frames(1, 16, 24, (g) => {
+        for (let i = 0; i < 6; i++) rect(g, 8 - i - 2, 1 + i, (i + 2) * 2, 1, '#ffd34d');
+        rect(g, 1, 7, 14, 1, '#d8a020');
+        g.drawImage(S.frame(S.get('littleJaehee'), 'up', 0, 0), 0, 8);
+        rect(g, 8, 7, 1, 6, '#5a3a1a');
+      }),
+    }),
+    branch: () => ({
+      w: 32, h: 16, fps: 0,
+      frames: frames(1, 32, 16, (g) => {
+        rect(g, 2, 9, 28, 4, '#5a3a22');
+        rect(g, 2, 9, 28, 1, '#7a5232');
+        for (const [x, y] of [[6, 5], [14, 4], [22, 6], [27, 7]]) {
+          rect(g, x, y + 2, 1, 4, '#5a3a22');
+          ellipse(g, x, y, 3, 2, '#3c8c45');
+        }
+      }),
+    }),
+    gateWood: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 1, 3, 14, 12, '#6a4424');
+        for (let x = 2; x < 15; x += 3) rect(g, x, 4, 2, 10, '#9a6a3a');
+        rect(g, 1, 6, 14, 1, '#4a2e14');
+        rect(g, 1, 11, 14, 1, '#4a2e14');
+      }),
+    }),
     none: () => ({ w: 16, h: 16, fps: 0, frames: [U.canvas(16, 16)] }),
   };
   function lever(on) {

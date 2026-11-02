@@ -334,6 +334,12 @@
       tone('sawtooth', 950, 700, 0.12, 0.05, 0.15, { lp: 2000 });
     },
     rustle: () => noise(0.35, 0.1, 'highpass', 2500),
+    thunder: () => {
+      noise(0.25, 0.35, 'highpass', 2000);
+      noise(2.2, 0.4, 'lowpass', 300, 0.1, 60);
+      tone('sawtooth', 55, 35, 1.8, 0.12, 0.15, { lp: 200, att: 0.05 });
+    },
+    rain: () => noise(1.5, 0.05, 'highpass', 4000),
     purr: () => {
       for (let i = 0; i < 6; i++) tone('sawtooth', 40, 38, 0.12, 0.08, i * 0.16, { lp: 300 });
     },

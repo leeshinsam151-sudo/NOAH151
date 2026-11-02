@@ -76,7 +76,9 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
   });
 
   const st = () => page.evaluate(() => __bot.st());
-  async function press(k) { await page.keyboard.press(k); await sleep(30); }
+  // 천둥에 얼어붙어 있는 동안에는 입력이 먹히지 않으므로 풀릴 때까지 기다린다
+  async function thaw() { for (let i = 0; i < 200; i++) { if (!(await page.evaluate(() => G.game.freezeT > 0))) return; await sleep(20); } }
+  async function press(k) { await thaw(); await page.keyboard.press(k); await sleep(30); }
 
   async function advance(choices = [], label = '') {
     let idle = 0;
@@ -98,6 +100,7 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
   }
 
   async function step(dir) {
+    await thaw();
     const s0 = await st();
     await page.keyboard.down(KEY[dir]);
     for (let i = 0; i < 100; i++) {
@@ -139,6 +142,7 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     throw new Error('exitTo guard ' + label);
   }
   async function face(dir) {
+    await thaw();
     await page.keyboard.down(KEY[dir]);
     await sleep(40);
     await page.keyboard.up(KEY[dir]);
@@ -397,6 +401,45 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     await advance([0], 'end3');
     await expectFlag('c3_end');
     await snap('end3');
+    console.log('[4장]');
+    await expectFlag('c4_started');
+    await exitTo(7, 11, 'house', 'home at dusk');
+    await advance();
+    await expectFlag('c4_storm');
+    await exitTo(8, 10, 'storm', 'into the storm');
+    await advance();
+    await expectFlag('c4_storm_in');
+    await snap('storm');
+    await goto(8, 19, 'stream bank4');
+    await switchChar();
+    await goto(12, 19, 'jump4');
+    await face('down');
+    await press('z');
+    await advance();
+    await expectFlag('c4_bridge');
+    await switchChar();
+    await goto(14, 17, 'plaza');
+    await advance();
+    await expectFlag('c4_bori');
+    await goto(15, 14, 'beam west');
+    await switchChar();
+    await goto(22, 14, 'beam east');
+    await face('right');
+    await press('z');
+    await advance();
+    await expectFlag('c4_gate');
+    await switchChar();
+    await goto(14, 10, 'alley');
+    await advance();
+    await expectFlag('c4_alley');
+    await goto(20, 6, 'found', [0]);
+    await advance([0], 'found4');
+    await expectFlag('c4_escort');
+    await snap('escort');
+    await exitTo(4, 18, 'village', 'home');
+    await advance([0], 'end4');
+    await expectFlag('c4_end');
+    await snap('end4');
     const fin = await page.evaluate(() => ({ ch: G.game.state.vars.chapter, courage: G.game.state.vars.courage, map: G.game.map.id, auto: !!localStorage.getItem('gamtu_save_auto'), play: G.game.state.playtime }));
     console.log('끝 상태', fin);
     // 저장 / 불러오기
