@@ -481,6 +481,26 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     await advance([0], 'end5');
     await expectFlag('c5_end');
     await snap('end5');
+    console.log('[6장]');
+    await expectFlag('c6_started');
+    await talk(16, 13, 'up', [], 'tree6');
+    await expectFlag('c6_tree');
+    await talk(25, 8, 'up', [], 'boat');
+    await expectFlag('c6_island');
+    await snap('island');
+    await talk(14, 21, 'up', [0, 1], 'q1');
+    await expectFlag('c6_q1');
+    await talk(14, 15, 'up', [1, 2], 'q2');
+    await expectFlag('c6_q2');
+    await talk(11, 9, 'up', [1, 0], 'q3');
+    await expectFlag('c6_q3');
+    await talk(17, 7, 'up', [2, 1], 'q4');
+    await expectFlag('c6_q4');
+    await snap('lanterns');
+    await exitTo(17, 4, 'village', 'core', [0]);
+    await advance([0], 'end6');
+    await expectFlag('c6_end');
+    await snap('end6');
     const fin = await page.evaluate(() => ({ ch: G.game.state.vars.chapter, courage: G.game.state.vars.courage, map: G.game.map.id, auto: !!localStorage.getItem('gamtu_save_auto'), play: G.game.state.playtime }));
     console.log('끝 상태', fin);
     // 저장 / 불러오기

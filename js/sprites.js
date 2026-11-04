@@ -888,6 +888,69 @@
         ellipse(g, 8, 11, 2, 2, '#f0e6cc');
       }),
     }),
+    /* ---- 6장 ---- */
+    greyGuestBig: () => ({
+      // 회색 손님의 진짜 모습 (시안 B: 잊혀진 물건을 품은 슬픈 망토)
+      w: 48, h: 56, fps: 2,
+      frames: frames(2, 48, 56, (g, f) => {
+        for (let y = 10; y < 56; y++) {
+          const w = Math.min(22, 8 + (y - 10) * 0.45) + Math.sin(y * 0.5 + f * 1.5) * 1.5;
+          g.fillStyle = `rgba(${90 + y},${90 + y},${110 + y},${0.92 - y * 0.008})`;
+          g.fillRect(Math.round(24 - w), y, Math.round(w * 2), 1);
+        }
+        ellipse(g, 24, 10, 9, 9, 'rgba(120,120,140,0.95)');
+        rect(g, 19, 9, 3, 2, '#fff');
+        rect(g, 27, 9, 3, 2, '#fff');
+        rect(g, 20, 12, 1, 3 + f, '#9ad0ff');
+        rect(g, 28, 12, 1, 3 + f, '#9ad0ff');
+        g.drawImage(S.frame(S.get('ball'), 'down', 0, 0), 6, 28);
+        g.drawImage(S.frame(S.get('hairpin'), 'down', 0, 0), 28, 34);
+        g.drawImage(S.frame(S.get('candle'), 'down', 0, 0), 14, 40);
+        rect(g, 30, 24, 8, 6, '#f6f0e0');
+        rect(g, 30, 24, 8, 1, '#c8b890');
+      }),
+    }),
+    greyKitten: () => ({
+      w: 16, h: 16, fps: 3,
+      frames: S.get('kittenB').frames.map((src) => {
+        const c = U.canvas(16, 16),
+          g = c.getContext('2d');
+        g.drawImage(src, 0, 0);
+        const im = g.getImageData(0, 0, 16, 16);
+        for (let i = 0; i < im.data.length; i += 4)
+          if (im.data[i + 3]) {
+            const l = (im.data[i] + im.data[i + 1] + im.data[i + 2]) / 3;
+            im.data[i] = l * 0.8 + 30;
+            im.data[i + 1] = l * 0.8 + 30;
+            im.data[i + 2] = l * 0.85 + 40;
+          }
+        g.putImageData(im, 0, 0);
+        return c;
+      }),
+    }),
+    lantern: () => lanternSp(false),
+    lanternOn: () => lanternSp(true),
+    boat: () => ({
+      w: 32, h: 16, fps: 2,
+      frames: frames(2, 32, 16, (g, f) => {
+        const o = f ? 1 : 0;
+        rect(g, 2, 7 + o, 28, 5, '#6a4424');
+        rect(g, 4, 12 + o, 24, 2, '#4a2e14');
+        rect(g, 2, 7 + o, 28, 1, '#9a6a3a');
+        rect(g, 22, 1 + o, 2, 8, '#8a5a30');
+        rect(g, 0, 14, 32, 1, 'rgba(200,230,255,0.6)');
+      }),
+    }),
+    letter: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 3, 6, 10, 7, '#f6f0e0');
+        for (let i = 0; i < 5; i++) {
+          px(g, 3 + i, 6 + i, '#c8b890');
+          px(g, 12 - i, 6 + i, '#c8b890');
+        }
+      }),
+    }),
     /* ---- 5장 ---- */
     plate: () => ({
       w: 16, h: 16, fps: 0,
@@ -977,6 +1040,17 @@
     }),
     none: () => ({ w: 16, h: 16, fps: 0, frames: [U.canvas(16, 16)] }),
   };
+  function lanternSp(on) {
+    return {
+      w: 16, h: 16, fps: on ? 3 : 0,
+      frames: frames(on ? 2 : 1, 16, 16, (g, f) => {
+        if (on) ellipse(g, 8, 6, 7, 7, `rgba(255,230,120,${f ? 0.3 : 0.2})`);
+        rect(g, 7, 9, 2, 6, '#5a4a3a');
+        rect(g, 4, 2, 8, 8, '#5a4a3a');
+        rect(g, 5, 3, 6, 6, on ? '#ffe680' : '#6a6a7a');
+      }),
+    };
+  }
   function bigMirror(withJ) {
     return {
       w: 24, h: 32, fps: 2,

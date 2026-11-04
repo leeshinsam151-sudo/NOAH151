@@ -5,7 +5,7 @@
 
 - 빌드 없이 HTML/CSS/JavaScript만 사용 → `index.html` 을 GitHub Pages에서 바로 실행
 - 그림·음악·효과음 모두 코드로 생성 (외부 이미지·폰트·소리 파일 없음)
-- 현재 수록: **타이틀 · 프롤로그 · 1장 ~ 5장** (약 3시간 15분). 전체 설계(7장, 약 5시간)는 [`docs/story.md`](docs/story.md)
+- 현재 수록: **타이틀 · 프롤로그 · 1장 ~ 6장** (약 4시간). 전체 설계(7장, 약 5시간)는 [`docs/story.md`](docs/story.md)
 
 ## 실행
 - GitHub Pages: 저장소 Settings → Pages → 브랜치 루트 지정 후 접속

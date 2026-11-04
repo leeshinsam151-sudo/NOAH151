@@ -190,6 +190,7 @@
       this.speed = p.speed || 3;
       this.offset = p.offset || this.def.offset || [0, 0];
       this.stepAnim = !!p.stepAnim;
+      this.float = !!p.float;
       this.alpha = p.alpha !== undefined ? p.alpha : 1;
       if (p.warp && !p.script) {
         const [m, x, y, d, o] = p.warp;

@@ -302,16 +302,14 @@ GameData.defineScripts({
     ['fadeOut', 2200],
     ['bgm', 'clear', 0],
     ['chapterCard', '5장 끝', '거울 숲', { hold: 3800 }],
-    ['caption', ['감투의 용기가 또 한 칸 자랐다.', '6장 「잊혀진 것들의 섬」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
+    ['caption', ['감투의 용기가 또 한 칸 자랐다.'], { hold: 2200 }],
     ['flag', 'c5_end'],
-    ['chapter', 6, '6장 · 잊혀진 것들의 섬 (준비 중)'],
+    ['chapter', 6, '6장 · 잊혀진 것들의 섬'],
     ['tone', '', 0],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
-    ['goal', '6장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(5장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c6_start'],
   ],
 });
 
@@ -320,25 +318,25 @@ GameData.addEvents('village', [
   {
     id: 'gm5', x: 6, y: 13,
     pages: [
-      { cond: { chapterMin: 5 }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 어젯밤 꿈에 마루가 텅 비어 있더라…. 허허, 꿈은 꿈이지.'] },
-      { cond: { flag: 'c5_end' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 어젯밤 달 참 곱더라. 우리 셋이 보니까 더 곱더라.'] },
+      { cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 어젯밤 꿈에 마루가 텅 비어 있더라…. 허허, 꿈은 꿈이지.'] },
+      { cond: { flag: 'c5_end', notFlag: 'c6_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 어젯밤 달 참 곱더라. 우리 셋이 보니까 더 곱더라.'] },
     ],
   },
   {
     id: 'zelkova5', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 5 }, sprite: 'zelkova', noTurn: true, script: 'c5_tree' },
-      { cond: { flag: 'c5_end' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 혼자 걸었구나. 그리고 혼자가 아니라는 걸 알았구나.', '느티나무: 마지막 조각은 회색 손님 한가운데, 잊혀진 것들의 섬에 있다. 그때는… 네 그림자도 데려가거라.'] },
+      { cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'zelkova', noTurn: true, script: 'c5_tree' },
+      { cond: { flag: 'c5_end', notFlag: 'c6_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 혼자 걸었구나. 그리고 혼자가 아니라는 걸 알았구나.', '느티나무: 마지막 조각은 회색 손님 한가운데, 잊혀진 것들의 섬에 있다. 그때는… 네 그림자도 데려가거라.'] },
     ],
   },
-  { id: 'ijang5', x: 33, y: 15, pages: [{ cond: { chapterMin: 5 }, sprite: 'ijang', dir: 'down', script: [['if', { flag: 'c5_end' }, ['이장님: 보리 녀석이 어제 어디 갔다 왔는지 온몸에 은가루를 묻혀 왔더라. 허허.'], ['이장님: 요즘은 마을이 다시 환해졌어. 할매도 웃음이 늘었고.']]] }] },
-  { id: 'bori5', x: 35, y: 13, pages: [{ cond: { flag: 'c5_end' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 거울 깨는 거 봤어! 크게 응원한 거 들었지?', '감투: …크게 하지 말랬잖아. 근데… 들었어. 고마워.'] }] },
-  { id: 'minsu5', x: 16, y: 21, pages: [{ cond: { chapterMin: 5 }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c5_end' }, ['민수: 누나, 감투 대감님 요즘 좀 멋있어진 것 같아. 걸음걸이가 달라!'], ['민수: 누나, 거울 보면 무서운 얘기 알아? 밤에 거울 보면 거울 속 내가 먼저 웃는대!', '감투: (……그 얘기 하지 마.)']]] }] },
-  { id: 'kkachi5', x: 23, y: 9, pages: [{ cond: { chapterMin: 5 }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c5_end' }, ['깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 거울을 깼대! 혼자서! 아니, 우리 다 같이!'], ['깍순이: 깍깍! 북쪽 안개 속에 거울 숲이 있대. 나는 거기 무서워서 못 가. …아마도.']]] }] },
+  { id: 'ijang5', x: 33, y: 15, pages: [{ cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'ijang', dir: 'down', script: [['if', { flag: 'c5_end' }, ['이장님: 보리 녀석이 어제 어디 갔다 왔는지 온몸에 은가루를 묻혀 왔더라. 허허.'], ['이장님: 요즘은 마을이 다시 환해졌어. 할매도 웃음이 늘었고.']]] }] },
+  { id: 'bori5', x: 35, y: 13, pages: [{ cond: { flag: 'c5_end', notFlag: 'c6_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 거울 깨는 거 봤어! 크게 응원한 거 들었지?', '감투: …크게 하지 말랬잖아. 근데… 들었어. 고마워.'] }] },
+  { id: 'minsu5', x: 16, y: 21, pages: [{ cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c5_end' }, ['민수: 누나, 감투 대감님 요즘 좀 멋있어진 것 같아. 걸음걸이가 달라!'], ['민수: 누나, 거울 보면 무서운 얘기 알아? 밤에 거울 보면 거울 속 내가 먼저 웃는대!', '감투: (……그 얘기 하지 마.)']]] }] },
+  { id: 'kkachi5', x: 23, y: 9, pages: [{ cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c5_end' }, ['깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 거울을 깼대! 혼자서! 아니, 우리 다 같이!'], ['깍순이: 깍깍! 북쪽 안개 속에 거울 숲이 있대. 나는 거기 무서워서 못 가. …아마도.']]] }] },
 ]);
 
 GameData.addEvents('shop', [
-  { id: 'geumsun5', x: 2, y: 3, pages: [{ cond: { chapterMin: 5 }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c5_end' }, ['금순 아줌마: 할머니가 요즘 가게에 자주 놀러 오셔. 재희 자랑하러. 호호.'], ['금순 아줌마: 어서 와~ 요즘 할머니 얼굴이 참 밝아지셨어.']]] }] },
+  { id: 'geumsun5', x: 2, y: 3, pages: [{ cond: { chapterMin: 5, notFlag: 'c6_started' }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c5_end' }, ['금순 아줌마: 할머니가 요즘 가게에 자주 놀러 오셔. 재희 자랑하러. 호호.'], ['금순 아줌마: 어서 와~ 요즘 할머니 얼굴이 참 밝아지셨어.']]] }] },
 ]);
 
 /* ---------- 거울 숲 입구 ---------- */
