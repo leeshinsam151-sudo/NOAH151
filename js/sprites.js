@@ -888,6 +888,43 @@
         ellipse(g, 8, 11, 2, 2, '#f0e6cc');
       }),
     }),
+    /* ---- 5장 ---- */
+    plate: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 2, 3, 12, 11, '#a89040');
+        rect(g, 3, 4, 10, 9, '#e8d070');
+        rect(g, 6, 7, 4, 3, '#c8b050');
+      }),
+    }),
+    glassGate: () => ({
+      w: 16, h: 16, fps: 2,
+      frames: frames(2, 16, 16, (g, f) => {
+        rect(g, 1, 0, 14, 16, '#8a8aac');
+        rect(g, 2, 1, 12, 14, f ? '#d8e8fc' : '#c8dcf4');
+        for (let i = 0; i < 4; i++) px(g, 4 + i * 2, 3 + i * 2, '#ffffff');
+      }),
+    }),
+    bigMirror: () => bigMirror(false),
+    bigMirrorJ: () => bigMirror(true),
+    bigMirrorBroken: () => ({
+      w: 24, h: 32, fps: 0,
+      frames: frames(1, 24, 32, (g) => {
+        rect(g, 0, 0, 24, 32, '#8a7a9a');
+        rect(g, 2, 2, 20, 28, '#3a3a58');
+        for (const [x, y] of [[4, 6], [12, 4], [16, 14], [6, 20], [14, 24]]) rect(g, x, y, 3, 2, '#c8dcf4');
+        rect(g, 0, 30, 24, 2, '#5a4a6a');
+      }),
+    }),
+    suitcase: () => ({
+      w: 16, h: 16, fps: 0,
+      frames: frames(1, 16, 16, (g) => {
+        rect(g, 3, 6, 10, 9, '#8a4a3a');
+        rect(g, 3, 6, 10, 1, '#aa6a5a');
+        rect(g, 6, 3, 4, 3, '#5a2a1a');
+        rect(g, 7, 4, 2, 2, 'rgba(0,0,0,0)');
+      }),
+    }),
     /* ---- 4장 ---- */
     kittenB: () => ({
       // 아기 감투 (시안 B: 동글동글 솜뭉치 + 큰 눈)
@@ -940,6 +977,22 @@
     }),
     none: () => ({ w: 16, h: 16, fps: 0, frames: [U.canvas(16, 16)] }),
   };
+  function bigMirror(withJ) {
+    return {
+      w: 24, h: 32, fps: 2,
+      frames: frames(2, 24, 32, (g, f) => {
+        rect(g, 0, 0, 24, 32, '#8a7a9a');
+        rect(g, 2, 2, 20, 28, f ? '#d0e0f6' : '#c8d8f0');
+        for (let i = 0; i < 6; i++) px(g, 4 + i * 2, 4 + i, '#ffffff');
+        if (withJ) {
+          g.globalAlpha = 0.8;
+          g.drawImage(S.frame(S.get('jaehee'), 'down', f ? 1 : 0, 0), 4, 10);
+          g.globalAlpha = 1;
+        }
+        rect(g, 0, 30, 24, 2, '#5a4a6a');
+      }),
+    };
+  }
   function lever(on) {
     return {
       w: 16, h: 16, fps: 0,

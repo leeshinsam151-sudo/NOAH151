@@ -326,15 +326,13 @@ GameData.defineScripts({
     ['weather', null],
     ['bgm', 'clear', 0],
     ['chapterCard', '4장 끝', '천둥 치는 밤', { hold: 3800 }],
-    ['caption', ['감투의 용기가 또 한 칸 자랐다.', '5장 「거울 숲」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
+    ['caption', ['감투의 용기가 또 한 칸 자랐다.'], { hold: 2200 }],
     ['flag', 'c4_end'],
-    ['chapter', 5, '5장 · 거울 숲 (준비 중)'],
+    ['chapter', 5, '5장 · 거울 숲'],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
-    ['goal', '5장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(4장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c5_start'],
   ],
 });
 
@@ -343,27 +341,27 @@ GameData.addEvents('village', [
   {
     id: 'gm4', x: 6, y: 13,
     pages: [
-      { cond: { chapterMin: 4 }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 비 오는 날이면… 누구를 데리러 가야 하는데. 아이고, 자꾸 그 생각이 나네.'] },
+      { cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 비 오는 날이면… 누구를 데리러 가야 하는데. 아이고, 자꾸 그 생각이 나네.'] },
       { cond: { flag: 'c4_storm', notFlag: 'c4_morning' } },
-      { cond: { flag: 'c4_morning' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 무지개 봤나? 감투 대감 덕분에 할미가 오늘 아침을 본다. 허허.'] },
+      { cond: { flag: 'c4_morning', notFlag: 'c5_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 무지개 봤나? 감투 대감 덕분에 할미가 오늘 아침을 본다. 허허.'] },
     ],
   },
   {
     id: 'zelkova4', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 4 }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 오늘 밤은 길 게다.', '느티나무: 감투야, 네가 잊고 있던 밤이 찾아온단다. 무서우면… 재희 손을 놓지 말거라.'] },
-      { cond: { flag: 'c4_morning' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 가지 하나쯤이야 괜찮다. 그보다 귀한 걸 지켰구나.', '느티나무: 남은 조각은 둘. 다음은… 거울 숲이다. 거기선 네가 혼자 걸어야 할지도 모르겠구나.'] },
+      { cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 오늘 밤은 길 게다.', '느티나무: 감투야, 네가 잊고 있던 밤이 찾아온단다. 무서우면… 재희 손을 놓지 말거라.'] },
+      { cond: { flag: 'c4_morning', notFlag: 'c5_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 가지 하나쯤이야 괜찮다. 그보다 귀한 걸 지켰구나.', '느티나무: 남은 조각은 둘. 다음은… 거울 숲이다. 거기선 네가 혼자 걸어야 할지도 모르겠구나.'] },
     ],
   },
-  { id: 'ijang4', x: 33, y: 15, pages: [{ cond: { chapterMin: 4 }, sprite: 'ijang', dir: 'down', script: [['if', { flag: 'c4_morning' }, ['이장님: 어젯밤엔 십년감수했다. 감투 녀석이 할매를 찾았다며? 장하다, 장해.'], ['이장님: 창문 단단히 닫아라! 오늘 밤 태풍이여!']]] }] },
-  { id: 'bori4', x: 35, y: 13, pages: [{ cond: { flag: 'c4_morning' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 천둥 칠 때 안 멈췄다며! 나도 천둥 무서운데… 다음엔 나도 해 볼래!'] }] },
-  { id: 'minsu4', x: 16, y: 21, pages: [{ cond: { chapterMin: 4 }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c4_morning' }, ['민수: 누나! 무지개 봤어? 끝에 보물 있대! 같이 찾으러 갈래?'], ['민수: 천둥 치면 배꼽 가려야 돼! 안 그러면 천둥 할아버지가 가져간대!', '감투: (…배꼽 가려야 돼? 나 배꼽 어딨지?)']]] }] },
-  { id: 'kkachi4', x: 23, y: 9, pages: [{ cond: { chapterMin: 4 }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c4_morning' }, ['깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 번개 치는 밤에 할머니를 구했대! 이번 건 진짜 빅뉴스야!'], ['깍순이: 깍깍! 바람이 심상치 않아! 나는 둥지 단속하러 간다!']]] }] },
+  { id: 'ijang4', x: 33, y: 15, pages: [{ cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'ijang', dir: 'down', script: [['if', { flag: 'c4_morning' }, ['이장님: 어젯밤엔 십년감수했다. 감투 녀석이 할매를 찾았다며? 장하다, 장해.'], ['이장님: 창문 단단히 닫아라! 오늘 밤 태풍이여!']]] }] },
+  { id: 'bori4', x: 35, y: 13, pages: [{ cond: { flag: 'c4_morning', notFlag: 'c5_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 감투! 천둥 칠 때 안 멈췄다며! 나도 천둥 무서운데… 다음엔 나도 해 볼래!'] }] },
+  { id: 'minsu4', x: 16, y: 21, pages: [{ cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c4_morning' }, ['민수: 누나! 무지개 봤어? 끝에 보물 있대! 같이 찾으러 갈래?'], ['민수: 천둥 치면 배꼽 가려야 돼! 안 그러면 천둥 할아버지가 가져간대!', '감투: (…배꼽 가려야 돼? 나 배꼽 어딨지?)']]] }] },
+  { id: 'kkachi4', x: 23, y: 9, pages: [{ cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c4_morning' }, ['깍순이: 깍깍! 빅뉴스! 꼬맹이 고양이가 번개 치는 밤에 할머니를 구했대! 이번 건 진짜 빅뉴스야!'], ['깍순이: 깍깍! 바람이 심상치 않아! 나는 둥지 단속하러 간다!']]] }] },
   { id: 'c4Start', x: 0, y: 3, pages: [{ cond: { chapter: 4, notFlag: 'c4_started' }, trigger: 'auto', script: 'c4_start' }] },
 ]);
 
 GameData.addEvents('shop', [
-  { id: 'geumsun4', x: 2, y: 3, pages: [{ cond: { chapterMin: 4 }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c4_morning' }, ['금순 아줌마: 어젯밤 정전에 가게도 난리였어. 그래도 할머니 무사하시다니 다행이야!'], ['금순 아줌마: 오늘 밤 태풍 온대! 손전등 건전지는 넉넉하지? 할머니 잘 챙겨 드려.']]] }] },
+  { id: 'geumsun4', x: 2, y: 3, pages: [{ cond: { chapterMin: 4, notFlag: 'c5_started' }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c4_morning' }, ['금순 아줌마: 어젯밤 정전에 가게도 난리였어. 그래도 할머니 무사하시다니 다행이야!'], ['금순 아줌마: 오늘 밤 태풍 온대! 손전등 건전지는 넉넉하지? 할머니 잘 챙겨 드려.']]] }] },
 ]);
 
 /* ---------- 할머니 집: 폭풍우 밤 ---------- */

@@ -440,15 +440,57 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     await advance([0], 'end4');
     await expectFlag('c4_end');
     await snap('end4');
+    console.log('[5장]');
+    await expectFlag('c5_started');
+    await talk(16, 13, 'up', [], 'tree5');
+    await expectFlag('c5_tree');
+    await advance();
+    await expectFlag('c5_entry');
+    await goto(10, 5, 'trap');
+    await advance();
+    await expectFlag('solo');
+    await press('c');
+    if ((await st()).control !== 'gamtu') throw new Error('홀로 모드 전환 막힘 실패');
+    console.log('  ✓ 홀로 모드: 재희로 못 바꿈');
+    await exitTo(10, 0, 'mirror1', 'room1');
+    await advance();
+    // 쌍둥이 퍼즐: 막힌 방향 입력은 짧게 톡 눌러서 그림자만 한 칸 움직인다
+    const twinMoving = () => page.evaluate(() => { const t = G.game.map.eventById('twin'); return !!(t && t.moving); });
+    const nudge = async (dir) => { await thaw(); await page.keyboard.down(KEY[dir]);
+      for (let i = 0; i < 200 && !(await twinMoving()); i++) await sleep(2);
+      await page.keyboard.up(KEY[dir]);
+      for (let i = 0; i < 100; i++) { if (!(await page.evaluate(() => { const t = G.game.map.eventById('twin'); return t && t.moving; }))) break; await sleep(10); } await sleep(30); };
+    const steps = async (dir, n) => { for (let i = 0; i < n; i++) await step(dir); };
+    await steps('left', 2); await steps('up', 6); await advance();
+    await expectFlag('c5_room1');
+    await exitTo(4, 0, 'mirror2', 'room2');
+    await advance();
+    await steps('right', 2); await steps('up', 6); await advance();
+    await expectFlag('c5_room2');
+    await exitTo(4, 0, 'mirror3', 'room3');
+    await advance();
+    await steps('left', 2); await steps('up', 1);
+    for (let i = 0; i < 5; i++) await nudge('right');
+    await steps('up', 6); await advance();
+    await expectFlag('c5_room3');
+    await snap('mirror3');
+    await exitTo(4, 0, 'mirrorHall', 'hall');
+    await advance();
+    await expectFlag('c5_hall');
+    await talk(8, 3, 'up', [0], 'final mirror');
+    await advance([0], 'end5');
+    await expectFlag('c5_end');
+    await snap('end5');
     const fin = await page.evaluate(() => ({ ch: G.game.state.vars.chapter, courage: G.game.state.vars.courage, map: G.game.map.id, auto: !!localStorage.getItem('gamtu_save_auto'), play: G.game.state.playtime }));
     console.log('끝 상태', fin);
     // 저장 / 불러오기
     await press('x');
-    await sleep(300);
+    await sleep(800);
     await press('ArrowDown'); await press('ArrowDown'); await press('z'); // 저장하기
     await sleep(200);
-    await press('z'); // 저장 1
     await sleep(300);
+    await press('z'); // 저장 1
+    await sleep(400);
     await press('x');
     await sleep(300);
     const saved = await page.evaluate(() => G.game.saveInfo(1));

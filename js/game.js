@@ -203,6 +203,10 @@
   Game.trySwitch = function () {
     const s = Game.state;
     if (!s.flags.canSwitch || !s.party.includes('gamtu')) return;
+    if (s.flags.solo) {
+      G.dialog.toast('재희가 없다…. 감투 혼자 가야 한다.');
+      return;
+    }
     if (s.noSwitch || s.flags.gamtuLeads || (Game.map.def.noSwitch && !Game.resolve(Game.map.def.allowSwitch))) {
       G.dialog.toast(Game.map.def.noSwitchMsg || '지금은 바꿀 수 없다.');
       return;
@@ -279,9 +283,25 @@
     if (d) Game.tryMove(lead, d);
   };
 
+  /* 거울 쌍둥이: page.twin 이벤트는 조작 캐릭터가 '움직이려 할 때마다' 좌우를 거꾸로 따라 움직인다
+   * (조작 캐릭터가 벽에 막혀도 쌍둥이는 움직인다) */
+  Game.moveTwins = function (d) {
+    const m = Game.map;
+    const md = d === 'left' ? 'right' : d === 'right' ? 'left' : d;
+    for (const e of m.events) {
+      if (!e.active || !e.page.twin || e.moving) continue;
+      const [dx, dy] = U.DIRS[md];
+      const nx = e.x + dx,
+        ny = e.y + dy;
+      e.dir = md;
+      if (m.tilePass(nx, ny, 'npc') && !m.blockerAt(nx, ny)) e.startMove(md, { speed: Game.controlled().speed });
+    }
+  };
+
   Game.tryMove = function (a, d) {
     const m = Game.map,
       s = Game.state;
+    if (a === Game.controlled()) Game.moveTwins(d);
     const [dx, dy] = U.DIRS[d];
     const nx = a.x + dx,
       ny = a.y + dy;

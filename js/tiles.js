@@ -480,6 +480,39 @@
         }
       },
     },
+    /* ---- 거울 숲 ---- */
+    e: {
+      pass: true,
+      draw: (g, n, f, r) => {
+        rect(g, 0, 0, 16, 16, '#7a7a98');
+        for (let i = 0; i < 6; i++) px(g, Math.floor(r(i) * 16), Math.floor(r(i + 9) * 16), i % 2 ? '#8a8aac' : '#6a6a88');
+        if (r(20) > 0.7) {
+          px(g, 5, 9, '#d8dcf0');
+          px(g, 6, 8, '#d8dcf0');
+        }
+      },
+    },
+    '^': {
+      pass: false,
+      draw: (g, n, f, r) => {
+        rect(g, 0, 0, 16, 16, '#7a7a98');
+        ellipse(g, 8, 13, 6, 2, 'rgba(0,0,0,0.18)');
+        rect(g, 7, 9, 2, 6, '#9a9ab0');
+        ellipse(g, 8, 6, 6, 6, '#c8ccd8');
+        ellipse(g, 7, 5, 4, 3, '#e8ecf4');
+        px(g, 5, 4, '#ffffff');
+        if (r(3) > 0.5) px(g, 10, 7, '#b8c8f8');
+      },
+    },
+    '!': {
+      pass: false,
+      draw: (g, n) => {
+        rect(g, 0, 0, 16, 16, '#a8c0e0');
+        rect(g, 1, 0, 14, 16, '#c8dcf4');
+        for (let i = 0; i < 5; i++) px(g, 4 + i, 3 + i * 2, '#ffffff');
+        if (n(0, -1) !== '!') rect(g, 0, 0, 16, 2, '#8a8aac');
+      },
+    },
     /* ---- 동굴 ---- */
     U: {
       pass: false,
