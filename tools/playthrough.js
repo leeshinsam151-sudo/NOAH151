@@ -585,7 +585,7 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     // 저장 / 불러오기
     await press('x');
     await sleep(800);
-    await press('ArrowDown'); await press('ArrowDown'); await press('z'); // 저장하기
+    await press('ArrowDown'); await press('ArrowDown'); await press('ArrowDown'); await press('z'); // 저장하기
     await sleep(200);
     await sleep(300);
     await press('z'); // 저장 1

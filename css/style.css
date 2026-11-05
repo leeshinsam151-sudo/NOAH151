@@ -132,6 +132,10 @@ html, body {
 .m-item img { width: calc(var(--u) * 12px); height: calc(var(--u) * 12px); image-rendering: pixelated; }
 .m-item small { width: 100%; color: #b9c2dc; padding-left: calc(var(--u) * 14px); }
 .m-help { line-height: 1.6; font-size: .9em; }
+.m-hint { display: flex; gap: .6em; align-items: flex-start; line-height: 1.6; font-size: .9em; }
+.m-hint img { width: 3em; image-rendering: pixelated; flex: none; }
+.m-hint b { color: #ffd76a; }
+.m-hint p { margin: .2em 0 0; }
 .slot-info { color: #c6c8e8; font-size: .8em; margin-left: .3em; }
 
 /* 타이틀 */

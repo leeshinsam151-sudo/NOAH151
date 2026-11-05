@@ -89,6 +89,9 @@ const path = require('path');
           case 'warp':
             checkWarp(where, a);
             break;
+          case 'goal':
+            if (a[0] && !(GD.config.hints || []).some(([k]) => a[0].startsWith(k))) W(`${where}: 귀띔 없는 할 일 "${a[0]}"`);
+            break;
           case 'minigame':
             if (!G.minigames.list[a[0]]) E(`${where}: 없는 미니게임 ${a[0]}`);
             break;

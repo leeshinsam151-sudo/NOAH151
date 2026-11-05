@@ -226,8 +226,18 @@
     };
     showItems();
     for (;;) {
-      const i = await listSelect(list, [{ label: '돌아가기' }, { label: '소지품' }, { label: '저장하기' }, { label: '불러오기' }, { label: '설정' }, { label: '도움말' }, { label: '타이틀로' }]);
+      const MENU = ['돌아가기', '감투의 귀띔', '소지품', '저장하기', '불러오기', '설정', '도움말', '타이틀로'];
+      const k = await listSelect(list, MENU.map((label) => ({ label })));
+      // 아래 번호는 예전 순서(돌아가기·소지품·저장·불러오기·설정·도움말·타이틀로, 귀띔=7)를 그대로 쓴다
+      const i = k < 0 ? k : [0, 7, 1, 2, 3, 4, 5, 6][k];
       if (i <= 0) break;
+      if (i === 7) {
+        const goal = s.goal || '';
+        const hit = (GameData.config.hints || []).find(([k]) => goal.startsWith(k));
+        const face = G.sprites.dataURL('gamtu', 3);
+        sub.innerHTML = `<div class="m-hint"><img src="${face}"><div><b>감투의 귀띔</b><p>${hit ? hit[1] : GameData.config.hintDefault || ''}</p></div></div>`;
+        G.audio.se('meowSmall');
+      }
       if (i === 1) showItems();
       if (i === 2) {
         const slot = await UI.slotPicker(sub, 'save');
