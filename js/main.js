@@ -10,8 +10,16 @@
     const vw = window.innerWidth,
       vh = window.innerHeight;
     const portrait = vh > vw;
+    document.body.classList.toggle('portrait', portrait);
     const ctrlH = touch && portrait ? Math.min(230, vh * 0.36) : 0;
-    const availW = vw,
+    // 가로 화면 터치: 방향 패드·버튼이 게임 화면을 가리지 않도록 양옆을 비워 둔다
+    let side = 0;
+    if (touch && !portrait) {
+      const l = G.$('#dpad').getBoundingClientRect(),
+        r = G.$('#btns').getBoundingClientRect();
+      side = Math.max(l.right, vw - r.left) + 4;
+    }
+    const availW = vw - side * 2,
       availH = vh - ctrlH;
     let s = Math.min(availW / G.W, availH / G.H);
     if (s >= 2 && !touch) s = Math.floor(s * 2) / 2;
@@ -19,7 +27,6 @@
     scr.style.width = Math.floor(G.W * s) + 'px';
     scr.style.height = Math.floor(G.H * s) + 'px';
     scr.style.setProperty('--u', s);
-    document.body.classList.toggle('portrait', portrait);
     G.$('#app').style.justifyContent = touch && portrait ? 'flex-start' : 'center';
   }
   window.addEventListener('resize', resize);
