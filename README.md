@@ -32,5 +32,6 @@ data/maps/          맵 레이아웃
 data/chapters/      장별 대사·이벤트·컷신
 docs/story.md       전체 줄거리·등장인물·장별 성장 포인트
 docs/scripting.md   새 장/맵/이벤트 추가 방법
-tools/playthrough.js  처음부터 1장 끝까지 자동 플레이 점검 (Playwright)
+tools/playthrough.js  처음부터 엔딩까지 자동 플레이 점검 (Playwright, AUDIT=1 이면 저장/불러오기 점검 포함)
+tools/lint.js       대사·스크립트·그림·음악·맵 참조 정적 검사
 ```
