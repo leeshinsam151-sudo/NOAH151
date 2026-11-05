@@ -157,9 +157,51 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     await advance(choices, label);
   }
   async function flag(name) { return page.evaluate((n) => !!G.game.state.flags[n], name); }
+  const audit = [];
+  // 지금 맵에서 같은 칸에 겹친 그림 이벤트, 그리고 저장→불러오기 후 상태가 그대로인지 확인
+  async function checkpoint(label) {
+    for (let i = 0; i < 60 && (await page.evaluate(() => G.game.busy || G.interp.running > 0)); i++) await sleep(30);
+    const r = await page.evaluate((label) => {
+      const g = G.game, out = [];
+      if (g.scene !== 'map' || g.busy || G.interp.running > 0) return { skipped: true };
+      const seen = {};
+      for (const e of g.map.events) {
+        if (!e.active || !e.sprite || e.page.through || e.page.below || e.page.above) continue;
+        const k = e.x + ',' + e.y;
+        if (seen[k]) out.push(`${label}: ${g.map.id} (${k}) 에 ${seen[k]} 와 ${e.id} 가 겹침`);
+        seen[k] = e.id;
+      }
+      for (const a of g.partyHere()) {
+        if (!a.visible) continue;
+        const e = g.map.events.find((e) => e.active && e.sprite && !e.page.through && e.x === a.x && e.y === a.y);
+        if (e) out.push(`${label}: ${g.map.id} (${a.x},${a.y}) 에서 ${a.id} 와 ${e.id} 가 겹침`);
+      }
+      const snapOf = () => JSON.stringify({
+        state: { ...g.state, playtime: 0 },
+        map: g.map.id,
+        actors: g.state.party.map((id) => { const a = g.actor(id); return [id, a.mapId, a.x, a.y, a.visible]; }),
+        events: g.map.events.map((e) => [e.id, e.pageIndex, e.active, e.active ? e.x + ',' + e.y + e.dir : 0]),
+      });
+      const before = snapOf();
+      g.save(3);
+      g.load(3);
+      const after = snapOf();
+      if (before !== after) {
+        const A = JSON.parse(before), B = JSON.parse(after);
+        const flat = (o, pre = '', r = {}) => { for (const k in o) { const v = o[k]; if (v && typeof v === 'object' && !Array.isArray(v)) flat(v, pre + k + '.', r); else r[pre + k] = JSON.stringify(v); } return r; };
+        const FA = flat(A), FB = flat(B);
+        for (const k of new Set([...Object.keys(FA), ...Object.keys(FB)])) if (FA[k] !== FB[k]) out.push(`${label}: ${g.map.id} 불러오기 후 ${k} 가 달라짐 (${FA[k]} → ${FB[k]})`);
+        if (false) for (const k of Object.keys(A)) if (JSON.stringify(A[k]) !== JSON.stringify(B[k])) out.push(`${label}: 불러오기 후 ${k} 가 달라짐\n    전 ${JSON.stringify(A[k]).slice(0, 300)}\n    후 ${JSON.stringify(B[k]).slice(0, 300)}`);
+      }
+      return { out };
+    }, label);
+    if (r.skipped) return;
+    for (const m of r.out) if (!audit.includes(m)) { audit.push(m); console.log('  ⚠', m); }
+  }
   async function expectFlag(name) {
     if (!(await flag(name))) { await snap('fail_' + name); throw new Error('플래그 없음: ' + name + ' / 목표: ' + (await st()).goal); }
     console.log('  ✓', name);
+    if (process.env.AUDIT) await checkpoint(name);
   }
   async function switchChar() { await press('c'); await sleep(120); await advance(); }
 
@@ -565,6 +607,7 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     process.exitCode = 1;
   }
   console.log('소요', ((Date.now() - t0) / 1000).toFixed(1) + 's');
+  if (process.env.AUDIT) console.log(audit.length ? `점검 경고 ${audit.length}개` : '저장/겹침 점검 이상 없음');
   console.log(errors.length ? '콘솔:\n' + errors.join('\n') : '콘솔 오류 없음');
   await browser.close();
 })();

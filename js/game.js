@@ -882,10 +882,15 @@
       const a = Game.actor(id);
       actors[id] = { map: a.mapId, x: a.x, y: a.y, dir: a.dir, visible: a.visible };
     }
+    // 지금 맵 이벤트의 위치·방향·지워짐 (컷신으로 옮긴 인물, 거울 쌍둥이, 밀던 상자 등)
+    const events = Game.map
+      ? { map: Game.map.id, list: Game.map.events.map((e) => [e.x, e.y, e.dir, e.erased ? 1 : 0, e.visible === false ? 0 : 1]) }
+      : null;
     const data = {
       v: 1,
       state: U.copy(s),
       actors,
+      events,
       savedAt: Date.now(),
       info: { chapter: s.chapterTitle || '', map: Game.map.def.name || '', playtime: s.playtime },
     };
@@ -926,8 +931,21 @@
     const lead = Game.controlled();
     Game.scene = 'map';
     Game.map = null;
-    Game.loadMap(lead.mapId || GameData.config.start.map);
-    if (Game.state.bgm && Game.resolve(Game.map.def.bgm) === undefined) G.audio.playBgm(Game.state.bgm);
+    const savedBgm = Game.state.bgm;
+    Game.loadMap(lead.mapId || GameData.config.start.map, { keepBgm: true });
+    const ev = d.events;
+    if (ev && ev.map === Game.map.id && ev.list.length === Game.map.events.length) {
+      Game.map.events.forEach((e, i) => {
+        const [x, y, dir, erased, vis] = ev.list[i];
+        if (x !== undefined) e.place(x, y, dir);
+        e.erased = !!erased;
+        if (vis === 0) e.visible = false;
+      });
+    }
+    // 저장할 때 흐르던 음악(연출로 바꾼 곡·정적 포함)을 그대로 되살린다
+    Game.state.bgm = savedBgm;
+    if (savedBgm) G.audio.playBgm(savedBgm);
+    else G.audio.stopBgm();
     Game.snapCamera();
     Game.applyScreen(0);
     Game.busy = false;

@@ -242,7 +242,14 @@
       return !!t.pass;
     }
     refresh() {
-      for (const e of this.events) e.refresh();
+      // 조건(boxesSolved 등)은 '지금 새로 고치는 맵' 기준으로 판정한다 (맵을 만드는 중엔 G.game.map 이 아직 이전 맵/없음)
+      const prev = G.interp.condMap;
+      G.interp.condMap = this;
+      try {
+        for (const e of this.events) e.refresh();
+      } finally {
+        G.interp.condMap = prev;
+      }
     }
     eventById(id) {
       return this.events.find((e) => e.id === id);

@@ -63,7 +63,7 @@
           if (IP.cond(v)) return false;
           break;
         case 'boxesSolved':
-          if (G.game.map.boxesSolved() !== v) return false;
+          if ((IP.condMap || G.game.map).boxesSolved() !== v) return false;
           break;
         default:
           console.warn('알 수 없는 조건', k);
