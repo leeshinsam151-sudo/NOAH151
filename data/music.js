@@ -234,3 +234,22 @@
     },
   });
 })();
+
+/*
+ * 음량 믹스 표 — 곡·효과음·환경음 사이의 크기를 맞추는 배수 (1 = 그대로)
+ * 2026-11 전체 음량 검수 결과: 곡끼리 ±2dB 안, 효과음은 음악보다 살짝 또렷하게,
+ * 환경음은 음악보다 약 10dB 작게, 발소리는 그보다 조금 작게.
+ */
+GameData.config.mix = {
+  bgm: { house: 1.45, sad: 1.3, tension: 1.35, mirror: 1.2, night: 1.12, cave: 0.75, brave: 0.85, clear: 0.85 },
+  se: {
+    blip: 2.2, cursor: 2, ok: 2, cancel: 2, door: 1.25, meow: 1.6, meowSmall: 1.4, scared: 1.6, hiss: 0.63,
+    whine: 1.4, item: 2, jump: 1.8, land: 2.5, heart: 0.56, success: 1.25, miss: 1.8, push: 2.5, whoosh: 2,
+    roar: 1.25, thud: 0.5, save: 1.4, sparkle: 2, bus: 2.5, flash: 0.8, pop: 2, squeak: 2.5, caw: 2, rain: 1.25,
+    purr: 1.6, bump: 1.4, splash: 1.25,
+  },
+  amb: { summer: 1.1, night: 1.4, rain: 0.8, cave: 1.25, wind: 1.4, mirror: 2.2, indoor: 2 },
+  step: { grass: 0.7, wood: 1.3, stone: 2, dirt: 2, water: 1.8 },
+  master: 2.2,
+};
+

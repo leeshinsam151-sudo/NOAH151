@@ -7,6 +7,8 @@
 (function () {
   const A = (G.audio = { ctx: null, bgmVol: 0.6, seVol: 0.7, cur: null, curName: null, pending: null });
   let master, bgmBus, seBus, ambBus, echoDelay, echoFb, echoLp, echoSend, noiseBuf;
+  const mix = (k) => ((GameData.config.mix || {})[k] || {});
+  let seMul = 1;
   const NOTE = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
 
   function freq(tok) {
@@ -30,8 +32,16 @@
       return;
     }
     master = A.ctx.createGain();
-    master.gain.value = 0.9;
-    master.connect(A.ctx.destination);
+    master.gain.value = 0.9 * ((GameData.config.mix || {}).master || 1);
+    // 리미터: 천둥처럼 큰 소리가 겹쳐도 찢어지지 않게
+    const lim = A.ctx.createDynamicsCompressor();
+    lim.threshold.value = -6;
+    lim.knee.value = 4;
+    lim.ratio.value = 12;
+    lim.attack.value = 0.003;
+    lim.release.value = 0.15;
+    master.connect(lim);
+    lim.connect(A.ctx.destination);
     bgmBus = A.ctx.createGain();
     bgmBus.gain.value = A.bgmVol;
     bgmBus.connect(master);
@@ -129,7 +139,7 @@
     g.connect(bgmBus);
     const t0 = A.ctx.currentTime + 0.06;
     g.gain.setValueAtTime(0, A.ctx.currentTime);
-    g.gain.linearRampToValueAtTime(def.vol || 1, t0 + Math.max(0.05, fade / 1000));
+    g.gain.linearRampToValueAtTime((def.vol || 1) * (mix('bgm')[name] || 1), t0 + Math.max(0.05, fade / 1000));
     A.cur = { song, gain: g, start: t0, next: 0, loop: def.loop !== false };
   };
 
@@ -255,6 +265,7 @@
     o.type = type;
     o.frequency.setValueAtTime(f0, t);
     if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+    v *= seMul;
     g.gain.setValueAtTime(0.0001, t);
     g.gain.linearRampToValueAtTime(v, t + (opt.att || 0.005));
     g.gain.exponentialRampToValueAtTime(0.0005, t + dur);
@@ -291,7 +302,7 @@
     f.frequency.setValueAtTime(freqV, t);
     if (sweep) f.frequency.exponentialRampToValueAtTime(sweep, t + dur);
     const g = c.createGain();
-    g.gain.setValueAtTime(v, t);
+    g.gain.setValueAtTime(v * seMul, t);
     g.gain.exponentialRampToValueAtTime(0.0005, t + dur);
     s.connect(f);
     f.connect(g);
@@ -448,11 +459,13 @@
           for (let i = 0; i < n; i++) blipAt('sine', f * R(0.9, 1.1), f * R(1.2, 1.5), 0.07, 0.03, t + i * 0.11, o);
         }],
         [0.05, (t, o) => { // 매미 한 줄기
-          const c = A.ctx, os = c.createOscillator(), am = c.createOscillator(), ag = c.createGain(), g = c.createGain();
-          os.type = 'sawtooth'; os.frequency.value = R(3800, 4600); am.frequency.value = R(28, 40); ag.gain.value = 0.5;
+          // 떨림(AM)은 0~1 사이로 따로 걸고, 그 뒤에 크기(엔벨로프)를 건다
+          const c = A.ctx, os = c.createOscillator(), am = c.createOscillator(), ag = c.createGain(), trem = c.createGain(), g = c.createGain();
+          os.type = 'sawtooth'; os.frequency.value = R(3800, 4600); am.frequency.value = R(28, 40);
+          trem.gain.value = 0.5; ag.gain.value = 0.5;
           g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.012, t + 0.8); g.gain.setValueAtTime(0.012, t + 2.6); g.gain.linearRampToValueAtTime(0.0001, t + 3.6);
           const fl = c.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.value = 4200; fl.Q.value = 2;
-          am.connect(ag); ag.connect(g.gain); os.connect(fl); fl.connect(g); g.connect(o);
+          am.connect(ag); ag.connect(trem.gain); os.connect(fl); fl.connect(trem); trem.connect(g); g.connect(o);
           os.start(t); am.start(t); os.stop(t + 3.7); am.stop(t + 3.7);
         }],
       ],
@@ -508,7 +521,7 @@
     }
     const def = AMB[name];
     if (!def) return;
-    const out = ambOut(AMB_GAIN[name] || 1);
+    const out = ambOut((AMB_GAIN[name] || 1) * (mix('amb')[name] || 1));
     ambTarget = out;
     amb = { name, beds: def.beds(), timer: null };
     ambTarget = null;
@@ -534,7 +547,7 @@
     const P = { grass: ['highpass', 2600, 0.05, 0.05], wood: ['lowpass', 500, 0.09, 0.06], stone: ['bandpass', 1500, 0.06, 0.04], dirt: ['lowpass', 900, 0.06, 0.05], water: ['bandpass', 800, 0.08, 0.08] }[floor] || ['lowpass', 900, 0.04, 0.05];
     f.type = P[0];
     f.frequency.value = P[1] * alt;
-    g.gain.setValueAtTime(P[2], t);
+    g.gain.setValueAtTime(P[2] * (mix('step')[floor] || 1), t);
     g.gain.exponentialRampToValueAtTime(0.0005, t + P[3]);
     s.connect(f);
     f.connect(g);
@@ -544,11 +557,13 @@
 
   A.se = function (name, p) {
     if (!A.ctx || !SE[name]) return;
+    seMul = mix('se')[name] || 1;
     try {
       SE[name](p);
     } catch (e) {
       /* 무시 */
     }
+    seMul = 1;
   };
 
   document.addEventListener('visibilitychange', () => {
