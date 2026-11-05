@@ -132,6 +132,7 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
   async function exitTo(tx, ty, map, label) {
     for (let guard = 0; guard < 400; guard++) {
       const s = await st();
+      if (s.scene === 'title') return;
       if (s.map === map) { await advance(); return; }
       if (s.busy) { await advance([], label); continue; }
       const p = await page.evaluate(([x, y]) => __bot.path(x, y), [tx, ty]);
@@ -501,6 +502,42 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
     await advance([0], 'end6');
     await expectFlag('c6_end');
     await snap('end6');
+    console.log('[7장]');
+    await expectFlag('c7_started');
+    await exitTo(28, 20, 'shop', 'shop7');
+    await talk(2, 5, 'up', [], 'geumsun7');
+    await expectFlag('note_geumsun');
+    await exitTo(5, 8, 'village', 'out shop7');
+    await page.evaluate(() => { G.interp.run('talk_kkam'); });
+    await advance();
+    await expectFlag('note_kkam');
+    await talk(33, 16, 'up', [], 'ijang7');
+    await talk(16, 22, 'up', [], 'minsu7');
+    await talk(23, 10, 'up', [], 'kkachi7');
+    await talk(25, 10, 'up', [], 'owl7');
+    await talk(29, 12, 'left', [], 'mouse7');
+    await talk(34, 13, 'right', [], 'bori7');
+    await advance();
+    await expectFlag('c7_parents');
+    await snap('parents');
+    await talk(16, 13, 'up', [], 'tree7');
+    await expectFlag('c7_tree');
+    await exitTo(7, 11, 'house', 'finale');
+    for (let i = 0; i < 400 && (await st()).scene !== 'title'; i++) await advance([0], 'finale');
+    await expectFlag('c7_end');
+    const c7 = await page.evaluate(() => ({ courage: G.game.state.vars.courage, cleared: localStorage.getItem('gamtu_cleared') }));
+    if (c7.courage !== 7 || !c7.cleared) throw new Error('완결 상태 이상 ' + JSON.stringify(c7));
+    console.log('  ✓ 완결 (용기 7, 완결 표시 저장)');
+    await sleep(1500);
+    await snap('cleared title');
+    // 타이틀의 '이어하기' → 자동 저장으로 실제 화면 흐름 그대로 이어 간다
+    await press('z');
+    await sleep(500);
+    await press('z');
+    await sleep(1500);
+    if ((await st()).scene !== 'map') throw new Error('이어하기 실패');
+    console.log('  ✓ 타이틀 이어하기');
+    await advance();
     const fin = await page.evaluate(() => ({ ch: G.game.state.vars.chapter, courage: G.game.state.vars.courage, map: G.game.map.id, auto: !!localStorage.getItem('gamtu_save_auto'), play: G.game.state.playtime }));
     console.log('끝 상태', fin);
     // 저장 / 불러오기

@@ -296,15 +296,13 @@ GameData.defineScripts({
     ['fadeOut', 2200],
     ['bgm', 'clear', 0],
     ['chapterCard', '6장 끝', '잊혀진 것들의 섬', { hold: 3800 }],
-    ['caption', ['감투의 용기가 또 한 칸 자랐다.', '마지막 이야기, 7장 「다시, 달무리」', '— 다음 이야기에서 계속됩니다 —'], { hold: 2600 }],
+    ['caption', ['감투의 용기가 또 한 칸 자랐다.', '이제, 마지막 이야기.'], { hold: 2200 }],
     ['flag', 'c6_end'],
-    ['chapter', 7, '7장 · 다시, 달무리 (준비 중)'],
+    ['chapter', 7, '7장 · 다시, 달무리'],
     ['warp', 'village', 7, 15, 'up', { fade: false }],
-    ['goal', '마지막 7장은 다음 이야기에서 계속됩니다. 마을을 자유롭게 둘러보세요.'],
+    ['goal', ''],
     ['autosave'],
-    ['fadeIn', 1200],
-    '(6장을 클리어했습니다! 진행 상황이 자동 저장되었습니다.)',
-    ['choice', ['마을을 더 둘러본다', '타이틀로 돌아간다'], [[], [['title']]]],
+    ['call', 'c7_start'],
   ],
 });
 
@@ -313,28 +311,28 @@ GameData.addEvents('village', [
   {
     id: 'gm6', x: 6, y: 13,
     pages: [
-      { cond: { chapterMin: 6 }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 안개 낀 섬… 거기 뭘 두고 왔을꼬.'] },
-      { cond: { flag: 'c6_back' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 다 생각났다. 하나도 빠짐없이. …우리 재희 덕분이다.'] },
+      { cond: { chapterMin: 6, notFlag: 'c7_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 안개 낀 섬… 거기 뭘 두고 왔을꼬.'] },
+      { cond: { flag: 'c6_back', notFlag: 'c7_started' }, sprite: 'grandmaPin', dir: 'right', script: ['할머니 : 다 생각났다. 하나도 빠짐없이. …우리 재희 덕분이다.'] },
     ],
   },
   {
     id: 'zelkova6', x: 16, y: 11, area: [2, 2], offset: [8, 16],
     pages: [
-      { cond: { chapterMin: 6 }, sprite: 'zelkova', noTurn: true, script: 'c6_tree' },
-      { cond: { chapterMin: 6, flag: 'c6_tree' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 나룻배는 다리 오른쪽 개울가에 있단다.'] },
-      { cond: { flag: 'c6_back' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 별방울 소리가… 오백 년 동안 들은 소리 중에 가장 맑구나.'] },
+      { cond: { chapterMin: 6, notFlag: 'c7_started' }, sprite: 'zelkova', noTurn: true, script: 'c6_tree' },
+      { cond: { chapterMin: 6, flag: 'c6_tree', notFlag: 'c7_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 나룻배는 다리 오른쪽 개울가에 있단다.'] },
+      { cond: { flag: 'c6_back', notFlag: 'c7_started' }, sprite: 'zelkova', noTurn: true, script: ['느티나무: 별방울 소리가… 오백 년 동안 들은 소리 중에 가장 맑구나.'] },
     ],
   },
   { id: 'ijangBoat', x: 25, y: 7, pages: [{ cond: { chapterMin: 6, flag: 'c6_tree', notFlag: 'c6_back' }, sprite: 'ijang', dir: 'up', script: 'c6_boat' }] },
   { id: 'boatV', x: 25, y: 6, pages: [{ cond: { chapterMin: 6, notFlag: 'c6_back' }, sprite: 'boat', noTurn: true, through: true, trigger: 'none', offset: [8, 0] }] },
-  { id: 'ijang6', x: 33, y: 15, pages: [{ cond: { chapterMin: 6, notFlag: 'c6_tree' }, sprite: 'ijang', dir: 'down', script: ['이장님: 개울가에 내 옛날 나룻배를 꺼내 놨다. 느티나무가 그러라 하더라. …나무가 말을 하더라니께.'] }, { cond: { flag: 'c6_back' }, sprite: 'ijang', dir: 'down', script: ['이장님: 나룻배 돌아왔네! 보리 녀석이 저었다며? 세 바퀴 돌았다며? 크하하!'] }] },
-  { id: 'bori6', x: 35, y: 13, pages: [{ cond: { flag: 'c6_back' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 나 노 젓기 천재인 것 같아! 다음엔 다섯 바퀴만 돌 거야!'] }] },
-  { id: 'minsu6', x: 16, y: 21, pages: [{ cond: { chapterMin: 6 }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c6_back' }, ['민수: 누나! 어젯밤에 반딧불 같은 게 집집마다 들어갔어! 엄마가 잃어버린 반지 찾았대!'], ['민수: 누나, 방학 끝나면 가? …가지 마. 감투 대감님이랑 더 놀고 싶어.']]] }] },
-  { id: 'kkachi6', x: 23, y: 9, pages: [{ cond: { chapterMin: 6 }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c6_back' }, ['깍순이: 깍깍! 오늘의 빅뉴스! 마을 사람들이 잃어버린 물건을 몽땅 찾았대! 무슨 일이야, 이게!'], ['깍순이: 깍깍! 개울 끝 안개 섬엔 잊혀진 것들이 산대. 나는 무서워서… 아니, 바빠서 못 가!']]] }] },
+  { id: 'ijang6', x: 33, y: 15, pages: [{ cond: { chapterMin: 6, notFlag: ['c6_tree', 'c7_started'] }, sprite: 'ijang', dir: 'down', script: ['이장님: 개울가에 내 옛날 나룻배를 꺼내 놨다. 느티나무가 그러라 하더라. …나무가 말을 하더라니께.'] }, { cond: { flag: 'c6_back', notFlag: 'c7_started' }, sprite: 'ijang', dir: 'down', script: ['이장님: 나룻배 돌아왔네! 보리 녀석이 저었다며? 세 바퀴 돌았다며? 크하하!'] }] },
+  { id: 'bori6', x: 35, y: 13, pages: [{ cond: { flag: 'c6_back', notFlag: 'c7_started' }, sprite: 'boriCollar', move: { type: 'random', radius: 1, wait: 2 }, script: [['se', 'bark'], '보리: 나 노 젓기 천재인 것 같아! 다음엔 다섯 바퀴만 돌 거야!'] }] },
+  { id: 'minsu6', x: 16, y: 21, pages: [{ cond: { chapterMin: 6, notFlag: 'c7_started' }, sprite: 'minsu', move: { type: 'random', radius: 2, wait: 2.5 }, script: [['if', { flag: 'c6_back' }, ['민수: 누나! 어젯밤에 반딧불 같은 게 집집마다 들어갔어! 엄마가 잃어버린 반지 찾았대!'], ['민수: 누나, 방학 끝나면 가? …가지 마. 감투 대감님이랑 더 놀고 싶어.']]] }] },
+  { id: 'kkachi6', x: 23, y: 9, pages: [{ cond: { chapterMin: 6, notFlag: 'c7_started' }, sprite: 'magpie', script: [['se', 'caw'], ['if', { flag: 'c6_back' }, ['깍순이: 깍깍! 오늘의 빅뉴스! 마을 사람들이 잃어버린 물건을 몽땅 찾았대! 무슨 일이야, 이게!'], ['깍순이: 깍깍! 개울 끝 안개 섬엔 잊혀진 것들이 산대. 나는 무서워서… 아니, 바빠서 못 가!']]] }] },
 ]);
 
 GameData.addEvents('shop', [
-  { id: 'geumsun6', x: 2, y: 3, pages: [{ cond: { chapterMin: 6 }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c6_back' }, ['금순 아줌마: 어머, 오늘 아침에 가게 구석에서 우리 엄마가 쓰던 주판이 나왔어! 몇십 년 만이야!'], ['금순 아줌마: 방학 끝나 가지? 서운해서 어떡해.']]] }] },
+  { id: 'geumsun6', x: 2, y: 3, pages: [{ cond: { chapterMin: 6, notFlag: 'c7_started' }, sprite: 'geumsun', dir: 'down', script: [['if', { flag: 'c6_back' }, ['금순 아줌마: 어머, 오늘 아침에 가게 구석에서 우리 엄마가 쓰던 주판이 나왔어! 몇십 년 만이야!'], ['금순 아줌마: 방학 끝나 가지? 서운해서 어떡해.']]] }] },
 ]);
 
 /* ---------- 잊혀진 것들의 섬 ---------- */

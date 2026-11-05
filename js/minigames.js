@@ -185,6 +185,36 @@
     return picked;
   });
 
+  /* ---------- 할머니 기억 수첩 ----------
+   * GameData.config.notebook 의 항목 중 flag 가 켜진 것만 적혀 있다. Z/X/터치로 닫는다. */
+  M.register('notebook', async (opt, root) => {
+    const s = G.game.state;
+    const items = (GameData.config.notebook || []).filter((n) => !n.flag || s.flags[n.flag]);
+    const lines = items.map((n) => `<li>${n.text}</li>`).join('');
+    const stickers = items
+      .filter((n) => n.sticker)
+      .map((n) => `<img src="${G.sprites.dataURL(n.sticker, 3)}">`)
+      .join('');
+    root.innerHTML = `
+      <div class="notebook">
+        <div class="nb-page nb-left"><div class="nb-title">할머니 기억 수첩</div><ul>${lines}</ul></div>
+        <div class="nb-page nb-right"><div class="nb-stickers">${stickers}</div><div class="nb-foot">${opt.foot || ''}</div></div>
+      </div>
+      <div class="mg-help nb-help">${G.input.touch ? '화면을 터치하면 닫혀요' : 'Z / X : 닫기'}</div>`;
+    root.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      I.tap('ok');
+    });
+    G.audio.se('pop');
+    await G.wait(300);
+    for (;;) {
+      await G.nextFrame();
+      if (I.any('ok', 'cancel') || G.debug.autoMinigame) break;
+    }
+    G.audio.se('ok');
+    return items.length;
+  });
+
   function drawHeart(g, cx, cy, r, col) {
     g.fillStyle = col;
     for (let y = -r; y <= r; y++)

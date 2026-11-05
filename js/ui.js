@@ -84,6 +84,11 @@
 
   /* ---------- 타이틀 ---------- */
   UI.toTitle = async function () {
+    try {
+      UI.cleared = !!localStorage.getItem('gamtu_cleared');
+    } catch (e) {
+      UI.cleared = false;
+    }
     G.game.scene = 'title';
     G.game.map = null;
     G.game.busy = false;
@@ -101,7 +106,7 @@
     const root = G.$('#title');
     root.className = 'layer show';
     root.innerHTML = `
-      <div class="logo"><div class="logo-sub">겁쟁이 고양이의 아주 커다란 모험</div><div class="logo-main">감투와 별방울</div></div>
+      <div class="logo"><div class="logo-sub">겁쟁이 고양이의 아주 커다란 모험</div><div class="logo-main">감투와 별방울</div>${UI.cleared ? '<div class="logo-clear">★ 완결 ★</div>' : ''}</div>
       <div class="title-menu"></div>
       <div class="title-foot">${I.touch ? '' : '방향키 이동 · Z/Enter 결정 · X/Esc 취소'}</div>`;
     const menu = root.querySelector('.title-menu');
@@ -332,6 +337,10 @@
     const j = G.sprites.get('jaehee'),
       c = G.sprites.get('gamtu');
     g.drawImage(G.sprites.frame(j, 'up', 0, 0), 150, 178);
+    if (UI.cleared) {
+      // 완결 후에는 할머니도 함께 언덕에 앉아 있다
+      g.drawImage(G.sprites.frame(G.sprites.get('grandmaPin'), 'up', 0, 0), 134, 178);
+    }
     g.drawImage(G.sprites.frame(c, 'up', 0, 0), 166, 180);
     // 반딧불
     for (let i = 0; i < 10; i++) {
