@@ -139,7 +139,7 @@
     g.connect(bgmBus);
     const t0 = A.ctx.currentTime + 0.06;
     g.gain.setValueAtTime(0, A.ctx.currentTime);
-    g.gain.linearRampToValueAtTime((def.vol || 1) * (mix('bgm')[name] || 1), t0 + Math.max(0.05, fade / 1000));
+    g.gain.linearRampToValueAtTime((def.vol || 1) * (mix('bgm')[name] || 1) * ((GameData.config.mix || {}).bgmAll || 1), t0 + Math.max(0.05, fade / 1000));
     A.cur = { song, gain: g, start: t0, next: 0, loop: def.loop !== false };
   };
 

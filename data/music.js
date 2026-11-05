@@ -251,5 +251,6 @@ GameData.config.mix = {
   amb: { summer: 1.1, night: 1.4, rain: 0.8, cave: 1.25, wind: 1.4, mirror: 2.2, indoor: 2 },
   step: { grass: 0.7, wood: 1.3, stone: 2, dirt: 2, water: 1.8 },
   master: 2.2,
+  bgmAll: 0.65, // 배경음악 전체 크기 (기본이 조금 크다는 의견으로 약 -4dB)
 };
 
