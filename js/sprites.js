@@ -371,6 +371,28 @@
     return out;
   }
 
+  function hideSpot(kind, tail) {
+    const F = '#f2a24a', ST = '#9a5222', O = '#5a2e14';
+    return {
+      w: 16, h: 16, fps: tail ? 3 : 0,
+      frames: frames(tail ? 2 : 1, 16, 16, (g, f) => {
+        if (kind === 'jar') {
+          rect(g, 3, 6, 10, 9, '#6b3f26'); rect(g, 2, 8, 12, 6, '#7a4a2c'); rect(g, 4, 5, 8, 2, '#3a2416');
+          rect(g, 5, 4, 6, 1, '#8a5a3a'); rect(g, 4, 9, 2, 3, '#9a6a4a'); rect(g, 3, 15, 10, 1, 'rgba(0,0,0,0.25)');
+        } else if (kind === 'bush') {
+          rect(g, 1, 7, 14, 8, '#3f7a3a'); rect(g, 3, 5, 10, 4, '#4f8f45'); rect(g, 2, 9, 3, 3, '#5aa050');
+          rect(g, 10, 8, 3, 3, '#5aa050'); rect(g, 1, 14, 14, 1, '#2a5a2a'); rect(g, 6, 6, 1, 1, '#e86a8a'); rect(g, 11, 11, 1, 1, '#e86a8a');
+        } else {
+          rect(g, 2, 5, 12, 10, '#a8783f'); rect(g, 2, 5, 12, 1, '#c99a61'); rect(g, 2, 9, 12, 1, '#7a5228');
+          rect(g, 7, 5, 1, 10, '#7a5228'); rect(g, 2, 14, 12, 1, '#6a4220');
+        }
+        if (!tail) return;
+        const sx = f ? 1 : 0; // 살랑살랑
+        rect(g, 13, 10, 2, 2, F); rect(g, 14, 8, 2, 2, F); rect(g, 15 - sx, 6, 1, 2, F);
+        rect(g, 14, 5 + sx, 1, 1, ST); rect(g, 13, 12, 1, 1, O); rect(g, 15, 9, 1, 1, ST);
+      }),
+    };
+  }
   const PROC = {
     shadow: (p) => ({
       w: 16, h: 16, fps: 3,
@@ -836,6 +858,13 @@
         px(g, 6, 6, '#e0d0a0');
       }),
     }),
+    // 숨은 감투 (꼬리만 살랑) — 장독·덤불·상자, 찾은 뒤에는 꼬리 없는 모습
+    hideJar: () => hideSpot('jar', true),
+    hideBush: () => hideSpot('bush', true),
+    hideBox: () => hideSpot('box', true),
+    jarPlain: () => hideSpot('jar', false),
+    bushPlain: () => hideSpot('bush', false),
+    boxPlain: () => hideSpot('box', false),
     basket: () => ({
       w: 16, h: 24, fps: 0,
       frames: frames(1, 16, 24, (g) => {
