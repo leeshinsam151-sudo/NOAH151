@@ -6,7 +6,7 @@
  */
 (function () {
   const A = (G.audio = { ctx: null, bgmVol: 0.6, seVol: 0.7, cur: null, curName: null, pending: null });
-  let master, bgmBus, seBus, noiseBuf;
+  let master, bgmBus, seBus, ambBus, echoDelay, echoFb, echoLp, echoSend, noiseBuf;
   const NOTE = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
 
   function freq(tok) {
@@ -38,6 +38,28 @@
     seBus = A.ctx.createGain();
     seBus.gain.value = A.seVol;
     seBus.connect(master);
+    // 환경음(매미·빗소리·물소리 등)은 효과음 볼륨을 따른다
+    ambBus = A.ctx.createGain();
+    ambBus.gain.value = A.seVol;
+    ambBus.connect(master);
+    // 동굴·탑 메아리: 효과음에 짧은 되울림을 더한다 (A.setEcho)
+    echoDelay = A.ctx.createDelay(1);
+    echoDelay.delayTime.value = 0.23;
+    echoFb = A.ctx.createGain();
+    echoFb.gain.value = 0.35;
+    echoLp = A.ctx.createBiquadFilter();
+    echoLp.type = 'lowpass';
+    echoLp.frequency.value = 1800;
+    echoSend = A.ctx.createGain();
+    echoSend.gain.value = 0;
+    seBus.connect(echoSend);
+    echoSend.connect(echoDelay);
+    echoDelay.connect(echoLp);
+    echoLp.connect(echoFb);
+    echoFb.connect(echoDelay);
+    echoLp.connect(master);
+    if (A.echoOn) A.setEcho(true);
+    if (A.ambPending !== undefined) A.playAmb(A.ambPending);
     noiseBuf = A.ctx.createBuffer(1, A.ctx.sampleRate, A.ctx.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -55,6 +77,11 @@
     A.seVol = se;
     if (bgmBus) bgmBus.gain.value = bgm;
     if (seBus) seBus.gain.value = se;
+    if (ambBus) ambBus.gain.value = se;
+  };
+  A.setEcho = function (on) {
+    A.echoOn = !!on;
+    if (echoSend) echoSend.gain.setTargetAtTime(on ? 0.45 : 0, A.ctx.currentTime, 0.1);
   };
 
   /* ---------- BGM ---------- */
@@ -340,9 +367,179 @@
       tone('sawtooth', 55, 35, 1.8, 0.12, 0.15, { lp: 200, att: 0.05 });
     },
     rain: () => noise(1.5, 0.05, 'highpass', 4000),
+    bump: () => tone('sine', 150, 90, 0.07, 0.07),
+    splash: () => {
+      noise(0.3, 0.18, 'bandpass', 1200, 0, 400);
+      tone('sine', 900, 300, 0.12, 0.03);
+    },
     purr: () => {
       for (let i = 0; i < 6; i++) tone('sawtooth', 40, 38, 0.12, 0.08, i * 0.16, { lp: 300 });
     },
+  };
+
+  /* ---------- 환경음 ----------
+   * 맵의 ambience: 'summer' 낮 매미·새 | 'night' 귀뚜라미 | 'stream' 개울 | 'rain' 빗소리·바람
+   *              'cave' 물방울·웅웅 | 'wind' 안개 바람 | 'mirror' 유리 풍경 | 'indoor' 아주 조용한 실내
+   * 바닥에 깔리는 소리(bed)는 필터 건 노이즈 루프, 그 위에 가끔 나는 소리(ev)를 무작위로 얹는다. */
+  function ambOut(v) {
+    const g = A.ctx.createGain();
+    g.gain.value = v;
+    g.connect(ambBus);
+    return g;
+  }
+  function bed(type, f, v, q = 0.7, lfoRate = 0, lfoDepth = 0) {
+    const c = A.ctx;
+    const src = c.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    const fl = c.createBiquadFilter();
+    fl.type = type;
+    fl.frequency.value = f;
+    fl.Q.value = q;
+    const g = c.createGain();
+    g.gain.value = 0;
+    g.gain.setTargetAtTime(v, c.currentTime, 0.8);
+    src.connect(fl);
+    fl.connect(g);
+    g.connect(ambTarget || ambBus);
+    let lfo;
+    if (lfoRate) {
+      lfo = c.createOscillator();
+      const lg = c.createGain();
+      lfo.frequency.value = lfoRate;
+      lg.gain.value = lfoDepth;
+      lfo.connect(lg);
+      lg.connect(g.gain);
+      lfo.start();
+    }
+    src.start();
+    return {
+      stop() {
+        g.gain.setTargetAtTime(0, c.currentTime, 0.5);
+        setTimeout(() => {
+          try { src.stop(); if (lfo) lfo.stop(); } catch (e) { /* 무시 */ }
+          g.disconnect();
+        }, 2500);
+      },
+    };
+  }
+  function blipAt(type, f0, f1, dur, v, t, out, att = 0.005) {
+    const c = A.ctx;
+    const o = c.createOscillator(),
+      g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t);
+    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(v, t + att);
+    g.gain.exponentialRampToValueAtTime(0.0003, t + dur);
+    o.connect(g);
+    g.connect(out);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+  const R = (a, b) => a + Math.random() * (b - a);
+  const AMB = {
+    summer: {
+      beds: () => [bed('bandpass', 4200, 0.018, 3, 0.35, 0.012), bed('lowpass', 500, 0.012)],
+      ev: [
+        [0.18, (t, o) => { // 새 지저귐
+          const f = R(2400, 3400), n = 2 + ((Math.random() * 3) | 0);
+          for (let i = 0; i < n; i++) blipAt('sine', f * R(0.9, 1.1), f * R(1.2, 1.5), 0.07, 0.03, t + i * 0.11, o);
+        }],
+        [0.05, (t, o) => { // 매미 한 줄기
+          const c = A.ctx, os = c.createOscillator(), am = c.createOscillator(), ag = c.createGain(), g = c.createGain();
+          os.type = 'sawtooth'; os.frequency.value = R(3800, 4600); am.frequency.value = R(28, 40); ag.gain.value = 0.5;
+          g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.012, t + 0.8); g.gain.setValueAtTime(0.012, t + 2.6); g.gain.linearRampToValueAtTime(0.0001, t + 3.6);
+          const fl = c.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.value = 4200; fl.Q.value = 2;
+          am.connect(ag); ag.connect(g.gain); os.connect(fl); fl.connect(g); g.connect(o);
+          os.start(t); am.start(t); os.stop(t + 3.7); am.stop(t + 3.7);
+        }],
+      ],
+    },
+    night: {
+      beds: () => [bed('lowpass', 400, 0.01)],
+      ev: [
+        [0.9, (t, o) => { // 귀뚜라미 귀뚤귀뚤
+          const f = R(4300, 4900), v = R(0.01, 0.022);
+          for (let i = 0; i < 3; i++) blipAt('sine', f, f, 0.045, v, t + i * 0.06, o);
+        }],
+        [0.06, (t, o) => { blipAt('sine', 420, 380, 0.35, 0.02, t, o, 0.08); blipAt('sine', 420, 380, 0.35, 0.02, t + 0.45, o, 0.08); }], // 멀리 부엉
+      ],
+    },
+    stream: {
+      beds: () => [bed('bandpass', 900, 0.035, 0.8, 0.6, 0.012), bed('highpass', 3000, 0.012)],
+      ev: [[1.4, (t, o) => blipAt('sine', R(500, 1200), R(1300, 2200), 0.05, 0.02, t, o)]], // 졸졸
+    },
+    rain: {
+      beds: () => [bed('highpass', 2500, 0.05), bed('lowpass', 700, 0.04, 0.7, 0.15, 0.03)],
+      ev: [[0.25, (t, o) => blipAt('sine', R(1800, 2600), R(900, 1200), 0.04, 0.03, t, o)]], // 처마 물방울
+    },
+    cave: {
+      beds: () => [bed('lowpass', 160, 0.05, 1, 0.08, 0.02)],
+      ev: [[0.35, (t, o) => { const f = R(900, 1600); blipAt('sine', f, f * 0.55, 0.12, 0.05, t, o); }]], // 똑
+    },
+    wind: {
+      beds: () => [bed('bandpass', 500, 0.03, 1.5, 0.12, 0.025)],
+      ev: [],
+    },
+    mirror: {
+      beds: () => [bed('bandpass', 700, 0.015, 2, 0.1, 0.01)],
+      ev: [[0.3, (t, o) => { const f = R(1800, 3000); blipAt('sine', f, f, 0.9, 0.012, t, o); blipAt('sine', f * 1.5, f * 1.5, 0.6, 0.006, t + 0.01, o); }]], // 유리 풍경
+    },
+    indoor: {
+      beds: () => [bed('lowpass', 250, 0.006)],
+      ev: [[0.03, (t, o) => { blipAt('square', 1200, 1200, 0.015, 0.006, t, o); blipAt('square', 1000, 1000, 0.015, 0.006, t + 0.5, o); }]], // 벽시계 똑딱
+    },
+  };
+  let amb = null, ambTarget = null;
+  const AMB_GAIN = { summer: 2.6, night: 3.5, stream: 1.4, rain: 1, cave: 2.2, wind: 2.2, mirror: 2.4, indoor: 3 };
+  A.playAmb = function (name) {
+    name = name || null;
+    if (!A.ctx) {
+      A.ambPending = name;
+      return;
+    }
+    if (amb && amb.name === name) return;
+    if (amb) {
+      amb.beds.forEach((b) => b.stop());
+      clearInterval(amb.timer);
+      amb = null;
+    }
+    const def = AMB[name];
+    if (!def) return;
+    const out = ambOut(AMB_GAIN[name] || 1);
+    ambTarget = out;
+    amb = { name, beds: def.beds(), timer: null };
+    ambTarget = null;
+    // 0.25초마다 각 소리를 확률(초당 횟수)로 굴린다
+    amb.timer = setInterval(() => {
+      if (document.hidden) return;
+      for (const [rate, fn] of def.ev) if (Math.random() < rate * 0.25) {
+        try { fn(A.ctx.currentTime + Math.random() * 0.2, out); } catch (e) { /* 무시 */ }
+      }
+    }, 250);
+  };
+
+  /* 발소리: 재희만 (고양이는 발소리가 없다). 바닥 종류에 따라 소리가 다르다 */
+  let stepN = 0;
+  A.step = function (floor) {
+    if (!A.ctx) return;
+    const t = A.ctx.currentTime,
+      alt = stepN++ % 2 ? 1 : 1.12;
+    const c = A.ctx;
+    const s = noiseSrc(t, 0.08);
+    const f = c.createBiquadFilter();
+    const g = c.createGain();
+    const P = { grass: ['highpass', 2600, 0.05, 0.05], wood: ['lowpass', 500, 0.09, 0.06], stone: ['bandpass', 1500, 0.06, 0.04], dirt: ['lowpass', 900, 0.06, 0.05], water: ['bandpass', 800, 0.08, 0.08] }[floor] || ['lowpass', 900, 0.04, 0.05];
+    f.type = P[0];
+    f.frequency.value = P[1] * alt;
+    g.gain.setValueAtTime(P[2], t);
+    g.gain.exponentialRampToValueAtTime(0.0005, t + P[3]);
+    s.connect(f);
+    f.connect(g);
+    g.connect(seBus);
+    if (floor === 'wood') blipAt('sine', 140 * alt, 90, 0.05, 0.03, t, seBus);
   };
 
   A.se = function (name, p) {

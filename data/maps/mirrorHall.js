@@ -1,8 +1,9 @@
 /* 거울 숲 · 마지막 거울 — 5장. 은빛 나무(^), 은빛 바닥(e), 거울 벽(!) */
 GameData.defineMap('mirrorHall', {
   name: '거울 숲 · 마지막 거울',
-  bgm: [{ cond: { flag: 'c5_free' }, v: 'memory' }, { v: 'fog' }],
+  bgm: [{ cond: { flag: 'c5_free' }, v: 'memory' }, { v: 'mirror' }],
   weather: 'fog',
+  ambience: 'mirror',
   tiles: [
     '^^^^^^^^^^^^^^^^^',
     '^eeeeeeeeeeeeeee^',

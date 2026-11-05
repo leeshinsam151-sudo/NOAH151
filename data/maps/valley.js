@@ -2,6 +2,7 @@
 GameData.defineMap('valley', {
   name: '동쪽 골짜기',
   bgm: [{ cond: { flag: 'c2_frag' }, v: 'village' }, { v: 'forest' }],
+  ambience: 'stream',
   tiles: [
     'TTTTTTTTTTTTT~~~TTTTTTTTTTkkkk',
     'TTT..........~~~..........kkkk',

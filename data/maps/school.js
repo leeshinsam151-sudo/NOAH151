@@ -2,6 +2,7 @@
 GameData.defineMap('school', {
   name: '달무리 분교',
   bgm: [{ cond: { flag: 'c3_frag' }, v: 'village' }, { v: 'forest' }],
+  ambience: 'summer',
   tiles: [
     'TTTTTTTTTTTTTTTTTTTTTTTTTT',
     'T.rrrrrrrrrr...RRRR......T',

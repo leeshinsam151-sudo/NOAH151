@@ -2,6 +2,7 @@
 GameData.defineMap('classroom', {
   name: '분교 교실',
   bgm: [{ cond: { flag: 'c3_frag' }, v: 'house' }, { v: 'night' }],
+  ambience: 'indoor',
   tiles: [
     'XXXXXXXXXXXX',
     'XMMMMMMMMMMX',

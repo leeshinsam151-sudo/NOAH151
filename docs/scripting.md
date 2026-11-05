@@ -16,6 +16,8 @@ GameData.defineMap('id', {
   name: '배너에 뜨는 이름',
   bgm: 'village',                       // 또는 [{ cond: {...}, v: 'sad' }, { v: 'village' }]
   weather: 'fog',                       // fog | fireflies | dust | rain | snow (조건 배열 가능)
+  ambience: 'summer',                   // 환경음: summer | night | stream | rain | cave | wind | mirror | indoor (조건 배열 가능)
+  echo: true,                           // 동굴·탑처럼 효과음에 메아리
   tone: 'night',                        // 맵 고정 색조 (night | dusk | memory | dawn)
   dark: 0.7,                            // 어두운 맵 (주인공 주변만 밝다)
   noSwitch: true,                       // 감투 전환 금지
@@ -72,7 +74,7 @@ GameData.defineMap('id', {
 - `['face', 대상, 방향|대상]`, `['setPos', 대상, x, y, 방향]`, `['emote', 대상, '!'|'?'|'♥'|'♪'|'…'|'💧'|'zzz']`
 - `['anim', 대상, 'shiver'|'hop', ms]`, `['show'|'hide', 대상, {fade}]`, `['sprite', 대상, 키]`, `['sparkle', 대상]`
 - `['warp', 맵, x, y, 방향, {fade, cat, reload}]`, `['party', 'add'|'remove', id, x, y]`, `['follow', id, bool]`, `['gather']`, `['control', 'jaehee'|'gamtu']`, `['lock', bool]`
-- `['fadeOut', ms, 색]`, `['fadeIn', ms]`, `['flash', 색, ms]`, `['shake', 세기, ms]`, `['gray', 0~1, ms]`, `['tone', 이름, ms]`, `['weather', 이름]`, `['camera', 대상|[x,y]|'reset', ms]`
+- `['fadeOut', ms, 색]`, `['fadeIn', ms]`, `['flash', 색, ms]`, `['shake', 세기, ms]`, `['gray', 0~1, ms]`, `['tone', 이름, ms]`, `['weather', 이름]`, `['amb', 환경음|null]`, `['camera', 대상|[x,y]|'reset', ms]`
 - `['bgm', 이름, 페이드ms]`, `['stopBgm', ms]`, `['se', 이름]`, `['wait', ms]`
 - `['caption', [줄...], {hold}]`, `['chapterCard', '1장', '제목']`, `['chapter', 번호, '메뉴 제목']`
 - `['ability', id, '이름']`, `['courage', 1]`, `['minigame', 'heartbeat', {...}]` (결과는 `vars.mg`), `['autosave']`, `['hideParty', bool]`, `['title']`

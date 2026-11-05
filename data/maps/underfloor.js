@@ -3,6 +3,7 @@ GameData.defineMap('underfloor', {
   name: '마루 밑',
   dark: 0.72,
   bgm: undefined,
+  ambience: 'indoor',
   tiles: [
     'XXXXXXXXXX',
     'XMMMMMMMMX',

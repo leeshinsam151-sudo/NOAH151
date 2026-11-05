@@ -4,6 +4,7 @@ GameData.defineMap('forest', {
   noSwitch: true,
   bgm: [{ cond: { flag: 'c1_frag' }, v: 'forest' }, { v: 'tension' }],
   weather: [{ cond: { notFlag: 'c1_frag' }, v: 'fog' }],
+  ambience: [{ cond: { flag: 'c1_frag' }, v: 'summer' }, { v: 'wind' }],
   tiles: [
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
     'TTTTTTTTTTT.,....,.TTTTTTTTTTT',

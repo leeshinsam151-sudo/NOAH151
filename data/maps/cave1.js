@@ -1,11 +1,13 @@
 /* 동굴 입구 (30 x 24) — 어두운 맵. 재희의 손전등과 동료의 빛만 보인다 */
 GameData.defineMap('cave1', {
   name: '반딧불 동굴',
-  bgm: 'fog',
+  bgm: 'cave',
   dark: 0.82,
   lights: 'party',
   noSwitch: true,
   noSwitchMsg: '감투: 깜, 깜깜한 데서 혼자는… 절대 싫어!',
+  ambience: 'cave',
+  echo: true,
   tiles: [
     'UUUUUUUUUUUUUUUUUuuUUUUUUUUUUU',
     'UUUUUUUUUUUUUUUUUuuUUUUUUUUUUU',

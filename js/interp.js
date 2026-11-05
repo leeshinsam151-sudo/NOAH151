@@ -214,6 +214,7 @@
       g.applyScreen(ms);
     },
     weather: ([name], ctx, g) => g.setWeather(name),
+    amb: ([name]) => G.audio.playAmb(name),
     warp: async ([map, x, y, dir, opt = {}], ctx, g, s, D) => {
       if (s.control === 'gamtu' && !opt.cat && !s.flags.gamtuLeads) {
         await D.say('감투', GameData.config.cantLeaveLine || '재희를 두고 갈 수는 없어.');

@@ -2,6 +2,8 @@
 GameData.defineMap('tower2', {
   name: '시계탑 2층',
   bgm: 'night',
+  ambience: 'wind',
+  echo: true,
   tiles: [
     'XXXXXXXXXXXXXXXXXXXX',
     'XMMMMMVVVVVVVVMMDMMX',

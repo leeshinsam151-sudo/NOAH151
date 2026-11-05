@@ -2,6 +2,7 @@
 GameData.defineMap('storage', {
   name: '달무리상회 창고',
   bgm: 'shop',
+  ambience: 'indoor',
   tiles: [
     'XXXXXXXXXXX',
     'XMMMMQMMMMX',

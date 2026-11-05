@@ -3,6 +3,7 @@ GameData.defineMap('busstop', {
   name: '달무리 마을 입구',
   bgm: [{ cond: { flag: 'p_fog' }, v: 'sad' }, { v: 'village' }],
   weather: [{ cond: { flag: 'p_fog', notFlag: 'c1_frag' }, v: 'fog' }],
+  ambience: [{ cond: { flag: 'p_fog', notFlag: 'c1_frag' }, v: 'wind' }, { v: 'summer' }],
   tiles: [
     'TTTTTTTTT::TTTTTTTTT',
     'TTTTTTTt.::.tTTTTTTT',

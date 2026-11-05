@@ -10,6 +10,7 @@ GameData.defineMap('village', {
     { v: 'village' },
   ],
   weather: [{ cond: { flag: 'p_fog', notFlag: 'c1_frag' }, v: 'fog' }],
+  ambience: [{ cond: { flag: 'p_fog', notFlag: 'c1_frag' }, v: 'wind' }, { v: 'summer' }],
   tiles: [
     "TTTTTTTTTTTTTTTTTTT::TTTTTTTTTTTTTTTTTTT",
     "TTTTTTTTTTTTTTTTTT.::.TTTTTTTTTTTTTTTTTT",

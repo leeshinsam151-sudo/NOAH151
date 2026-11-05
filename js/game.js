@@ -44,7 +44,10 @@
     const a = new G.Actor({ id, sprite: def.sprite, kind: def.kind || id, speed: def.speed || 5, offset: def.offset });
     a.float = !!def.float;
     a.lightR = def.light || 0;
-    a.onMoveStart = (actor, fx, fy) => Game.trail(actor, fx, fy);
+    a.onMoveStart = (actor, fx, fy) => {
+      Game.trail(actor, fx, fy);
+      Game.footstep(actor);
+    };
     a.onArrive = (actor) => Game.arrived(actor);
     a.mapId = null;
     return a;
@@ -74,6 +77,22 @@
       .map((id) => Game.actor(id))
       .filter((a) => a.mapId === Game.map.id && a.visible);
   };
+  /* 발소리 (재희만, 바닥 타일에 따라) */
+  const FLOOR = { F: 'wood', b: 'wood', J: 'wood', p: 'wood', E: 'wood', n: 'stone', g: 'stone', ':': 'dirt', '=': 'dirt', o: 'water' };
+  Game.footstep = function (actor) {
+    if (actor.kind !== 'jaehee' || !actor.visible || Game.state.hideParty || !Game.map || actor.mapId !== Game.map.id) return;
+    if (Game.scene !== 'map') return;
+    G.audio.step(FLOOR[Game.map.tile(actor.x, actor.y)] || 'grass');
+  };
+  /* 벽에 부딪히는 소리 (조종 중인 캐릭터만, 너무 자주 나지 않게) */
+  Game.bumpSound = function (a) {
+    if (a !== Game.controlled()) return;
+    const now = performance.now();
+    if (now - (Game._bumpT || 0) < 350) return;
+    Game._bumpT = now;
+    G.audio.se('bump');
+  };
+
   Game.trail = function (actor, fx, fy) {
     if (actor.id !== Game.leader() || actor.jumping) return;
     let px = fx,
@@ -156,6 +175,8 @@
       else G.audio.stopBgm();
     }
     Game.setWeather(Game.resolve(def.weather) || null);
+    if (!opt.keepAmb) G.audio.playAmb(Game.resolve(def.ambience) || null);
+    G.audio.setEcho(!!def.echo);
     Game.applyScreen(0);
     if (def.name && !def.noBanner && !opt.initial) G.dialog.banner(def.name);
   };
@@ -317,6 +338,7 @@
         return;
       }
       if (ev.trigger === 'touch') Game.runEvent(ev);
+      else Game.bumpSound(a);
       return;
     }
     if (!m.tilePass(nx, ny, a.kind)) {
@@ -335,6 +357,7 @@
       if (landing && a.kind === 'jaehee') Game.bumpScript('jaehee_water');
       // 들보: 감투는 '들보 걷기'를 배워야 건널 수 있다
       if (t.beamWalk) Game.bumpScript(a.kind === 'gamtu' ? 'fear_height' : 'jaehee_beam');
+      else if (!landing) Game.bumpSound(a);
       return;
     }
     a._landing = false;

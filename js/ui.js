@@ -90,6 +90,8 @@
       UI.cleared = false;
     }
     G.game.scene = 'title';
+    G.audio.playAmb(null);
+    G.audio.setEcho(false);
     G.game.map = null;
     G.game.busy = false;
     UI.menuOpen = false;

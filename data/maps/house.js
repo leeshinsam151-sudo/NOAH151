@@ -2,6 +2,7 @@
 GameData.defineMap('house', {
   name: '할머니 집',
   bgm: [{ cond: { flag: 'p_fog', notFlag: 'c1_frag' }, v: 'sad' }, { v: 'house' }],
+  ambience: 'indoor',
   tiles: [
     'XXXXXXXXXXXXXXXX',
     'XMMMMMXMMMMXMMMX',

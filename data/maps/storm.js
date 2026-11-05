@@ -7,6 +7,7 @@ GameData.defineMap('storm', {
   weather: 'rain',
   dark: 0.8,
   lights: 'party',
+  ambience: 'rain',
   tiles: [
     'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
     'TTTTTTTTTTTTTTTTTTTT,........T',

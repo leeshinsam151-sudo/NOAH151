@@ -85,6 +85,53 @@
         },
       ],
     },
+    /* 동굴 — 물방울 같은 뜯는 소리와 낮은 울림 (2장) */
+    cave: {
+      bpm: 72,
+      channels: [
+        {
+          wave: 'sine', vol: 0.12, notes: `
+          d2 - - - - - - -   d2 - - - - - - -   bb1 - - - - - - -   a1 - - - - - - -
+          d2 - - - - - - -   d2 - - - - - - -   g1 - - - - - - -    a1 - - - - - - -`,
+        },
+        {
+          wave: 'triangle', vol: 0.05, env: 'pluck', notes: `
+          . . a4 . . d5 . .   . f5 . . e5 . . .   . . d5 . . f4 . .   . e4 . . . . c#5 .
+          . . a4 . . d5 . .   . f5 . . a5 . g5 .  . . f5 . . e5 . .   d5 . . . . . . .`,
+        },
+        {
+          wave: 'sine', vol: 0.03, env: 'pluck', notes: `
+          . . . . . . . a6   . . . . . . . .   . . . . . d6 . .   . . . . . . . .
+          . . . . . . . .   . . . . . . . f6   . . . . . . . .   . . . a6 . . . .`,
+        },
+      ],
+    },
+    /* 거울 숲 — 한 선율과 그 '거울에 비친' 선율이 서로 대답한다 (5장) */
+    mirror: {
+      bpm: 60,
+      channels: [
+        {
+          wave: 'sine', vol: 0.12, env: 'pluck', notes: `
+          e5 . g5 . b5 . a5 .   g5 . . . . . . .   . . . . . . . .   . . . . . . . .
+          e5 . g5 . c6 . b5 .   a5 . . . . . . .   . . . . . . . .   . . . . . . . .`,
+        },
+        {
+          wave: 'sine', vol: 0.08, env: 'pluck', notes: `
+          . . . . . . . .   . . . . . . . .   e5 . c5 . a4 . b4 .   c5 . . . . . . .
+          . . . . . . . .   . . . . . . . .   e5 . c5 . g4 . a4 .   b4 . . . . . . .`,
+        },
+        {
+          wave: 'triangle', vol: 0.07, notes: `
+          e3 - - - - - - -   c3 - - - - - - -   a2 - - - - - - -   b2 - - - - - - -
+          e3 - - - - - - -   c3 - - - - - - -   f2 - - - - - - -   b2 - - - - - - -`,
+        },
+        {
+          wave: 'square', vol: 0.012, env: 'pluck', notes: `
+          b5 e6 b5 e6 b5 e6 b5 e6   c6 e6 c6 e6 c6 e6 c6 e6   a5 e6 a5 e6 a5 e6 a5 e6   b5 d#6 b5 d#6 b5 d#6 b5 d#6
+          b5 e6 b5 e6 b5 e6 b5 e6   c6 e6 c6 e6 c6 e6 c6 e6   a5 f6 a5 f6 a5 f6 a5 f6   b5 d#6 b5 d#6 b5 d#6 b5 d#6`,
+        },
+      ],
+    },
     fog: {
       bpm: 56,
       channels: [

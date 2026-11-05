@@ -7,6 +7,7 @@ GameData.defineMap('island', {
   weather: [{ cond: { notFlag: 'c6_core' }, v: 'fog' }],
   dark: 0.55,
   lights: 'party',
+  ambience: [{ cond: { flag: 'c6_core' }, v: 'stream' }, { v: 'wind' }],
   tiles: [
     '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
     '~~~~~~~~."..........".~~~~~~~~',
