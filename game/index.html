@@ -1,0 +1,1270 @@
+<title>유실물 보관소</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+<style>
+/* Layout: one dark station-at-night stage, game screen on top, touch pad below on phones. Single deliberate dark look. */
+:root{
+  --bg:#060909; --panel:#0b1110; --panel-2:#111a18; --line:#2c3a37; --fg:#cfd8d4; --dim:#7d8e89;
+  --accent:#9cc0b5; --warn:#c0565a; --paper:#d9d3c5; --ink:#221e19; --raincoat:#d9b43c;
+  --f-story:'Gowun Batang','Noto Serif KR','Batang',serif;
+  --f-ui:'Nanum Gothic Coding','D2Coding',ui-monospace,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-story);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px;-webkit-tap-highlight-color:transparent}
+#app{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+#stage{position:relative;width:100%;border:1px solid var(--line);background:#000;overflow:hidden;user-select:none;-webkit-user-select:none}
+#cv{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+#fader{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5}
+#hud{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:6}
+.hbtn{font-family:var(--f-ui);font-size:12px;letter-spacing:.04em;color:var(--fg);background:rgba(6,10,10,.78);border:1px solid var(--line);padding:5px 9px;cursor:pointer}
+.hbtn:focus-visible,.mbtn:focus-visible,.choice:focus-visible,.slide:focus-visible,.kbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hbtn.pulse{animation:pulse 1.2s ease-in-out infinite;border-color:var(--accent)}
+@keyframes pulse{50%{background:rgba(60,90,82,.85)}}
+#mapname{position:absolute;top:10px;left:12px;z-index:6;font-family:var(--f-ui);font-size:12px;letter-spacing:.12em;color:var(--dim);opacity:0;transition:opacity .8s}
+#mapname.on{opacity:1}
+#toast{position:absolute;top:40px;left:50%;transform:translateX(-50%);z-index:7;font-family:var(--f-ui);font-size:12px;color:var(--fg);background:rgba(8,14,13,.9);border:1px solid var(--line);padding:6px 12px;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap}
+#toast.on{opacity:1}
+#dialog{position:absolute;left:2.5%;right:2.5%;bottom:3%;z-index:8;background:rgba(5,9,9,.93);border:1px solid var(--line);padding:12px 16px 14px;min-height:21%;font-size:clamp(13px,2.15vw,18px);line-height:1.65;cursor:pointer}
+#speaker{position:absolute;top:-13px;left:12px;font-family:var(--f-ui);font-size:12px;letter-spacing:.08em;background:var(--panel-2);border:1px solid var(--line);color:var(--accent);padding:2px 8px}
+#dtext{white-space:pre-wrap;min-height:1.6em;text-wrap:pretty}
+#dtext.narr{color:#aab7b2;font-style:italic}
+#dtext.sys{font-family:var(--f-ui);font-size:.85em;color:var(--accent)}
+#more{position:absolute;right:12px;bottom:6px;font-size:11px;color:var(--dim);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+#choices{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.choice{font:inherit;text-align:left;color:var(--fg);background:transparent;border:1px solid transparent;padding:3px 10px;cursor:pointer}
+.choice.sel{border-color:var(--line);background:rgba(80,110,102,.2)}
+.choice.sel::before{content:'▸ ';color:var(--accent)}
+#title{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(ellipse at 50% 60%,#0f1a18 0%,#040606 70%);text-align:center;padding:16px}
+#title h1{font-family:var(--f-story);font-weight:700;font-size:clamp(28px,6vw,54px);letter-spacing:.32em;margin:0 0 0 .32em;color:#dfe6e2;text-shadow:0 0 18px rgba(120,170,155,.25)}
+#title .sub{font-family:var(--f-ui);font-size:clamp(11px,1.6vw,13px);letter-spacing:.18em;color:var(--dim);margin:0}
+#title .tag{font-size:clamp(12px,1.8vw,15px);color:#9eaca7;margin:6px 0 10px}
+#title .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#title .warn{font-family:var(--f-ui);font-size:11px;color:var(--dim);margin-top:8px}
+.mbtn{font-family:var(--f-ui);font-size:13px;letter-spacing:.06em;color:var(--fg);background:var(--panel-2);border:1px solid var(--line);padding:9px 18px;cursor:pointer}
+.mbtn:hover{border-color:var(--accent)}
+.mbtn.primary{border-color:var(--accent);color:#e6efeb}
+.mbtn[disabled]{opacity:.4;cursor:default}
+#modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.panel{background:var(--panel);border:1px solid var(--line);width:100%;max-width:640px;max-height:100%;overflow:auto;padding:18px}
+.panel h3{font-family:var(--f-ui);font-size:13px;letter-spacing:.14em;color:var(--accent);margin:0 0 12px;font-weight:700}
+.paper{background:var(--paper);color:var(--ink);border:none;max-width:460px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.paper h3{color:#5a5248}
+.pbody{white-space:pre-wrap;font-size:16px;line-height:1.8;margin-bottom:14px}
+.paper .mbtn{background:#c9c2b3;color:var(--ink);border-color:#a39b8b}
+.scratch{background:#2b2620;color:transparent;letter-spacing:.2em}
+.mail{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.mail .m{display:grid;grid-template-columns:5.5em 3.5em 1fr;gap:10px;padding:8px 6px;border-bottom:1px solid var(--line);font-size:14px;line-height:1.5}
+.mail .m b{font-family:var(--f-ui);font-size:12px;color:var(--accent);font-weight:400}
+.mail .m time{font-family:var(--f-ui);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.mail .m.ghost{color:#e3e9e6}
+.mail .m.ghost b{color:var(--warn)}
+@media (max-width:520px){.mail .m{grid-template-columns:1fr 3.5em}.mail .m span{grid-column:1/-1}}
+.keypad .disp{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.keypad .disp span{width:42px;height:50px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--f-ui);font-size:24px;background:#050808}
+.keypad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto 12px}
+.kbtn{font-family:var(--f-ui);font-size:18px;padding:12px 0;background:var(--panel-2);color:var(--fg);border:1px solid var(--line);cursor:pointer}
+.keypad .msg{text-align:center;font-family:var(--f-ui);font-size:12px;color:var(--dim);margin:0 0 10px}
+.btnrow{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.slides{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+@media (max-width:520px){.slides{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.slide{position:relative;text-align:left;font:inherit;color:var(--fg);cursor:pointer;border:1px solid var(--line);padding:24px 10px 10px;min-height:92px;background:#0d1514 repeating-linear-gradient(0deg,transparent 0 13px,rgba(140,170,160,.07) 13px 14px),repeating-linear-gradient(90deg,transparent 0 27px,rgba(140,170,160,.07) 27px 28px)}
+.slide .n{position:absolute;top:5px;left:8px;font-family:var(--f-ui);font-size:11px;color:var(--dim)}
+.slide .t{font-weight:700;font-size:14px;display:block}
+.slide .d{font-family:var(--f-ui);font-size:12px;color:#a4b3ae;display:block;margin-top:4px}
+.slide.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.hint{font-family:var(--f-ui);font-size:12px;color:var(--dim);margin:0 0 12px;line-height:1.6}
+.clockui{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.clockui canvas{width:170px;height:170px}
+.clockui .ctl{display:grid;grid-template-columns:auto auto auto;gap:6px 8px;align-items:center;font-family:var(--f-ui)}
+.clockui .val{font-size:22px;text-align:center;min-width:2.4em;font-variant-numeric:tabular-nums}
+.clockui .lab{font-size:12px;color:var(--dim)}
+.tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.tab{font-family:var(--f-ui);font-size:12px;letter-spacing:.06em;color:var(--dim);background:none;border:1px solid transparent;border-bottom:none;padding:7px 12px;cursor:pointer}
+.tab.on{color:var(--fg);border-color:var(--line);background:var(--panel-2)}
+.list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.item{border:1px solid var(--line);padding:10px 12px;background:#0a0f0e}
+.item b{display:block;font-size:15px;margin-bottom:3px}
+.item p{margin:0;font-size:14px;color:#a9b6b1;line-height:1.6;white-space:pre-wrap}
+.diary .e{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;border-bottom:1px dashed var(--line);padding:10px 2px;font-size:15px;line-height:1.7}
+.diary .e .tx{min-width:0}
+.diary .e.can .tx{text-decoration:underline;text-decoration-color:rgba(156,192,181,.5);text-underline-offset:4px}
+.diary .e.doubt .tx::after{content:' ?';color:var(--warn);font-weight:700}
+.diary .e.over .tx{font-weight:700;color:#e9efec;letter-spacing:.02em}
+.diary .db{flex:none;font-family:var(--f-ui);font-size:11px;color:var(--warn);background:none;border:1px solid #5a3335;padding:4px 8px;cursor:pointer}
+.diary .db.on{background:#3a1d1f;color:#f0c9ca}
+.empty{color:var(--dim);font-size:14px}
+.end h2{font-family:var(--f-story);font-size:22px;margin:0 0 6px;letter-spacing:.1em}
+.end .stat{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:14px;margin:14px 0;font-variant-numeric:tabular-nums}
+.end .stat span:nth-child(even){font-family:var(--f-ui);color:var(--accent)}
+#pad{display:none;justify-content:space-between;align-items:center;gap:16px;padding:4px 0}
+@media (pointer:coarse),(max-width:700px){#pad{display:flex}}
+.dpad{display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(3,54px);gap:4px;touch-action:none}
+.pb{background:var(--panel-2);border:1px solid var(--line);color:var(--fg);font-family:var(--f-ui);font-size:16px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pb:active,.pb.on{background:#22312e}
+.ab{display:flex;gap:12px;align-items:center}
+.ab .pb{width:64px;height:64px;border-radius:50%;font-size:13px}
+#help{font-family:var(--f-ui);font-size:12px;color:var(--dim);margin:0;line-height:1.7}
+#help kbd{font-family:inherit;border:1px solid var(--line);padding:0 5px;color:var(--fg)}
+@media (prefers-reduced-motion:reduce){.hbtn.pulse,#more{animation:none}}
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="cv" width="480" height="352" aria-label="게임 화면"></canvas>
+    <div id="mapname"></div>
+    <div id="hud" hidden>
+      <button class="hbtn" id="btnDiary" type="button">일기장</button>
+      <button class="hbtn" id="btnMenu" type="button">메뉴</button>
+    </div>
+    <div id="toast"></div>
+    <div id="fader"></div>
+    <div id="dialog" hidden>
+      <div id="speaker" hidden></div>
+      <div id="dtext"></div>
+      <div id="choices"></div>
+      <div id="more" hidden>▼</div>
+    </div>
+    <div id="title">
+      <p class="sub">녹하역 B1 · 1장 체험판</p>
+      <h1>유실물 보관소</h1>
+      <p class="tag">깨진 손목시계</p>
+      <div class="row">
+        <button class="mbtn primary" id="btnNew" type="button">처음부터</button>
+        <button class="mbtn" id="btnCont" type="button" disabled>이어하기</button>
+      </div>
+      <p class="warn">헤드폰 권장 · 소리가 켜집니다</p>
+    </div>
+  </div>
+  <div id="pad">
+    <div class="dpad">
+      <span></span><button class="pb" data-dir="up" type="button" aria-label="위">▲</button><span></span>
+      <button class="pb" data-dir="left" type="button" aria-label="왼쪽">◀</button><span></span><button class="pb" data-dir="right" type="button" aria-label="오른쪽">▶</button>
+      <span></span><button class="pb" data-dir="down" type="button" aria-label="아래">▼</button><span></span>
+    </div>
+    <div class="ab">
+      <button class="pb" id="padB" type="button">메뉴</button>
+      <button class="pb" id="padA" type="button">조사</button>
+    </div>
+  </div>
+  <p id="help">이동 <kbd>←↑→↓</kbd> / <kbd>WASD</kbd> · 조사·넘기기 <kbd>Z</kbd> <kbd>Space</kbd> <kbd>Enter</kbd> · 메뉴 <kbd>X</kbd> <kbd>Esc</kbd> · 일기장 <kbd>Q</kbd></p>
+</div>
+<div id="modal" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const TS = 32, VW = 15, VH = 11, W = VW * TS, H = VH * TS, STEP = 0.19;
+const $ = id => document.getElementById(id);
+const cv = $('cv'), g = cv.getContext('2d');
+g.imageSmoothingEnabled = false;
+const light = document.createElement('canvas'); light.width = W; light.height = H;
+const lx = light.getContext('2d');
+const vig = document.createElement('canvas'); vig.width = W; vig.height = H;
+{ const v = vig.getContext('2d'); const gr = v.createRadialGradient(W/2, H/2, H*0.35, W/2, H/2, W*0.62);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.75)'); v.fillStyle = gr; v.fillRect(0, 0, W, H); }
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+const hash = (x, y, s = 0) => { let h = (x * 374761393 + y * 668265263 + s * 982451653) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967295; };
+const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/* ================= AUDIO ================= */
+const A = { ctx: null, on: false };
+function audioInit() {
+  if (A.ctx) { A.ctx.resume(); return; }
+  const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+  const ctx = new C(); A.ctx = ctx;
+  A.master = ctx.createGain(); A.master.gain.value = 0.9; A.master.connect(ctx.destination);
+  for (const k of ['amb', 'sfx', 'bgm']) { A[k] = ctx.createGain(); A[k].gain.value = 1; A[k].connect(A.master); }
+  const len = ctx.sampleRate * 2;
+  A.white = ctx.createBuffer(1, len, ctx.sampleRate); A.brown = ctx.createBuffer(1, len, ctx.sampleRate);
+  const w = A.white.getChannelData(0), b = A.brown.getChannelData(0); let last = 0;
+  for (let i = 0; i < len; i++) { w[i] = Math.random() * 2 - 1; const x = Math.random() * 2 - 1; last = (last + 0.02 * x) / 1.02; b[i] = last * 3.5; }
+  A.on = true;
+  if (AMB.pending) { setAmbient(AMB.pending); AMB.pending = null; }
+}
+const now = () => (A.ctx ? A.ctx.currentTime : 0);
+function outNode(pan = 0, bus) {
+  bus = bus || A.sfx;
+  if (A.ctx.createStereoPanner) { const p = A.ctx.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); p.connect(bus); return p; }
+  return bus;
+}
+function envG(t, a, peak, d) { const gn = A.ctx.createGain(); gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + a); gn.gain.exponentialRampToValueAtTime(0.0001, t + a + d); return gn; }
+function nburst(o) {
+  if (!A.on) return; const ctx = A.ctx; const t = o.t ?? now(); const dur = o.dur ?? 0.1, a = o.a ?? 0.005;
+  const s = ctx.createBufferSource(); s.buffer = o.buf || A.white;
+  const f = ctx.createBiquadFilter(); f.type = o.type || 'bandpass'; f.frequency.setValueAtTime(o.f ?? 1000, t);
+  if (o.f2) f.frequency.exponentialRampToValueAtTime(o.f2, t + a + dur); f.Q.value = o.q ?? 1;
+  const gn = envG(t, a, o.peak ?? 0.1, dur);
+  s.connect(f).connect(gn).connect(outNode(o.pan || 0, o.bus)); s.start(t, Math.random() * 0.4); s.stop(t + a + dur + 0.05);
+}
+function tone(o) {
+  if (!A.on) return; const ctx = A.ctx; const t = o.t ?? now(); const dur = o.dur ?? 0.5, a = o.a ?? 0.01;
+  const os = ctx.createOscillator(); os.type = o.type || 'sine'; os.frequency.setValueAtTime(o.f, t);
+  if (o.f2) os.frequency.exponentialRampToValueAtTime(o.f2, t + a + dur);
+  let node = os;
+  if (o.vib) { const l = ctx.createOscillator(); l.frequency.value = 5.2; const lg = ctx.createGain(); lg.gain.value = o.f * 0.012; l.connect(lg).connect(os.frequency); l.start(t); l.stop(t + a + dur + 0.1); }
+  if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; node.connect(f); node = f; }
+  const gn = envG(t, a, o.peak ?? 0.05, dur);
+  node.connect(gn).connect(outNode(o.pan || 0, o.bus)); os.start(t); os.stop(t + a + dur + 0.1);
+}
+function bell(t, f, peak, bus, d = 1.6) { tone({ t, f, a: 0.004, dur: d, peak, bus }); tone({ t, f: f * 2.76, a: 0.004, dur: d * 0.4, peak: peak * 0.25, bus }); }
+const SFX = {
+  steps(p) { nburst({ dur: .09, peak: .12, type: 'lowpass', f: 260, pan: p, buf: A.brown }); nburst({ t: now() + .55, dur: .09, peak: .1, type: 'lowpass', f: 260, pan: p, buf: A.brown }); },
+  door(p) { nburst({ dur: .3, peak: .35, type: 'lowpass', f: 160, pan: p, buf: A.brown }); nburst({ t: now() + .03, dur: .14, peak: .04, type: 'bandpass', f: 1600, q: 3, pan: p }); },
+  sigh(p) { nburst({ dur: 1.1, a: .45, peak: .045, type: 'bandpass', f: 950, f2: 330, q: 1.4, pan: p }); },
+  phone(p) { const t = now(); for (let i = 0; i < 15; i++) tone({ t: t + i * .045, f: i % 2 ? 1180 : 1480, type: 'square', a: .002, dur: .035, peak: .012, pan: p, lp: 2500 }); },
+  chairRoll(p) { nburst({ dur: .9, a: .15, peak: .05, type: 'bandpass', f: 320, q: 2.5, pan: p }); },
+  click(p) { nburst({ dur: .02, peak: .07, type: 'highpass', f: 3200, pan: p }); nburst({ t: now() + .13, dur: .02, peak: .05, type: 'highpass', f: 3200, pan: p }); },
+  ding(p) { tone({ f: 880, dur: 1.5, peak: .035, pan: p }); tone({ t: now() + .28, f: 698, dur: 1.8, peak: .035, pan: p }); },
+  creak(p) { tone({ f: 230, f2: 140, type: 'sawtooth', a: .06, dur: .7, peak: .035, pan: p, lp: 900 }); },
+  murmur(p) { const t = now(); for (let i = 0; i < 9; i++) nburst({ t: t + i * .22 + Math.random() * .1, dur: .18, a: .04, peak: .03, type: 'bandpass', f: rnd(380, 720), q: 4, pan: p }); },
+  beep(p) { tone({ f: 1046, dur: .12, peak: .045, pan: p }); },
+  clink(p) { tone({ f: 2600, dur: .25, peak: .025, pan: p }); tone({ t: now() + .08, f: 3150, dur: .2, peak: .018, pan: p }); },
+  drip(p) { tone({ f: 1500, f2: 480, dur: .05, peak: .05, pan: p }); },
+  cough(p) { nburst({ dur: .12, peak: .07, type: 'bandpass', f: 520, q: 2, pan: p }); nburst({ t: now() + .26, dur: .1, peak: .05, type: 'bandpass', f: 460, q: 2, pan: p }); },
+  blind(p) { const t = now(); for (let i = 0; i < 7; i++) nburst({ t: t + i * .045 + Math.random() * .02, dur: .03, peak: .035, type: 'highpass', f: 2600, pan: p }); },
+  train(p) { nburst({ buf: A.brown, dur: 4, a: 1.6, peak: .28, type: 'lowpass', f: 130, pan: p }); },
+  childHum(p) { const t = now(); [523, 587, 659, 587, 523, 440].forEach((f, i) => tone({ t: t + i * .48, f, a: .1, dur: .45, peak: .011, pan: p, vib: true, lp: 1400 })); },
+  tick() { nburst({ dur: .012, peak: .12, type: 'highpass', f: 4200 }); },
+  thud() { tone({ f: 62, f2: 32, dur: 1.3, peak: .4 }); nburst({ buf: A.brown, dur: .7, peak: .35, type: 'lowpass', f: 220 }); },
+  paper() { nburst({ dur: .22, peak: .05, type: 'bandpass', f: 2600, q: .7 }); },
+  pickup() { bell(now(), 660, .035); bell(now() + .12, 990, .025); },
+  key() { tone({ f: 1800, dur: .04, peak: .025, type: 'square', lp: 3000 }); },
+  err() { tone({ f: 110, dur: .35, peak: .06, type: 'square', lp: 700 }); },
+  pour() { nburst({ dur: 2.6, a: .2, peak: .07, type: 'lowpass', f: 700 }); },
+  trainArrive() { nburst({ buf: A.brown, dur: 4.5, a: 1.2, peak: .5, type: 'lowpass', f: 160 }); tone({ t: now() + 1.4, f: 2500, f2: 2150, type: 'sawtooth', a: .3, dur: 1.6, peak: .012, lp: 3500 }); },
+  unlock() { nburst({ dur: .05, peak: .12, type: 'highpass', f: 2000 }); tone({ t: now() + .06, f: 320, dur: .1, peak: .06, type: 'square', lp: 900 }); },
+  sw() { nburst({ dur: .04, peak: .14, type: 'bandpass', f: 1400, q: 2 }); },
+  glass() { for (let i = 0; i < 5; i++) tone({ t: now() + i * .03, f: rnd(3000, 5200), dur: .12, peak: .015 }); },
+  elevator() { SFX.ding(0); nburst({ buf: A.brown, dur: 1.5, a: .3, peak: .2, type: 'lowpass', f: 200 }); },
+  sting() { tone({ f: 233, type: 'sawtooth', a: .02, dur: 1.4, peak: .03, lp: 1200 }); tone({ f: 247, type: 'sawtooth', a: .02, dur: 1.4, peak: .03, lp: 1200 }); }
+};
+const AMB = { cur: null, pending: null, next: 0, last: '', typing: 0 };
+function setAmbient(prof) {
+  if (!A.on) { AMB.pending = prof; return; }
+  const ctx = A.ctx, t = now();
+  if (AMB.cur) { const old = AMB.cur; old.g.gain.cancelScheduledValues(t); old.g.gain.setTargetAtTime(0, t, .25); setTimeout(() => old.nodes.forEach(n => { try { n.stop(); } catch (e) {} }), 1800); }
+  const gm = ctx.createGain(); gm.gain.value = 0.0001; gm.gain.setTargetAtTime(1, t, .4); gm.connect(A.amb);
+  const nodes = []; let humG = null;
+  if (prof.hum) {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 120;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 240; bp.Q.value = 3;
+    humG = ctx.createGain(); humG.gain.value = prof.hum; o.connect(bp).connect(humG).connect(gm); o.start(); nodes.push(o);
+    const o2 = ctx.createOscillator(); o2.frequency.value = 60; const g2 = ctx.createGain(); g2.gain.value = prof.hum * 1.4; o2.connect(g2).connect(humG); o2.start(); nodes.push(o2);
+  }
+  if (prof.fan) { const s = ctx.createBufferSource(); s.buffer = A.brown; s.loop = true; const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = prof.fanCut || 400; const gg = ctx.createGain(); gg.gain.value = prof.fan; s.connect(f).connect(gg).connect(gm); s.start(); nodes.push(s); }
+  if (prof.fridge) { const o = ctx.createOscillator(); o.frequency.value = 50; const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = 100.4; const gg = ctx.createGain(); gg.gain.value = prof.fridge; o.connect(gg); o2.connect(gg); gg.connect(gm); o.start(); o2.start(); nodes.push(o, o2); }
+  AMB.cur = { g: gm, nodes, prof, humG }; AMB.next = t + rnd(4, 10);
+}
+function silence(sec) { if (!A.on) return; const t = now(); A.amb.gain.cancelScheduledValues(t); A.amb.gain.setTargetAtTime(0, t, .04); A.amb.gain.setTargetAtTime(1, t + sec, .35); G.silentUntil = G.time + sec; }
+function ambientTick(dt) {
+  if (!A.on || !AMB.cur) return;
+  const t = now(), prof = AMB.cur.prof;
+  if (AMB.cur.humG && prof.hum && Math.random() < dt * 0.6) { AMB.cur.humG.gain.setTargetAtTime(prof.hum * rnd(0.2, 1.4), t, .03); AMB.cur.humG.gain.setTargetAtTime(prof.hum, t + .12, .08); }
+  if (t > AMB.next && G.time > G.silentUntil && G.mode === 'play') {
+    let pool = (prof.shots || []).slice();
+    if (S && S.v.sanity <= 7) pool.push('childHum', 'childHum');
+    if (S && S.map !== 'hub' && Math.random() < .08) pool = ['train'];
+    pool = pool.filter(n => n !== AMB.last); const n = pool[Math.floor(Math.random() * pool.length)];
+    if (n && SFX[n]) { SFX[n](rnd(-.85, .85)); AMB.last = n; }
+    const k = S ? 0.45 + 0.55 * Math.max(0, S.v.sanity) / 10 : 1;
+    AMB.next = t + rnd(20, 60) * k;
+  }
+  const lvl = G.typing;
+  if (lvl > 0 && G.time > G.silentUntil && Math.random() < dt * (lvl > .06 ? 42 : 13)) nburst({ dur: .016, peak: lvl * rnd(.5, 1), type: 'bandpass', f: rnd(1800, 3300), q: 1.2, pan: rnd(-.7, .7) });
+  if (G.copier && (G.copierT -= dt) <= 0) { G.copierT = .62; nburst({ buf: A.brown, dur: .14, peak: .16, type: 'lowpass', f: 380, pan: .4 }); nburst({ t: t + .2, dur: .08, peak: .03, type: 'highpass', f: 2200, pan: .4 }); }
+}
+const BGM = { cur: null };
+function playBgm(name) {
+  if (!A.on) return; stopBgm(1);
+  const ctx = A.ctx, t = now(); const gm = ctx.createGain(); gm.gain.value = 0.0001; gm.connect(A.bgm);
+  const nodes = [], timers = [];
+  if (name === 'overtime') {
+    gm.gain.setTargetAtTime(1, t, 2);
+    const trem = ctx.createGain(); trem.gain.value = .75; trem.connect(gm);
+    const l = ctx.createOscillator(); l.frequency.value = 4.3; const lg = ctx.createGain(); lg.gain.value = .25; l.connect(lg).connect(trem.gain); l.start(); nodes.push(l);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520; lp.connect(trem);
+    [55, 58.27, 82.41, 87.31, 116.5].forEach(f => { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = rnd(-12, 12); const og = ctx.createGain(); og.gain.value = .028; o.connect(og).connect(lp); o.start(); nodes.push(o); });
+  } else if (name === 'climax') {
+    gm.gain.setTargetAtTime(1, t, .5);
+    const chords = [[220, 261.6, 329.6], [196, 246.9, 293.7], [174.6, 220, 261.6], [164.8, 207.7, 246.9]]; let ci = 0;
+    const tk = setInterval(() => { if (A.on) nburst({ dur: .012, peak: .07, type: 'highpass', f: 4200, bus: gm }); }, 1000); timers.push(tk);
+    const play = () => { const c = chords[ci++ % chords.length]; const t0 = now(); c.forEach((f, i) => { tone({ t: t0 + i * .05, f, type: 'triangle', a: .01, dur: 3.2, peak: .028, bus: gm }); tone({ t: t0 + i * .05, f: f * 2, a: .01, dur: 1.8, peak: .01, bus: gm }); }); };
+    play(); timers.push(setInterval(play, 4000));
+  } else if (name === 'musicbox') {
+    gm.gain.setTargetAtTime(1, t, .2);
+    const mel = [[784, .45], [659, .45], [784, .45], [880, .9], [784, .45], [659, .45], [587, .9], [523, .45], [587, .45], [659, .45], [784, .45], [659, 1.4]];
+    let tt = t + .3; for (let r = 0; r < 2; r++) mel.forEach(([f, d]) => { bell(tt, f, .045, gm, 1.8); tt += d * (1 + r * .18); });
+  }
+  BGM.cur = { g: gm, nodes, timers };
+}
+function stopBgm(fade = 1.5) {
+  if (!BGM.cur || !A.on) return; const c = BGM.cur; BGM.cur = null; const t = now();
+  c.g.gain.cancelScheduledValues(t); c.g.gain.setTargetAtTime(0, t, fade / 3);
+  c.timers.forEach(clearInterval); setTimeout(() => { c.nodes.forEach(n => { try { n.stop(); } catch (e) {} }); c.g.disconnect(); }, fade * 1000 + 600);
+}
+
+/* ================= STATE ================= */
+let S = null;
+const G = { mode: 'title', time: 0, busy: false, scene: null, typing: 0, silentUntil: 0, copier: false, copierT: 0, backT: 0, cwCool: 0, held: [], spill: 0, lightsOut: false, elevOpen: 0, flick: 0 };
+const P = { x: 6, y: 7, px: 192, py: 224, dir: 'up', moving: false, t: 0, fx: 0, fy: 0, tx: 0, ty: 0, phase: 0, scripted: false, onDone: null };
+function newState() { return { map: 'hub', x: 6, y: 7, dir: 'up', f: {}, v: { sanity: 10, pcFail: 0, overtime: 0 }, inv: [], notes: [], diary: [] }; }
+const SKEY = 'lostfound-ch1-v1';
+function save() { if (!S || S.f.climax) return; S.x = P.x; S.y = P.y; S.dir = P.dir; try { localStorage.setItem(SKEY, JSON.stringify(S)); } catch (e) {} }
+function loadSave() { try { const s = localStorage.getItem(SKEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+function clearSave() { try { localStorage.removeItem(SKEY); } catch (e) {} }
+
+const ITEMS = {
+  watch: ['깨진 손목시계', '유리가 깨진 은색 손목시계.\n뒷면 각인: 「아빠, 늦지 마 — 서아」'],
+  minute: ['분침', '커피 컵 바닥에 가라앉아 있던 가늘고 긴 시계 바늘.'],
+  hour: ['시침', '프로젝터 렌즈 덮개 안쪽에 있던 짧고 굵은 시계 바늘.'],
+  key: ['부장실 열쇠', '복사기에서 쏟아져 나온 종이 사이에 끼어 있던 열쇠. 꼬리표: 「부장실」']
+};
+const NOTES = {
+  A: ['화분 아래의 쪽지', '7층은 엘리베이터가 자주 멈춥니다.\n비상시 내선 0412.\n\n— 관리실'],
+  B: ['서랍 속 메신저 출력물', '[17:48] 강 과장님 오늘도 막차 타시겠네\n[17:49] 부장님 또 금요일 저녁에 일 던지심 ㅋ\n[17:49] 과장님 오늘 딸내미 학예회라던데\n[17:52] …'],
+  C: ['의자 밑의 대본 한 장', '연극 「시계 토끼」 — 3막\n\n서아(앨리스): 시계 토끼야, 왜 그렇게 서둘러?\n토끼: 늦으면 소중한 사람이 기다리다 지쳐버리거든!'],
+  D: ['머그컵 속 쪽지', '아빠 커피 너무 써.\n서아가 코코아 사줄게.\n\n(삐뚤빼뚤한 어린이 글씨)'],
+  E: ['블라인드 사이의 신고서', '녹하역 분실물 신고서 (사본)\n\n분실물: 손목시계 (은색, 유리 파손)\n분실 장소: 녹하역 승강장\n신고자: (공란)\n접수 직원 서명: ']
+};
+
+/* ================= MAPS ================= */
+const row = (w, c = '.') => '#' + c.repeat(w - 2) + '#';
+function rows(w, h, special) { const r = []; for (let y = 0; y < h; y++) r.push(y === 0 || y === h - 1 ? '#'.repeat(w) : row(w)); for (const [x, y] of special) r[y] = r[y].slice(0, x) + '.' + r[y].slice(x + 1); return r; }
+const O = (kind, x, y, p = {}) => Object.assign({ kind, x, y, w: 1, h: 1, solid: true }, p);
+
+const MAPS = {
+  hub: { name: '녹하역 B1 — 유실물 보관소', t: rows(13, 10, [[6, 9]]), floor: 'concrete', face: '#252c2a', top: '#0b100f', dark: .6,
+    lamps: [[6, 3], [2, 6], [10, 6]], amb: { hum: .012, fan: .05, fanCut: 200, shots: ['train', 'steps', 'drip', 'door'] },
+    objs: () => [
+      O('shelf', 1, 1, { w: 4, wall: false, items: ['umbrella', 'book', 'key', 'shoe'], act: actShelf }),
+      O('shelf', 8, 1, { w: 4, items: ['bear', 'lunch', 'cloth', 'button'], act: actShelf }),
+      O('speaker', 6, 0, { wall: true, act: actSpeaker }),
+      O('counter', 4, 4, { w: 5, act: actCounter }),
+      O('clerk', 6, 3, { act: actClerk }),
+      O('crate', 1, 7, { w: 1, act: async () => nar('먼지 쌓인 상자. 꼬리표가 수십 장 붙어 있다. 전부 「주인 미확인」.') }),
+      O('crate', 11, 7, { act: async () => nar('젖은 우산들이 꽂혀 있다. 바닥에 물이 고여 있지 않은데도, 우산 끝에서 물이 떨어진다.') }),
+      O('shutter', 6, 9, { act: async () => nar('셔터가 내려져 있다. 녹이 슬어 꿈쩍도 않는다.') })
+    ] },
+  m11: { name: '한결물산 7F — 엘리베이터 홀', t: rows(15, 11, [[14, 5]]), floor: 'tile2', face: '#2a3633', top: '#0c1211', dark: .5,
+    lamps: [[4, 3], [10, 3], [7, 7]], amb: { hum: .02, fan: .03, shots: ['creak', 'door', 'ding', 'steps'] },
+    doors: [{ x: 14, y: 5, to: 'm12', tx: 11, ty: 15, dir: 'up' }],
+    objs: () => [
+      O('elevator', 6, 0, { w: 3, wall: true, act: actElevator }),
+      O('clock', 2, 0, { wall: true, act: async () => S.f.solved ? nar('시계가 째깍이며 움직이고 있다.') : hy('11시 59분. 초침이 움직이질 않아.') }),
+      O('board', 11, 0, { wall: true, act: async () => nar('「한결물산 7F」\n영업2팀 · 회의실 · 탕비실 · 부장실') }),
+      O('plant', 1, 9, { act: async () => { if (!has('note', 'A')) { await nar('시든 화분. 화분 아래에 종이가 깔려 있다.'); await getNote('A'); } else await nar('시든 화분. 흙이 바싹 말라 있다.'); } }),
+      O('plant', 13, 1, { act: async () => nar('조화다. 잎에 먼지가 하얗게 앉아 있다.') }),
+      O('bench', 2, 4, { w: 2, act: async () => nar('대기용 의자. 누군가 앉았던 자국처럼 가운데가 움푹 꺼져 있다.') }),
+      O('doyun', 7, 1, { when: () => S.f.solved && !S.f.clear, act: async () => {} })
+    ] },
+  m12: { name: '7F — 영업2팀', t: (() => { const r = rows(23, 17, [[18, 0], [11, 16], [0, 6], [22, 6]]); return r; })(), floor: 'carpet', face: '#29342f', top: '#0c1110', dark: .55,
+    lamps: [[5, 2], [13, 2], [19, 3], [5, 10], [13, 10], [19, 11]], amb: { hum: .018, fan: .04, fanCut: 500, typing: .032, shots: ['chairRoll', 'click', 'phone', 'sigh'] },
+    doors: [{ x: 11, y: 16, to: 'm11', tx: 13, ty: 5, dir: 'left' }, { x: 0, y: 6, to: 'm14', tx: 9, ty: 4, dir: 'left' }, { x: 22, y: 6, to: 'm13', tx: 1, ty: 5, dir: 'right' }, { x: 18, y: 0, to: 'm15', tx: 6, ty: 9, dir: 'up' }],
+    objs: () => {
+      const L = [];
+      for (const dy of [3, 8, 12]) for (const dx of [3, 7, 11, 15]) {
+        const doyun = dx === 3 && dy === 3;
+        L.push(O('desk', dx, dy, { w: 2, doyun, act: doyun ? actDoyunDesk : actDesk }));
+        L.push(O('chair', dx, dy + 1, { solid: false, deco: true }));
+      }
+      for (const [x, y] of [[7, 4], [11, 4], [15, 4], [3, 9], [11, 9], [15, 9], [7, 13], [15, 13]]) L.push(O('coworker', x, y, { act: actCoworker }));
+      L.push(O('window', 2, 0, { w: 5, wall: true, act: actWindow }));
+      L.push(O('clock', 11, 0, { wall: true, act: async () => S.f.solved ? nar('시계가 움직이고 있다.') : hy('11시 59분. 이 시계도.') }));
+      L.push(O('copier', 20, 14, { act: actCopier }));
+      L.push(O('plant', 21, 1, { act: async () => nar('화분의 흙이 젖어 있다. 아무도 물을 준 것 같지 않은데.') }));
+      L.push(O('cabinet', 1, 14, { w: 1, h: 2, act: async () => nar('캐비닛. 서랍마다 같은 서류철. 「주간 업무 보고 — 강도윤」') }));
+      L.push(O('lockdoor', 18, 0, { wall: true, when: () => !S.f.bossOpen, act: actBossDoor }));
+      return L;
+    } },
+  m13: { name: '7F — 회의실', t: rows(15, 11, [[0, 5]]), floor: 'carpet', face: '#29342f', top: '#0c1110', dark: .62,
+    lamps: [[3, 2], [11, 2], [7, 8]], amb: { hum: .01, fan: .07, fanCut: 700, shots: ['creak', 'murmur'] },
+    doors: [{ x: 0, y: 5, to: 'm12', tx: 21, ty: 6, dir: 'left' }],
+    objs: () => {
+      const L = [O('table', 3, 4, { w: 6, h: 3, act: async () => nar('긴 회의 테이블. 자리마다 같은 보고서가 놓여 있다.\n「4분기 실적 보고 — 강도윤」') }),
+        O('projector', 10, 5, { act: actProjector }),
+        O('screen', 4, 0, { w: 4, wall: true, act: async () => S.f.hour ? nar('무대 위의 여자아이. 객석 맨 앞줄, 한 자리만 비어 있다.') : nar('하얀 스크린. 먼지가 내려앉아 있다.') }),
+        O('clock', 12, 0, { wall: true, act: async () => S.f.solved ? nar('시계가 움직이고 있다.') : hy('11시 59분. …이 층의 시계는 전부 같은 시각에 멈춰 있어.') })];
+      for (const [x, y] of [[4, 3], [6, 3], [8, 3], [4, 7], [6, 7], [8, 7]]) L.push(O('mchair', x, y, { act: (x === 8 && y === 7) ? actChairNote : async () => nar('의자가 스크린 반대쪽을 향해 있다. …전부 다.') }));
+      return L;
+    } },
+  m14: { name: '7F — 탕비실', t: rows(11, 9, [[10, 4]]), floor: 'tile', face: '#2f3b37', top: '#0c1211', dark: .55,
+    lamps: [[5, 4]], amb: { hum: .015, fridge: .03, shots: ['beep', 'clink', 'drip'] },
+    doors: [{ x: 10, y: 4, to: 'm12', tx: 1, ty: 6, dir: 'right' }],
+    objs: () => [
+      O('coffee', 2, 1, { act: actCoffee }), O('fridge', 5, 1, { act: actFridge }),
+      O('water', 8, 1, { act: async () => { SFX.drip(0); await nar('정수기. 물을 받으려 하자 꾸르륵, 하고 기포가 올라온다.'); await hy('…마시지 않는 게 좋겠어.'); } }),
+      O('sink', 2, 7, { w: 2, act: actSink }),
+      O('stool', 6, 5, { act: async () => nar('간이 의자. 앉는 사람이 없었는지 비닐도 안 벗겨져 있다.') })
+    ] },
+  m15: { name: '7F — 부장실', t: rows(13, 11, [[6, 10]]), floor: 'wood', face: '#2b2824', top: '#0d0c0b', dark: .66,
+    lamps: [[6, 5]], amb: { hum: .004, fan: .03, fanCut: 250, shots: ['creak', 'blind', 'cough'] },
+    doors: [{ x: 6, y: 10, to: 'm12', tx: 18, ty: 1, dir: 'down' }],
+    objs: () => [
+      O('bdesk', 5, 3, { w: 3, act: async () => nar('결재 서류가 쌓여 있다. 맨 위: 「분기 보고서 — 금일 중」.\n결재란에 붉은 도장. 반려.') }),
+      O('bchair', 6, 2, { act: actBossChair }),
+      O('master', 10, 0, { wall: true, act: actMaster }),
+      O('blinds', 2, 0, { w: 2, wall: true, act: actBlinds }),
+      O('bookshelf', 11, 3, { h: 3, act: async () => nar('두꺼운 서류철들. 등마다 같은 이름이 적혀 있다. 「강도윤」「강도윤」「강도윤」') }),
+      O('sofa', 1, 6, { h: 2, act: async () => nar('가죽 소파. 차갑다.') })
+    ] }
+};
+for (const id in MAPS) { const m = MAPS[id]; m.id = id; m.Wd = m.t[0].length; m.Ht = m.t.length; m.doors = m.doors || []; }
+let M = MAPS.hub;
+
+function tileAt(x, y) { if (x < 0 || y < 0 || x >= M.Wd || y >= M.Ht) return '#'; return M.t[y][x]; }
+const isWall = (x, y) => tileAt(x, y) === '#';
+const active = o => !o.when || o.when();
+const covers = (o, x, y) => x >= o.x && x < o.x + o.w && y >= o.y && y < o.y + o.h;
+function objAt(x, y) { return M.objects.find(o => active(o) && !o.deco && o.alpha !== 0 && covers(o, x, y)); }
+function blocked(x, y) { if (isWall(x, y)) return true; return M.objects.some(o => active(o) && o.solid && (o.alpha ?? 1) > 0 && covers(o, x, y)); }
+
+function enterMap(id, x, y, dir) {
+  M = MAPS[id]; S.map = id;
+  M.objects = M.objs(); M.objects.forEach(o => { o.alpha = 1; o.stand = false; o.stare = false; o.sitT = 0; });
+  M.lampState = M.lamps.map(([lx_, ly]) => ({ x: lx_, y: ly, on: !(id === 'm12' && S.f.overtime), f: 1 }));
+  P.x = x; P.y = y; P.px = x * TS; P.py = y * TS; P.dir = dir; P.moving = false;
+  G.spill = 0; G.lightsOut = false; G.copier = false; G.elevOpen = 0; G.backT = 0;
+  G.typing = 0;
+  setAmbient(M.amb);
+  const mn = $('mapname'); mn.textContent = M.name; mn.classList.add('on'); clearTimeout(enterMap.t); enterMap.t = setTimeout(() => mn.classList.remove('on'), 2600);
+  save();
+}
+async function goto(id, x, y, dir, opt = {}) {
+  if (!opt.noFade) await fade(1, 260);
+  SFX.door && A.on && !opt.quiet && SFX.door(0);
+  enterMap(id, x, y, dir);
+  await fade(0, 300);
+  if (!opt.skipEnter) await onEnter(id);
+}
+async function onEnter(id) {
+  if (id === 'm11' && !S.f.e101) {
+    S.f.e101 = true; G.flick = .9;
+    await nar('엘리베이터 문이 열린다. 형광등이 두 번 깜빡인다.');
+    await hy('…회사? 여긴 역이 아닌데.');
+    addDiary('d1_1', '오늘 처음 와보는 곳이다. 회사 같은 곳.');
+  }
+  if (id === 'm12' && !S.f.climax) {
+    if (S.f.overtime) {
+      playBgm('overtime'); M.objects.forEach(o => { if (o.kind === 'coworker') o.stand = true; });
+      await nar('키보드 소리. …수십 개의 키보드 소리가 한꺼번에 울린다.');
+      await nar('모두가 일어서 있다.');
+      await hy('부장실로… 돌아가야 해.');
+    } else if (S.f.minute && S.f.hour && !S.f.copierDone) {
+      G.copier = true; G.copierT = .4;
+      await nar('어디선가 기계 소리가 난다. 덜컥, 덜컥.');
+    }
+  }
+  if (id === 'm15' && S.f.overtime) {
+    S.f.overtime = false; stopBgm(2.5); silence(2);
+    await nar('소리가 멎었다. 다시 정적.');
+    await hy('초대장, 메일, 슬라이드… 그 사람이 몇 시에 회사를 나섰어야 했는지 떠올려 보자.');
+  }
+  save();
+}
+
+/* ================= DIALOG ================= */
+const dEl = $('dialog'), dSp = $('speaker'), dTx = $('dtext'), dCh = $('choices'), dMore = $('more');
+const D = { open: false, typing: false, full: '', shown: 0, res: null, choices: null, sel: 0, cancel: -1 };
+function say(text, who, style) {
+  return new Promise(res => {
+    D.open = true; dEl.hidden = false; dSp.hidden = !who; dSp.textContent = who || '';
+    dTx.className = style || (who ? '' : 'narr'); D.full = text; D.shown = 0; D.typing = true; D.choices = null; dCh.innerHTML = ''; dMore.hidden = true; D.res = res; dTx.textContent = '';
+  });
+}
+const nar = t => say(t, null);
+const hy = t => say(t, '하연');
+const sys = t => say(t, '안내', 'sys');
+function closeDlg() { D.open = false; dEl.hidden = true; }
+function advance() {
+  if (!D.open) return;
+  if (D.typing) { D.shown = D.full.length; return; }
+  if (D.choices) { pick(D.sel); return; }
+  closeDlg(); const r = D.res; D.res = null; r && r();
+}
+function choose(opts, prompt, who) {
+  return new Promise(res => {
+    D.open = true; dEl.hidden = false; dSp.hidden = !who; dSp.textContent = who || '';
+    dTx.className = who ? '' : 'narr'; D.full = prompt || ''; D.shown = D.full.length; D.typing = false; dTx.textContent = D.full; dMore.hidden = true;
+    D.choices = opts; D.sel = 0; D.cancel = opts.length - 1; D.res = res;
+    dCh.innerHTML = ''; opts.forEach((o, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'choice' + (i === 0 ? ' sel' : ''); b.textContent = o; b.onclick = e => { e.stopPropagation(); pick(i); }; dCh.appendChild(b); });
+  });
+}
+function pick(i) { const r = D.res; D.res = null; D.choices = null; dCh.innerHTML = ''; closeDlg(); r && r(i); }
+function moveSel(d) { if (!D.choices) return; D.sel = (D.sel + d + D.choices.length) % D.choices.length; [...dCh.children].forEach((b, i) => b.classList.toggle('sel', i === D.sel)); }
+dEl.addEventListener('click', () => { if (!D.choices) advance(); });
+
+/* ================= UI helpers ================= */
+const fader = $('fader');
+function fade(to, ms = 400) { return new Promise(r => { fader.style.transition = `opacity ${ms}ms`; requestAnimationFrame(() => { fader.style.opacity = to; }); setTimeout(r, ms + 40); }); }
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 2200); }
+const mEl = $('modal');
+let MOD = null;
+function openModal(html, setup) {
+  return new Promise(res => {
+    mEl.innerHTML = html; mEl.hidden = false;
+    const done = v => { mEl.hidden = true; mEl.innerHTML = ''; MOD = null; res(v); };
+    MOD = { onKey: () => {} };
+    setup(mEl, done, MOD);
+    const f = mEl.querySelector('[data-focus]') || mEl.querySelector('button'); f && f.focus({ preventScroll: true });
+  });
+}
+const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function paper(title, body, extraHtml = '') {
+  SFX.paper && A.on && SFX.paper();
+  return openModal(`<div class="panel paper" role="dialog" aria-label="${esc(title)}"><h3>${esc(title)}</h3><div class="pbody">${esc(body)}${extraHtml}</div><div class="btnrow"><button class="mbtn" type="button" data-close data-focus>닫기</button></div></div>`, (root, done, m) => {
+    root.querySelector('[data-close]').onclick = () => done();
+    m.onKey = e => { if (['Enter', 'Escape', 'KeyZ', 'KeyX', 'Space'].includes(e.code) || e.key === 'Enter' || e.key === 'Escape') done(); };
+  });
+}
+function has(kind, id) { return kind === 'note' ? S.notes.includes(id) : S.inv.includes(id); }
+function addItem(id) { if (!S.inv.includes(id)) S.inv.push(id); SFX.pickup && A.on && SFX.pickup(); toast(`「${ITEMS[id][0]}」을(를) 얻었다`); }
+function removeItem(id) { S.inv = S.inv.filter(i => i !== id); }
+async function getNote(id) { S.notes.push(id); SFX.paper && A.on && SFX.paper(); toast(`쪽지 ${S.notes.length}/5`); await paper(NOTES[id][0], NOTES[id][1], id === 'E' ? '<span class="scratch">▇▇▇▇▇▇</span>  (긁혀서 지워져 있다)' : ''); }
+function addDiary(id, text, opt = {}) { if (S.diary.some(d => d.id === id)) return; S.diary.push({ id, text, can: !!opt.can, doubt: false, over: false }); toast('일기장에 새 기록'); $('btnDiary').classList.add('pulse'); }
+function sanity(d) { S.v.sanity = Math.max(0, Math.min(10, S.v.sanity + d)); }
+
+function keypad() {
+  return openModal(`<div class="panel keypad" role="dialog" aria-label="비밀번호"><h3>강도윤 — 비밀번호 4자리</h3><div class="disp">${'<span></span>'.repeat(4)}</div><p class="msg">숫자를 누르세요</p><div class="grid">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="kbtn" type="button" data-n="${n}">${n}</button>`).join('')}<button class="kbtn" type="button" data-b>←</button><button class="kbtn" type="button" data-n="0">0</button><button class="kbtn" type="button" data-ok data-focus>확인</button></div><div class="btnrow"><button class="mbtn" type="button" data-x>그만둔다</button></div></div>`, (root, done, m) => {
+    let code = ''; const sp = [...root.querySelectorAll('.disp span')];
+    const draw = () => sp.forEach((s, i) => s.textContent = code[i] ? code[i] : '');
+    const add = n => { if (code.length < 4) { code += n; SFX.key && A.on && SFX.key(); draw(); } };
+    const ok = () => { if (code.length === 4) done(code); };
+    root.querySelectorAll('[data-n]').forEach(b => b.onclick = () => add(b.dataset.n));
+    root.querySelector('[data-b]').onclick = () => { code = code.slice(0, -1); draw(); };
+    root.querySelector('[data-ok]').onclick = ok; root.querySelector('[data-x]').onclick = () => done(null);
+    m.nativeEnter = false;
+    m.onKey = e => { if (/^Digit\d$|^Numpad\d$/.test(e.code)) add(e.code.slice(-1)); else if (e.code === 'Backspace') { code = code.slice(0, -1); draw(); } else if (e.key === 'Enter') ok(); else if (e.key === 'Escape') done(null); };
+  });
+}
+function mailbox() {
+  const mails = [['박 부장', '16:52', '분기 보고서 금일 중', '강 과장, 오늘 안에 올리고 가. 월요일 아침 임원 보고야.'],
+    ['아내', '17:05', '오늘 잊지 않았지?', '막 시작하면 서아 많이 긴장해. 꼭 시작 전에 와줘.'],
+    ['아내', '18:14', '어디야', ''],
+    ['아내', '19:30', '…', '서아가 마지막 인사 할 때까지 객석만 봤어.'],
+    ['(발신자 없음)', '23:59', '(제목 없음)', '지금이라도 가면 늦지 않을까요?']];
+  return openModal(`<div class="panel" role="dialog" aria-label="받은 편지함"><h3>받은 편지함 — 강도윤</h3><div class="mail">${mails.map((m, i) => `<div class="m${i === 4 ? ' ghost' : ''}"><b>${esc(m[0])}</b><time>${m[1]}</time><span><strong>${esc(m[2])}</strong>${m[3] ? '<br>' + esc(m[3]) : ''}</span></div>`).join('')}</div><div class="btnrow"><button class="mbtn" type="button" data-close data-focus>닫기</button></div></div>`, (root, done, m) => {
+    root.querySelector('[data-close]').onclick = () => done(); m.onKey = e => { if (e.key === 'Escape' || e.key === 'Enter' || e.code === 'KeyX' || e.code === 'KeyZ') done(); };
+  });
+}
+const SLIDES = [['회사 정문', '한결물산 → 한결역 도보 5분'], ['한결역 승강장', '2호선 탑승'], ['환승 통로', '녹하역 환승 10분'], ['녹하선 열차 안', '녹하선 3정거장 15분'], ['학교 앞 횡단보도', '서아초등학교 도보 10분'], ['강당 무대', '총 소요시간 40분']];
+function slidesUI() {
+  if (!S.slideOrder) S.slideOrder = [2, 5, 0, 4, 1, 3];
+  return openModal(`<div class="panel" role="dialog" aria-label="슬라이드"><h3>프레젠테이션 — 슬라이드 순서 편집</h3><p class="hint">슬라이드 두 장을 차례로 누르면 자리가 바뀝니다. 가족사진과 보고서가 반쯤 겹쳐 있다. 이건 '퇴근길'일까.</p><div class="slides"></div><div class="btnrow"><button class="mbtn" type="button" data-x>닫기</button><button class="mbtn primary" type="button" data-ok>순서 확정</button></div></div>`, (root, done, m) => {
+    const box = root.querySelector('.slides'); let sel = -1;
+    const draw = () => { box.innerHTML = ''; S.slideOrder.forEach((si, pos) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'slide' + (pos === sel ? ' sel' : ''); b.innerHTML = `<span class="n">${pos + 1}</span><span class="t">${SLIDES[si][0]}</span><span class="d">${SLIDES[si][1]}</span>`; b.onclick = () => { if (sel < 0) sel = pos; else { const o = S.slideOrder; [o[sel], o[pos]] = [o[pos], o[sel]]; sel = -1; SFX.key && A.on && SFX.key(); } draw(); box.children[pos].focus({ preventScroll: true }); }; box.appendChild(b); }); };
+    draw();
+    root.querySelector('[data-x]').onclick = () => done('cancel');
+    root.querySelector('[data-ok]').onclick = () => { if (S.slideOrder.every((v, i) => v === i)) done('ok'); else { S.slideOrder = [3, 0, 5, 2, 4, 1]; done('wrong'); } };
+    m.onKey = e => { if (e.key === 'Escape') done('cancel'); };
+  });
+}
+function clockUI() {
+  return openModal(`<div class="panel" role="dialog" aria-label="마스터 시계"><h3>마스터 시계 — 바늘 맞추기</h3><p class="hint">이 사람이 '그날' 회사를 나섰어야 했던 시각.</p><div class="clockui"><canvas width="340" height="340"></canvas><div class="ctl">
+    <span class="lab">시</span><button class="kbtn" type="button" data-h="-1" aria-label="시 감소">−</button><button class="kbtn" type="button" data-h="1" aria-label="시 증가">+</button>
+    <span class="lab">분</span><button class="kbtn" type="button" data-m="-5" aria-label="분 감소">−</button><button class="kbtn" type="button" data-m="5" aria-label="분 증가">+</button>
+    <span class="lab">오전/오후</span><button class="kbtn" type="button" data-p style="grid-column:span 2">오후</button>
+    <span class="lab">현재</span><span class="val" style="grid-column:span 2"></span></div></div>
+    <div class="btnrow"><button class="mbtn" type="button" data-x>그만둔다</button><button class="mbtn primary" type="button" data-ok data-focus>이 시각으로 맞춘다</button></div></div>`, (root, done, m) => {
+    let h = 11, mi = 55, pm = true;
+    const c = root.querySelector('canvas'), x = c.getContext('2d'); const val = root.querySelector('.val'), pb = root.querySelector('[data-p]');
+    const draw = () => {
+      x.clearRect(0, 0, 340, 340); x.save(); x.translate(170, 170);
+      x.fillStyle = '#1b2422'; x.beginPath(); x.arc(0, 0, 160, 0, 7); x.fill();
+      x.fillStyle = '#c8ccc3'; x.beginPath(); x.arc(0, 0, 146, 0, 7); x.fill();
+      x.fillStyle = '#2a2a26'; x.font = '700 26px "Gowun Batang", serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      for (let i = 1; i <= 12; i++) { const a = i / 12 * Math.PI * 2 - Math.PI / 2; x.fillText(i, Math.cos(a) * 118, Math.sin(a) * 118); }
+      const ha = ((h % 12) + mi / 60) / 12 * Math.PI * 2 - Math.PI / 2, ma = mi / 60 * Math.PI * 2 - Math.PI / 2;
+      x.strokeStyle = '#141412'; x.lineCap = 'round'; x.lineWidth = 9; x.beginPath(); x.moveTo(0, 0); x.lineTo(Math.cos(ha) * 70, Math.sin(ha) * 70); x.stroke();
+      x.lineWidth = 5; x.beginPath(); x.moveTo(0, 0); x.lineTo(Math.cos(ma) * 112, Math.sin(ma) * 112); x.stroke();
+      x.fillStyle = '#141412'; x.beginPath(); x.arc(0, 0, 9, 0, 7); x.fill(); x.restore();
+      val.textContent = `${pm ? '오후' : '오전'} ${h}:${String(mi).padStart(2, '0')}`; pb.textContent = pm ? '오후' : '오전';
+    };
+    draw();
+    root.querySelectorAll('[data-h]').forEach(b => b.onclick = () => { h = ((h - 1 + +b.dataset.h + 12) % 12) + 1; SFX.tick && A.on && SFX.tick(); draw(); });
+    root.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mi = (mi + +b.dataset.m + 60) % 60; SFX.tick && A.on && SFX.tick(); draw(); });
+    pb.onclick = () => { pm = !pm; draw(); };
+    root.querySelector('[data-x]').onclick = () => done(null);
+    root.querySelector('[data-ok]').onclick = () => done({ h: (h % 12) + (pm ? 12 : 0), m: mi });
+    m.onKey = e => { if (e.key === 'Escape') done(null); };
+  });
+}
+function openMenu(tab = 'inv') {
+  if (MOD || G.mode !== 'play') return;
+  if (tab === 'diary') $('btnDiary').classList.remove('pulse');
+  return openModal(`<div class="panel" role="dialog" aria-label="메뉴"><div class="tabs"><button class="tab" type="button" data-t="inv">소지품</button><button class="tab" type="button" data-t="diary">일기장</button><button class="tab" type="button" data-t="notes">쪽지 ${S.notes.length}/5</button></div><div class="body"></div><div class="btnrow"><button class="mbtn" type="button" data-close>닫기</button></div></div>`, (root, done, m) => {
+    const body = root.querySelector('.body'); let cur = tab;
+    const render = () => {
+      root.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.t === cur));
+      if (cur === 'diary') $('btnDiary').classList.remove('pulse');
+      if (cur === 'inv') body.innerHTML = S.inv.length ? `<div class="list">${S.inv.map(i => `<div class="item"><b>${ITEMS[i][0]}</b><p>${esc(ITEMS[i][1])}</p></div>`).join('')}</div>` : '<p class="empty">가진 것이 없다.</p>';
+      else if (cur === 'notes') body.innerHTML = S.notes.length ? `<div class="list">${S.notes.map(n => `<div class="item"><b>${NOTES[n][0]}</b><p>${esc(NOTES[n][1])}${n === 'E' ? '▇▇▇▇▇▇' : ''}</p></div>`).join('')}</div>` : '<p class="empty">아직 모은 쪽지가 없다.</p>';
+      else {
+        body.innerHTML = `<p class="hint">하연이 적은 기록. 직접 본 것과 다른 문장이 있다면 [의심]할 수 있다.</p><div class="list diary">${S.diary.map((d, i) => `<div class="e${d.can ? ' can' : ''}${d.doubt ? ' doubt' : ''}${d.over ? ' over' : ''}"><span class="tx">${esc(d.text)}</span>${d.can && !d.over ? `<button class="db${d.doubt ? ' on' : ''}" type="button" data-i="${i}">${d.doubt ? '의심함' : '의심'}</button>` : ''}</div>`).join('') || '<p class="empty">아직 아무것도 적지 않았다.</p>'}</div>`;
+        body.querySelectorAll('.db').forEach(b => b.onclick = () => { const d = S.diary[+b.dataset.i]; d.doubt = !d.doubt; SFX.paper && A.on && SFX.paper(); render(); save(); });
+      }
+    };
+    root.querySelectorAll('.tab').forEach(t => t.onclick = () => { cur = t.dataset.t; render(); });
+    root.querySelector('[data-close]').onclick = () => done();
+    m.onKey = e => { if (e.key === 'Escape' || e.code === 'KeyX') done(); else if (e.code === 'KeyQ') { cur = 'diary'; render(); } };
+    render();
+  });
+}
+
+/* ================= EVENTS ================= */
+async function actShelf(tx) {
+  const L = {
+    1: '검은 장우산. 꼬리표: 「분실 2009. 주인 미확인」',
+    2: '물에 젖어 부푼 그림책. 꼬리표: 「분실일 2016.11.04」\n…아직은 손댈 수 없을 것 같다. (2장 — 제작 중)',
+    3: '녹슨 열쇠 꾸러미. 역무원 명찰 고리가 달려 있다.\n…아직은 손댈 수 없을 것 같다. (3장 — 제작 중)',
+    4: '짝을 잃은 아이 운동화 한 짝.',
+    8: '한쪽 눈이 없는 곰 인형.',
+    9: '빈 도시락통. 뚜껑 안쪽에 이름 스티커가 반쯤 뜯겨 있다.',
+    10: '천에 덮인 무언가. 꼬리표의 이름이 번져 읽을 수 없다.\n…왠지 들춰 보고 싶지 않다.'
+  };
+  if (tx === 11) { if (S.f.clear) { await nar('노란 단추 하나.'); await hy('…아까는 없었는데.'); } else await nar('먼지만 쌓여 있다.'); return; }
+  await nar(L[tx]);
+}
+async function actCounter(tx) {
+  if (tx !== 6) { await nar('낡은 장부. 「분실물 접수 대장 — 녹하역」\n마지막 접수일이 2016년 11월 4일이다.'); return; }
+  if (S.f.clear) { await nar('꼬리표만 남아 있다. 「반환 완료」'); return; }
+  if (S.f.ch1) return;
+  await nar('카운터 위에 유리가 깨진 은색 손목시계가 놓여 있다.');
+  await nar('뒷면에 각인이 있다. 「아빠, 늦지 마 — 서아」');
+  const c = await choose(['시계를 집어 든다', '그만둔다']);
+  if (c !== 0) return;
+  addItem('watch'); S.f.ch1 = true;
+  await say('주인은 아직 그날에 머물러 있어요. …시간이 멈춘 곳에.', '보관소 직원');
+  SFX.tick(); await wait(500); SFX.tick(); await wait(500);
+  await nar('시계 바늘이 움직이지 않는데도, 째깍이는 소리가 들린다.');
+  await fade(1, 1200); SFX.elevator();
+  await wait(900);
+  await goto('m11', 7, 1, 'down', { noFade: true, quiet: true });
+}
+async function actClerk() {
+  if (!S.f.ch1) return say('시계부터 부탁드려요. 카운터 위에 있어요.', '보관소 직원');
+  if (S.f.ended) { await say('…다음 물건은, 조금 더 기다려 주세요.', '보관소 직원'); return; }
+}
+async function actSpeaker() {
+  await nar('안내 방송 스피커. 지지직…');
+  await nar(S.f.clear ? '「…윤하연 승객님. …승강장에서 …기다리고 있습니다.」' : '「녹하역… 유실물 보관소… 이용 시간은… 막차 이후…」');
+  save(); toast('저장했습니다');
+}
+async function actElevator() {
+  if (S.f.clear) { await nar('층 표시등: B1'); return; }
+  await hy('버튼이 눌러지지 않아. …무언가를 끝내야 나갈 수 있는 걸까.');
+}
+const DESK_LINES = ['모니터에 엑셀 표가 떠 있다. 모든 칸의 값이 23:59다.', '서랍이 잠겨 있다.', '식은 커피가 담긴 종이컵. 컵 안쪽에 커피 자국이 몇 겹이나 나 있다.', '포스트잇. 「금요일까지」「금요일까지」「금요일까지」', '액자가 있어야 할 자리에 네모난 자국만 남아 있다.', '키보드 위에 먼지가 소복이 쌓여 있다. 그런데도 타이핑 소리는 계속된다.'];
+async function actDesk(tx, ty) {
+  if (ty === 8 && (tx === 15 || tx === 16)) {
+    if (!has('note', 'B')) { await nar('서랍이 조금 열려 있다. 안에 출력물이 들어 있다.'); await getNote('B'); return; }
+  }
+  if (S.f.overtime) { await nar('모니터: 「야근 확정」'); return; }
+  await nar(DESK_LINES[Math.floor(hash(tx, ty, 3) * DESK_LINES.length)]);
+}
+async function actDoyunDesk(tx) {
+  if (tx === 3) {
+    if (!S.f.pcOpen) {
+      await nar('모니터에 잠금 화면이 떠 있다.\n「강도윤 — 비밀번호 4자리를 입력하세요」');
+      const code = await keypad();
+      if (code === null) return;
+      if (code === '0412') { SFX.beep(0); S.f.pcOpen = true; await nar('잠금이 풀렸다. 메일함이 열려 있다.'); await mailbox(); }
+      else {
+        SFX.err(); S.v.pcFail++;
+        await nar('화면에 문구가 떠오른다.\n「다시 생각해보게, 강 과장.」');
+        if (S.v.pcFail % 3 === 0) { const c = M.objects.find(o => o.kind === 'coworker' && o.x === 7 && o.y === 4); if (c) { c.stand = true; c.stare = true; } SFX.creak(.5); await nar('…등 뒤에서 의자 끌리는 소리가 났다.'); }
+      }
+    } else await mailbox();
+    return;
+  }
+  if (!S.f.invite) {
+    await nar('명패: 「과장 강도윤」');
+    await nar('모니터 옆에 접힌 종이가 끼워져 있다.');
+    await paper('초대장', '서아초등학교 2학년 1반 학예회\n연극 「시계 토끼」 — 주인공: 강서아\n\n일시: 금요일 오후 6시\n장소: 본관 강당\n\n(삐뚤빼뚤한 글씨로) 아빠 맨 앞에 앉아!');
+    S.f.invite = true;
+    addDiary('d1_2', '학예회는 금요일 6시. 아빠가 오지 않은 아이.');
+    await hy('…금요일 오후 6시.');
+    return;
+  }
+  const c = await choose(['엎어진 액자를 뒤집어 본다', '초대장을 다시 읽는다', '그만둔다'], '책상 위에 엎어진 액자와 초대장이 있다.');
+  if (c === 0) {
+    SFX.glass();
+    await nar('유리가 깨진 가족사진. 남자와 여자, 그리고 종이 왕관을 쓴 여자아이.');
+    await nar('뒷면에 메모가 붙어 있다.');
+    await paper('액자 뒷면', '우리 공주 여덟 번째 생일 ♥\n4월 12일');
+    S.f.frame = true;
+  } else if (c === 1) await paper('초대장', '서아초등학교 2학년 1반 학예회\n연극 「시계 토끼」 — 주인공: 강서아\n\n일시: 금요일 오후 6시\n장소: 본관 강당\n\n(삐뚤빼뚤한 글씨로) 아빠 맨 앞에 앉아!');
+}
+async function actCoworker() {
+  const o = this;
+  if (o.stand) { await nar('얼굴이 없다. 그것은 아무 말 없이 하연 쪽을 보고 있다.'); return; }
+  G.cwTalk = (G.cwTalk || 0) + 1;
+  await nar(G.cwTalk % 2 ? '얼굴이 없다. 손가락만 쉬지 않고 움직인다.' : '어깨를 두드려 보았다. …차갑다. 아무 반응이 없다.');
+}
+async function actWindow() {
+  if (S.f.window) { await nar('창밖으로 비어 있는 승강장이 보인다.'); return; }
+  S.f.window = true;
+  await nar('창밖 풍경이… 도시가 아니다.');
+  await fade(1, 500); G.scene = sceneWindow; G.child = 1; await fade(0, 600);
+  SFX.trainArrive(); await wait(2600); silence(2.2); await wait(1400);
+  await hy('창밖이… 승강장?');
+  await nar('승강장 끝에, 노란 우비를 입은 작은 아이가 서 있다.');
+  G.child = 2; SFX.sting();
+  await nar('아이가 천천히 고개를 든다.');
+  G.child = 3; SFX.thud(); await wait(1000);
+  G.child = 0; await wait(900);
+  await hy('……하준?');
+  await fade(1, 500); G.scene = null; await fade(0, 500);
+  addDiary('d1_3', '창밖 승강장에 아무도 없었다. 피곤해서 잘못 본 것 같다.', { can: true });
+  await nar('하연은 습관처럼 일기장을 꺼내 적었다.');
+  await sys('기억과 다른 문장이 있다면 일기장에서 [의심]할 수 있습니다.\n(Q 키 또는 화면 위 「일기장」 버튼)');
+}
+async function actCopier() {
+  if (!(S.f.minute && S.f.hour)) { await nar('꺼진 복사기. 용지함이 비어 있다.'); return; }
+  if (S.f.copierDone) { await nar('복사기는 조용하다. 출력된 종이 더미만 남아 있다.'); return; }
+  G.copier = false; SFX.paper();
+  await nar('복사기가 혼자 작동하고 있다. 출력된 종이가 계속 쌓인다.');
+  await paper('출력물', '퇴근하지 마\n퇴근하지 마\n퇴근하지 마\n아빠 언제 와\n퇴근하지 마');
+  await nar('마지막 장 사이에 열쇠가 끼어 있다.');
+  S.f.copierDone = true; addItem('key');
+  await hy('부장실 열쇠…. 이 사람, 계속 붙잡혀 있었구나.');
+  let best = null, bd = 99; M.objects.forEach(o => { if (o.kind === 'coworker') { const d = Math.hypot(o.x - P.x, o.y - P.y); if (d < bd) { bd = d; best = o; } } });
+  if (best) { best.stand = true; G.cwCool = G.time + 6; }
+}
+async function actBossDoor() {
+  if (has('item', 'key')) { SFX.unlock(); await nar('열쇠를 돌렸다. 철컥.'); S.f.bossOpen = true; save(); }
+  else await nar('잠겨 있다. 문패: 「부장실」');
+}
+async function actProjector() {
+  if (S.f.hour) { await nar('프로젝터가 꺼져 있다. 스크린엔 잔상만 남았다.'); return; }
+  await nar('빔프로젝터를 켰다. 스크린에 슬라이드가 순서 없이 뜬다.');
+  const r = await slidesUI();
+  if (r === 'cancel') { await nar('프로젝터 팬이 웅웅거린다.'); return; }
+  if (r === 'wrong') { SFX.err(); await nar('슬라이드가 전부 엑셀 표로 바뀐다.\n「REVISION REQUIRED」'); await nar('순서가 다시 뒤섞였다.'); return; }
+  await fade(1, 500); G.scene = sceneStage; await fade(0, 700);
+  await nar('스크린 전체에 무대 사진이 떠오른다.');
+  await nar('토끼 귀를 단 여자아이. 객석 맨 앞줄, 한 자리만 비어 있다.');
+  await fade(1, 500); G.scene = null; await fade(0, 400);
+  await nar('프로젝터 렌즈 덮개 안쪽에서 무언가 떨어졌다.');
+  S.f.hour = true; addItem('hour');
+  await nar('시계의 「시침」을 얻었다.');
+}
+async function actChairNote() {
+  if (!has('note', 'C')) { await nar('의자 밑에 종이 한 장이 붙어 있다.'); await getNote('C'); }
+  else await nar('의자가 스크린 반대쪽을 향해 있다.');
+}
+async function actCoffee() {
+  if (S.f.minute) { await nar('커피머신 화면이 꺼져 있다.'); return; }
+  const c = await choose(['아메리카노', '믹스커피', '코코아', '그만둔다'], '커피머신 화면이 켜져 있다. 「메뉴를 선택하세요」');
+  if (c === 3) return;
+  SFX.beep(0);
+  if (c === 2) {
+    await wait(300); SFX.pour();
+    await nar('따뜻한 코코아가 컵에 채워진다. 단내가 난다.');
+    await nar('컵 바닥에 무언가 가라앉아 있다.');
+    S.f.minute = true; addItem('minute');
+    await nar('시계의 「분침」을 얻었다.');
+  } else {
+    SFX.pour(); G.spill = 0.01;
+    await nar('커피가 멈추지 않는다. 컵을 넘쳐 바닥이 검게 물들어 간다.');
+    await hy('…쓴 냄새.'); sanity(-1);
+  }
+}
+async function actFridge() {
+  if (!S.f.fridge) {
+    S.f.fridge = true; await nar('냉장고 문에 크레파스 그림이 붙어 있다.');
+    await paper('냉장고의 그림', '(아빠와 여자아이가 각자 컵을 들고 웃고 있다)\n\n여자아이의 컵: 「코코아」\n아빠의 컵: 「아빠는 맨날 쓴 거」');
+  } else {
+    const c = await choose(['그림을 다시 본다', '냉장고를 연다', '그만둔다'], '크레파스 그림이 붙은 냉장고.');
+    if (c === 0) await paper('냉장고의 그림', '(아빠와 여자아이가 각자 컵을 들고 웃고 있다)\n\n여자아이의 컵: 「코코아」\n아빠의 컵: 「아빠는 맨날 쓴 거」');
+    else if (c === 1) await nar('텅 비어 있다. 차가운 공기만 흘러나온다.');
+  }
+}
+async function actSink(tx) {
+  if (tx === 3 && !has('note', 'D')) { SFX.clink(0); await nar('머그컵 하나 안에 쪽지가 말려 들어가 있다.'); await getNote('D'); return; }
+  SFX.drip(0); await nar('싱크대에 머그컵이 잔뜩 쌓여 있다. 전부 씻지 않은 채.');
+}
+async function actBossChair() {
+  if (S.f.chair) { await nar('빈 의자다.'); return; }
+  S.f.chair = true;
+  await nar('등을 돌린 가죽 의자.');
+  await say('강 과장, 가족은 이해해줄 거야. 회사는 아니지.', '???');
+  SFX.creak(0); S.f.chairTurned = true;
+  await nar('의자가 천천히 돈다. …비어 있다.');
+}
+async function actBlinds(tx) {
+  if (tx === 2 && !has('note', 'E')) { SFX.blind(0); await nar('블라인드 사이에 종이가 끼워져 있다.'); await getNote('E'); return; }
+  SFX.blind(0); await nar('블라인드 틈으로 보이는 건 바깥이 아니라 검은 벽이다.');
+}
+async function actMaster() {
+  if (!S.f.handsIn) {
+    const n = (S.f.minute ? 1 : 0) + (S.f.hour ? 1 : 0);
+    if (n < 2) { await nar('커다란 벽시계. 바늘이 하나도 없다.'); if (n === 1) await hy('바늘이 하나 더 필요해.'); return; }
+    S.f.handsIn = true; removeItem('minute'); removeItem('hour'); SFX.unlock();
+    await nar('시침과 분침을 끼웠다.');
+  }
+  await nar('바늘을 돌릴 수 있다. 몇 시에 맞출까.');
+  const r = await clockUI(); if (!r) return;
+  const t = r.h * 60 + r.m;
+  if (t === 17 * 60 + 20) return climax();
+  if (t >= 17 * 60 && t < 17 * 60 + 20) { await say('…너무 이른 건 아닐까. 아직 할 일이 남았는데.', '???'); await nar('바늘이 저절로 11시 59분으로 돌아갔다.'); return; }
+  await overtime();
+}
+async function overtime() {
+  S.f.overtime = true; S.v.overtime++; sanity(-2);
+  SFX.sw(); G.lightsOut = true; SFX.thud();
+  await nar('딸깍. 모든 불이 꺼졌다.');
+  await nar('마스터 시계가 다시 11시 59분을 가리킨다.');
+  await goto('m12', 18, 1, 'down');
+}
+async function climax() {
+  S.f.solved = true; S.f.climax = true;
+  for (let i = 0; i < 4; i++) { SFX.tick(); await wait(140); }
+  playBgm('climax');
+  await nar('바늘이 오후 5시 20분을 가리키는 순간—');
+  await nar('모든 벽시계가 동시에 째깍이기 시작한다.');
+  await goto('m12', 18, 1, 'down');
+  G.typing = 0;
+  await wait(600);
+  for (const l of M.lampState) { l.on = false; SFX.sw(); await wait(450); }
+  const cws = M.objects.filter(o => o.kind === 'coworker');
+  for (let i = 0; i < cws.length - 1; i++) { const c = cws[i]; for (let k = 0; k < 10; k++) { c.alpha = Math.max(0.001, 1 - (k + 1) / 10); await wait(35); } c.alpha = 0; await wait(260); }
+  const lastC = cws[cws.length - 1]; lastC.stand = true; await wait(700); lastC.bow = true; SFX.creak(0); await wait(1100);
+  for (let k = 0; k < 14; k++) { lastC.alpha = Math.max(0.001, 1 - (k + 1) / 14); await wait(50); } lastC.alpha = 0;
+  await nar('그림자들이 하나씩 사라졌다. 마지막 하나는, 사라지기 전에 고개를 숙였다.');
+  await goto('m11', 7, 5, 'up', { skipEnter: true });
+  await wait(400);
+  await walk('up', 3);
+  await say('…몇 시예요, 지금.', '도윤');
+  await hy('다섯 시 이십 분이요.');
+  await say('그럼… 아직 늦지 않았네요.', '도윤');
+  stopBgm(2); await wait(500); playBgm('musicbox');
+  await nar('하연이 손목시계를 건넨다. 도윤이 깨진 유리를 손끝으로 쓸어 본다.');
+  removeItem('watch');
+  await say('이거, 딸이 준 거예요. 늦지 말라고.', '도윤');
+  await say('그날 승강장에 떨어뜨렸는데… 줍지 않았어요.\n주우면, 내가 늦었다는 걸 인정하는 것 같아서.', '도윤');
+  await say('학생도 뭔가 두고 왔죠? 이 역에.', '도윤');
+  await hy('……');
+  await say('너무 오래 두면, 주우러 가는 게 더 무서워져요.', '도윤');
+  SFX.elevator(); G.elevOpen = 1; await wait(700);
+  const dy = M.objects.find(o => o.kind === 'doyun');
+  await say('고마워요. 이번엔, 맨 앞자리에 앉을게요.', '도윤');
+  for (let k = 0; k < 16; k++) { dy.alpha = Math.max(0.001, 1 - (k + 1) / 16); await wait(60); }
+  dy.alpha = 0; G.elevOpen = 0; G.elevFloor = 'B1'; await wait(500);
+  await nar('엘리베이터 층 표시등이 「7」에서 「B1」로 바뀐다.');
+  S.f.clear = true;
+  addDiary('d1_4', '그 사람은 시계를 받고 웃었다. 나는 아무것도 두고 오지 않았다.');
+  await fade(1, 1600); stopBgm(3); await wait(800);
+  S.f.climax = false;
+  await goto('hub', 6, 5, 'up', { noFade: true, skipEnter: true, quiet: true });
+  await say('돌려주셨군요. 주인이 기뻐했겠어요.', '보관소 직원');
+  const c = await choose(['봤어요', '아무것도'], '…창밖에서 뭔가 보셨나요?', '보관소 직원');
+  if (c === 0) { S.f.toldTruth = true; await say('그렇군요. 그 아이도 꽤 오래 기다렸으니까요.', '보관소 직원'); }
+  else { sanity(-1); await say('…그런가요.', '보관소 직원'); }
+  if (S.notes.length === 5) {
+    await say('…그 신고서, 보셨군요. 서명이 지워져 있었죠?', '보관소 직원');
+    await say('저도요. 제 이름이 기억나지 않아요. 아주 오래전부터.', '보관소 직원');
+  }
+  const d = S.diary.find(e => e.id === 'd1_3');
+  if (d && d.doubt) { S.f.doubt13 = true; await nar('일기장을 펼쳤다. 의심 표시를 한 문장 옆에, 누군가 작게 적어 두었다.\n「노란 우비」'); }
+  else if (d) { d.over = true; sanity(-1); SFX.sting(); await nar('일기장을 펼쳤다. 한 줄이 굵은 글씨로 덧써져 있다.\n「창밖 승강장에 아무도 없었다.」'); }
+  S.f.ended = true; save();
+  await wait(400);
+  await endScreen();
+}
+function endScreen() {
+  const d = S.diary.find(e => e.id === 'd1_3');
+  return openModal(`<div class="panel end" role="dialog" aria-label="1장 종료"><h3>1장 체험판 종료</h3><h2>깨진 손목시계 — 반환 완료</h2><p class="hint">강도윤은 이번엔 맨 앞자리에 앉겠다고 했다.</p>
+    <div class="stat"><span>모은 쪽지</span><span>${S.notes.length} / 5</span><span>일기장 「창밖 승강장」 문장</span><span>${d && d.doubt ? '의심함' : '받아들임'}</span><span>직원에게 한 대답</span><span>${S.f.toldTruth ? '봤어요' : '아무것도'}</span><span>야근 이벤트</span><span>${S.v.overtime}회</span></div>
+    <p class="hint">이 선택들은 4장과 엔딩에서 다시 돌아옵니다. 2장 「젖은 그림책」은 제작 중입니다.</p>
+    <div class="btnrow"><button class="mbtn" type="button" data-stay>보관소 둘러보기</button><button class="mbtn primary" type="button" data-re data-focus>처음부터 다시</button></div></div>`, (root, done, m) => {
+    root.querySelector('[data-stay]').onclick = () => done();
+    root.querySelector('[data-re]').onclick = () => { done(); setTimeout(newGame, 50); };
+    m.onKey = e => { if (e.key === 'Escape') done(); };
+  });
+}
+
+/* ================= MOVEMENT ================= */
+function startMove(nx, ny) { P.moving = true; P.t = 0; P.fx = P.x; P.fy = P.y; P.tx = nx; P.ty = ny; }
+function tryMove(dir) { P.dir = dir; const [dx, dy] = DIRV[dir]; const nx = P.x + dx, ny = P.y + dy; if (!blocked(nx, ny)) { P.scripted = false; startMove(nx, ny); } }
+function step(dir) { return new Promise(res => { P.dir = dir; const [dx, dy] = DIRV[dir]; const nx = P.x + dx, ny = P.y + dy; if (blocked(nx, ny)) { res(false); return; } P.scripted = true; startMove(nx, ny); P.onDone = res; }); }
+async function walk(dir, n) { for (let i = 0; i < n; i++) await step(dir); }
+const canControl = () => G.mode === 'play' && !G.busy && !D.open && !MOD && !G.scene;
+async function run(fn) { if (G.busy) return; G.busy = true; try { await fn(); } catch (e) { console.error(e); } finally { G.busy = false; } }
+function interact() {
+  const [dx, dy] = DIRV[P.dir]; const fx = P.x + dx, fy = P.y + dy;
+  const o = objAt(fx, fy);
+  if (o && o.act) run(() => o.act.call(o, fx, fy));
+}
+function updatePlayer(dt) {
+  if (P.moving) {
+    P.t += dt / STEP; P.phase = (P.phase + dt / (STEP * 2)) % 1;
+    const k = Math.min(1, P.t);
+    P.px = (P.fx + (P.tx - P.fx) * k) * TS; P.py = (P.fy + (P.ty - P.fy) * k) * TS;
+    if (P.t >= 1) {
+      P.x = P.tx; P.y = P.ty; P.moving = false;
+      const cb = P.onDone; P.onDone = null;
+      if (cb) cb(true);
+      else {
+        const dr = M.doors.find(d => d.x === P.x && d.y === P.y);
+        if (dr) { run(() => goto(dr.to, dr.tx, dr.ty, dr.dir)); return; }
+      }
+    }
+  }
+  if (!P.moving && canControl()) { const d = G.held[G.held.length - 1]; if (d) tryMove(d); else P.phase = 0; }
+}
+function updateCoworkers(dt) {
+  if (M.id !== 'm12') { G.typing = 0; return; }
+  const cws = M.objects.filter(o => o.kind === 'coworker' && o.alpha > 0);
+  if (S.f.climax) { G.typing = 0; return; }
+  if (S.f.overtime) { cws.forEach(c => c.stand = true); G.typing = .11; return; }
+  const near2 = cws.some(c => Math.max(Math.abs(c.x - P.x), Math.abs(c.y - P.y)) <= 2);
+  G.typing = near2 ? 0 : M.amb.typing;
+  if (G.busy || D.open || MOD) return;
+  const [fx, fy] = DIRV[P.dir];
+  for (const c of cws) {
+    if (!c.stand || c.stare) continue;
+    const dx = c.x - P.x, dy = c.y - P.y;
+    if (dx * fx + dy * fy > 0) { c.sitT += dt; if (c.sitT > .35) { c.stand = false; c.sitT = 0; SFX.creak(Math.max(-1, Math.min(1, dx / 6))); } }
+  }
+  let near = null, nd = 1e9; for (const c of cws) { const d = Math.hypot(c.x - P.x, c.y - P.y); if (d < nd) { nd = d; near = c; } }
+  if (near && nd < 7 && !near.stand) {
+    const dx = near.x - P.x, dy = near.y - P.y;
+    if (dx * fx + dy * fy < 0) { G.backT += dt; if (G.backT > 3 && G.time > G.cwCool) { near.stand = true; near.sitT = 0; G.cwCool = G.time + 8; G.backT = 0; } }
+    else G.backT = 0;
+  }
+}
+
+/* ================= RENDER ================= */
+let cam = { x: 0, y: 0 };
+function floorTile(x, y, sx, sy) {
+  const r = hash(x, y);
+  switch (M.floor) {
+    case 'carpet': g.fillStyle = '#17201e'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#131b19'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS); if (r < .3) { g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(sx + r * 60 % 24, sy + r * 90 % 24, 6, 4); } break;
+    case 'tile': g.fillStyle = (x + y) % 2 ? '#202a28' : '#1a2321'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#121a18'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS); break;
+    case 'tile2': g.fillStyle = '#1d2524'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#151c1b'; g.fillRect(sx, sy + 15, TS, 1); g.fillRect(sx + 15, sy, 1, TS); g.fillStyle = 'rgba(255,255,255,.02)'; g.fillRect(sx + 2, sy + 2, 12, 12); break;
+    case 'wood': g.fillStyle = '#231f1b'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#1a1714'; for (let i = 0; i < 4; i++) g.fillRect(sx, sy + i * 8 + 7, TS, 1); g.fillRect(sx + ((x * 13 + y * 7) % 4) * 8, sy, 1, TS); break;
+    default: g.fillStyle = '#1b201f'; g.fillRect(sx, sy, TS, TS); if (r < .25) { g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(sx + 16, sy + 16, 6 + r * 30, 4 + r * 16, 0, 0, 7); g.fill(); } g.fillStyle = '#161b1a'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS);
+  }
+}
+function wallTile(x, y, sx, sy) {
+  const below = !isWall(x, y + 1) && y + 1 < M.Ht;
+  if (below) {
+    g.fillStyle = M.face; g.fillRect(sx, sy, TS, TS);
+    g.fillStyle = M.top; g.fillRect(sx, sy, TS, 6);
+    g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(sx, sy + TS - 4, TS, 4);
+    const r = hash(x, y, 7); if (r < .22) { g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(sx + r * 100 % 24, sy + 9, 5, 14 + r * 20 % 8); }
+  } else { g.fillStyle = M.top; g.fillRect(sx, sy, TS, TS); }
+}
+function drawPerson(sx, sy, o) {
+  const a = o.alpha ?? 1; g.globalAlpha = a;
+  g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(sx + 16, sy + 29, 9, 3, 0, 0, 7); g.fill();
+  g.fillStyle = o.pants || '#121414'; g.fillRect(sx + 11, sy + 20, 4, 9); g.fillRect(sx + 17, sy + 20, 4, 9);
+  g.fillStyle = o.coat; g.fillRect(sx + 9, sy + 8, 14, 14);
+  g.fillStyle = 'rgba(255,255,255,.05)'; g.fillRect(sx + 9, sy + 8, 14, 2);
+  g.fillStyle = o.face || '#000'; g.fillRect(sx + 11, sy - 2, 10, 10);
+  if (o.cap) { g.fillStyle = o.cap; g.fillRect(sx + 10, sy - 5, 12, 5); g.fillRect(sx + 9, sy - 1, 14, 2); }
+  else { g.fillStyle = '#0c0d0e'; g.fillRect(sx + 11, sy - 4, 10, 4); }
+  g.globalAlpha = 1;
+}
+function drawGirl(sx, sy, dir, phase) {
+  const st = phase ? (Math.sin(phase * Math.PI * 2) > 0 ? 1 : -1) : 0; const bob = phase ? Math.abs(Math.sin(phase * Math.PI * 2)) > .5 ? 1 : 0 : 0;
+  g.fillStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.ellipse(sx + 16, sy + 29, 8, 3, 0, 0, 7); g.fill();
+  g.fillStyle = '#d6d1c8'; g.fillRect(sx + 12, sy + 22 + (st > 0 ? -1 : 0), 3, 5); g.fillRect(sx + 17, sy + 22 + (st < 0 ? -1 : 0), 3, 5);
+  g.fillStyle = '#121212'; g.fillRect(sx + 12, sy + 27 + (st > 0 ? -1 : 0), 3, 2); g.fillRect(sx + 17, sy + 27 + (st < 0 ? -1 : 0), 3, 2);
+  g.fillStyle = '#262d3c'; g.fillRect(sx + 10, sy + 17 - bob, 12, 6);
+  g.fillStyle = '#323a4b'; g.fillRect(sx + 10, sy + 10 - bob, 12, 8);
+  if (dir === 'down') { g.fillStyle = '#d8d5cd'; g.fillRect(sx + 14, sy + 10 - bob, 4, 3); g.fillStyle = '#4a3036'; g.fillRect(sx + 15, sy + 12 - bob, 2, 3); }
+  g.fillStyle = '#d4bfa9'; g.fillRect(sx + 11, sy + 1 - bob, 10, 10);
+  g.fillStyle = '#0e0c0f';
+  if (dir === 'up') { g.fillRect(sx + 10, sy - 1 - bob, 12, 14); }
+  else if (dir === 'down') { g.fillRect(sx + 10, sy - 1 - bob, 12, 4); g.fillRect(sx + 10, sy + 1 - bob, 2, 12); g.fillRect(sx + 20, sy + 1 - bob, 2, 12); g.fillStyle = '#1e1a1a'; g.fillRect(sx + 13, sy + 6 - bob, 2, 2); g.fillRect(sx + 17, sy + 6 - bob, 2, 2); }
+  else if (dir === 'left') { g.fillRect(sx + 10, sy - 1 - bob, 12, 4); g.fillRect(sx + 15, sy + 1 - bob, 7, 12); g.fillStyle = '#1e1a1a'; g.fillRect(sx + 12, sy + 6 - bob, 2, 2); }
+  else { g.fillRect(sx + 10, sy - 1 - bob, 12, 4); g.fillRect(sx + 10, sy + 1 - bob, 7, 12); g.fillStyle = '#1e1a1a'; g.fillRect(sx + 18, sy + 6 - bob, 2, 2); }
+}
+function wallClock(cx_, cy_, r, moving, noHands) {
+  g.fillStyle = '#0e1312'; g.beginPath(); g.arc(cx_, cy_, r + 2, 0, 7); g.fill();
+  g.fillStyle = '#9da49d'; g.beginPath(); g.arc(cx_, cy_, r, 0, 7); g.fill();
+  if (noHands && !S.f.handsIn) return;
+  let ha, ma;
+  if (moving || S.f.solved) { const t = G.time; ma = t * 0.6; ha = t * 0.05; } else { ha = (11 + 59 / 60) / 12 * Math.PI * 2; ma = 59 / 60 * Math.PI * 2; }
+  g.strokeStyle = '#151614'; g.lineWidth = 2; g.beginPath(); g.moveTo(cx_, cy_); g.lineTo(cx_ + Math.sin(ha) * r * .5, cy_ - Math.cos(ha) * r * .5); g.stroke();
+  g.lineWidth = 1; g.beginPath(); g.moveTo(cx_, cy_); g.lineTo(cx_ + Math.sin(ma) * r * .8, cy_ - Math.cos(ma) * r * .8); g.stroke();
+}
+function drawObj(o, sx, sy) {
+  const w = o.w * TS;
+  switch (o.kind) {
+    case 'desk': {
+      g.fillStyle = '#1d2523'; g.fillRect(sx, sy - 6, w, 8);
+      g.fillStyle = '#2a3230'; g.fillRect(sx + 1, sy + 2, w - 2, 24); g.fillStyle = '#35403c'; g.fillRect(sx + 1, sy + 2, w - 2, 3);
+      g.fillStyle = '#0a0d0d'; g.fillRect(sx + 20, sy - 4, 24, 16); const lit = S.f.overtime || (o.doyun && S.f.pcOpen);
+      g.fillStyle = lit ? '#5d7d78' : '#16302d'; g.fillRect(sx + 22, sy - 2, 20, 11); g.fillStyle = '#0a0d0d'; g.fillRect(sx + 30, sy + 12, 4, 4);
+      g.fillStyle = '#121615'; g.fillRect(sx + 22, sy + 18, 20, 5);
+      g.fillStyle = '#7f8580'; g.fillRect(sx + 4, sy + 12, 9, 7); g.fillRect(sx + 6, sy + 10, 9, 7);
+      if (o.doyun) { g.fillStyle = '#3a3330'; g.fillRect(sx + 48, sy + 10, 10, 7); g.fillStyle = '#a49b94'; g.fillRect(sx + 50, sy + 18, 9, 5); g.fillStyle = '#5c5550'; g.fillRect(sx + 4, sy + 21, 12, 3); }
+      if (S.f.overtime && Math.hypot(o.x + .5 - P.x, o.y - P.y) < 3) { g.fillStyle = '#dfe9e5'; g.font = '700 10px "Nanum Gothic Coding", monospace'; g.textAlign = 'left'; g.fillText('야근 확정', sx + 10, sy - 10); }
+      break;
+    }
+    case 'chair': g.fillStyle = '#121817'; g.fillRect(sx + 9, sy + 6, 14, 14); g.fillRect(sx + 8, sy + 18, 16, 5); break;
+    case 'coworker': {
+      if (o.alpha <= 0) break;
+      g.globalAlpha = o.alpha; const flick = (Math.random() < .03) ? 1 : 0;
+      g.fillStyle = '#121817'; g.fillRect(sx + 8, sy + 18, 16, 5);
+      g.fillStyle = 'rgba(1,2,2,.96)';
+      if (o.stand) {
+        const bow = o.bow ? 6 : 0;
+        g.fillRect(sx + 9, sy - 20 + bow, 14, 44 - bow); g.fillRect(sx + 7, sy - 16 + bow, 18, 14);
+        g.beginPath(); g.arc(sx + 16 + flick, sy - 26 + bow * 1.6, 7, 0, 7); g.fill();
+      } else {
+        g.fillRect(sx + 7, sy + 2, 18, 14); g.fillRect(sx + 9, sy + 14, 14, 6);
+        g.beginPath(); g.arc(sx + 16 + flick, sy - 1, 6.5, 0, 7); g.fill();
+        g.fillRect(sx + 6, sy - 2, 4, 6); g.fillRect(sx + 22, sy - 2, 4, 6);
+      }
+      g.globalAlpha = 1; break;
+    }
+    case 'window': {
+      g.fillStyle = '#334140'; g.fillRect(sx + 2, sy + 4, w - 4, 24);
+      g.fillStyle = '#071012'; g.fillRect(sx + 4, sy + 6, w - 8, 20);
+      g.fillStyle = 'rgba(120,150,150,.12)'; for (let i = 0; i < 9; i++) { const xx = sx + 6 + ((i * 37 + Math.floor(G.time * 40)) % (w - 12)); g.fillRect(xx, sy + 6 + (i * 7 % 12), 1, 6); }
+      g.fillStyle = '#334140'; for (let i = 1; i < o.w; i++) g.fillRect(sx + i * TS - 1, sy + 4, 2, 24);
+      break;
+    }
+    case 'clock': wallClock(sx + 16, sy + 15, 8, false); break;
+    case 'master': g.fillStyle = '#211b16'; g.fillRect(sx + 1, sy + 1, 30, 30); wallClock(sx + 16, sy + 16, 12, false, true); break;
+    case 'board': g.fillStyle = '#1b2724'; g.fillRect(sx + 3, sy + 6, 26, 20); g.fillStyle = '#6f807a'; for (let i = 0; i < 4; i++) g.fillRect(sx + 6, sy + 9 + i * 4, 14 + (i * 5 % 7), 2); break;
+    case 'elevator': {
+      g.fillStyle = '#3c4744'; g.fillRect(sx + 4, sy + 2, w - 8, 30);
+      if (G.elevOpen) { g.fillStyle = '#c9b48a'; g.globalAlpha = .55; g.fillRect(sx + 26, sy + 8, w - 52, 24); g.globalAlpha = 1; g.fillStyle = '#4a5552'; g.fillRect(sx + 10, sy + 8, 16, 24); g.fillRect(sx + w - 26, sy + 8, 16, 24); }
+      else { g.fillStyle = '#4c5754'; g.fillRect(sx + 10, sy + 8, w - 20, 24); g.fillStyle = '#20292a'; g.fillRect(sx + w / 2 - 1, sy + 8, 2, 24); }
+      g.fillStyle = '#060808'; g.fillRect(sx + w / 2 - 10, sy - 2, 20, 9); g.fillStyle = '#c86a5c'; g.font = '700 8px "Nanum Gothic Coding", monospace'; g.textAlign = 'center'; g.fillText((G.elevFloor || S.f.clear) ? 'B1' : '7', sx + w / 2, sy + 5);
+      g.fillStyle = '#7e8885'; g.fillRect(sx + w - 6, sy + 16, 3, 6); break;
+    }
+    case 'plant': g.fillStyle = '#29221d'; g.fillRect(sx + 10, sy + 18, 12, 11); g.fillStyle = '#1f3229'; g.beginPath(); g.arc(sx + 16, sy + 12, 9, 0, 7); g.fill(); g.fillStyle = '#284034'; g.beginPath(); g.arc(sx + 12, sy + 9, 5, 0, 7); g.fill(); break;
+    case 'bench': g.fillStyle = '#2c3431'; g.fillRect(sx + 2, sy + 10, w - 4, 12); g.fillStyle = '#1a201e'; g.fillRect(sx + 4, sy + 22, 4, 6); g.fillRect(sx + w - 8, sy + 22, 4, 6); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(sx + w / 2 - 8, sy + 12, 16, 6); break;
+    case 'copier': g.fillStyle = '#3b4542'; g.fillRect(sx + 2, sy + 2, 28, 28); g.fillStyle = '#55615d'; g.fillRect(sx + 2, sy + 2, 28, 8); g.fillStyle = (G.copier && Math.floor(G.time * 3) % 2) ? '#cfe2dc' : '#1b2321'; g.fillRect(sx + 22, sy + 14, 4, 3); if (S.f.copierDone) { g.fillStyle = '#9b9f99'; g.fillRect(sx - 6, sy + 22, 12, 8); g.fillRect(sx - 3, sy + 20, 12, 8); } break;
+    case 'cabinet': g.fillStyle = '#2f3836'; g.fillRect(sx + 3, sy - 6, 26, o.h * TS + 4); g.fillStyle = '#1c2322'; for (let i = 0; i < 4; i++) g.fillRect(sx + 5, sy - 2 + i * 15, 22, 1); break;
+    case 'lockdoor': g.fillStyle = '#2b2420'; g.fillRect(sx + 3, sy + 2, 26, 30); g.fillStyle = '#8b8f88'; g.fillRect(sx + 23, sy + 17, 3, 3); g.fillStyle = '#9da29b'; g.fillRect(sx + 9, sy + 7, 14, 4); break;
+    case 'table': g.fillStyle = '#26211d'; g.fillRect(sx + 4, sy + 4, w - 8, o.h * TS - 8); g.fillStyle = '#2f2924'; g.fillRect(sx + 4, sy + 4, w - 8, 3); g.fillStyle = '#8c8f89'; for (let i = 0; i < 5; i++) { g.fillRect(sx + 18 + i * 34, sy + 14, 10, 8); g.fillRect(sx + 18 + i * 34, sy + o.h * TS - 24, 10, 8); } break;
+    case 'mchair': g.fillStyle = '#141a19'; g.fillRect(sx + 8, sy + 8, 16, 14); g.fillStyle = '#0f1413'; if (o.y < 5) g.fillRect(sx + 7, sy + 4, 18, 6); else g.fillRect(sx + 7, sy + 20, 18, 6); break;
+    case 'projector': g.fillStyle = '#202624'; g.fillRect(sx + 4, sy + 10, 24, 18); g.fillStyle = '#7b817c'; g.fillRect(sx + 6, sy + 4, 20, 10); g.fillStyle = S.f.hour ? '#1a1f1e' : '#b9d0c8'; g.beginPath(); g.arc(sx + 9, sy + 9, 3, 0, 7); g.fill(); break;
+    case 'screen': g.fillStyle = '#121615'; g.fillRect(sx + 2, sy + 2, w - 4, 4); g.fillStyle = S.f.hour ? '#3b3a37' : '#8d938d'; g.fillRect(sx + 6, sy + 6, w - 12, 22); if (S.f.hour) { g.fillStyle = '#1b1b1a'; g.fillRect(sx + 10, sy + 22, w - 20, 5); g.fillStyle = '#c8c6c0'; g.fillRect(sx + w / 2 - 2, sy + 12, 4, 9); } break;
+    case 'coffee': g.fillStyle = '#212625'; g.fillRect(sx + 4, sy - 6, 24, 34); g.fillStyle = S.f.minute ? '#101413' : '#3d6a62'; g.fillRect(sx + 8, sy - 2, 16, 7); g.fillStyle = '#0b0d0d'; g.fillRect(sx + 11, sy + 12, 10, 10); break;
+    case 'fridge': g.fillStyle = '#525a57'; g.fillRect(sx + 3, sy - 12, 26, 42); g.fillStyle = '#3a413f'; g.fillRect(sx + 3, sy + 4, 26, 1); g.fillRect(sx + 24, sy - 6, 2, 8); g.fillStyle = '#b8b2a4'; g.fillRect(sx + 7, sy + 8, 11, 12); g.fillStyle = '#6c7a8c'; g.fillRect(sx + 9, sy + 11, 3, 6); g.fillStyle = '#8c6c6c'; g.fillRect(sx + 13, sy + 13, 3, 4); break;
+    case 'water': g.fillStyle = '#3e4644'; g.fillRect(sx + 8, sy + 8, 16, 22); g.fillStyle = 'rgba(110,150,160,.55)'; g.fillRect(sx + 9, sy - 6, 14, 15); break;
+    case 'sink': g.fillStyle = '#434b48'; g.fillRect(sx + 1, sy + 2, w - 2, 26); g.fillStyle = '#121716'; g.fillRect(sx + 6, sy + 8, 26, 14); g.fillStyle = '#8a8e88'; for (let i = 0; i < 5; i++) { g.fillRect(sx + 36 + (i % 3) * 7, sy + 8 + Math.floor(i / 3) * 8, 6, 6); } break;
+    case 'stool': g.fillStyle = '#2a302e'; g.fillRect(sx + 10, sy + 10, 12, 12); g.fillStyle = 'rgba(200,210,205,.08)'; g.fillRect(sx + 10, sy + 10, 12, 4); break;
+    case 'bdesk': g.fillStyle = '#2b2019'; g.fillRect(sx + 1, sy + 2, w - 2, 26); g.fillStyle = '#382a21'; g.fillRect(sx + 1, sy + 2, w - 2, 3); g.fillStyle = '#9c9a92'; g.fillRect(sx + 10, sy + 9, 14, 10); g.fillRect(sx + 12, sy + 7, 14, 10); g.fillStyle = '#7a2b2b'; g.fillRect(sx + 18, sy + 10, 4, 4); break;
+    case 'bchair': g.fillStyle = '#18110e'; if (S.f.chairTurned) { g.fillRect(sx + 6, sy + 10, 20, 16); g.fillStyle = '#100b09'; g.fillRect(sx + 7, sy, 18, 12); } else { g.fillRect(sx + 5, sy - 6, 22, 30); g.fillStyle = '#231915'; g.fillRect(sx + 7, sy - 4, 18, 3); } break;
+    case 'blinds': g.fillStyle = '#2a2723'; g.fillRect(sx + 2, sy + 3, w - 4, 26); g.fillStyle = '#5b5750'; for (let i = 0; i < 8; i++) g.fillRect(sx + 4, sy + 5 + i * 3, w - 8, 2); if (!has('note', 'E')) { g.fillStyle = '#c9c3b5'; g.fillRect(sx + 10, sy + 12, 6, 6); } break;
+    case 'bookshelf': g.fillStyle = '#211a16'; g.fillRect(sx + 2, sy - 6, 28, o.h * TS + 4); for (let r = 0; r < 6; r++) for (let i = 0; i < 5; i++) { g.fillStyle = ['#3a3530', '#2f3532', '#433a32', '#35302d'][(r + i) % 4]; g.fillRect(sx + 5 + i * 5, sy - 3 + r * 16, 4, 12); } break;
+    case 'sofa': g.fillStyle = '#1d1613'; g.fillRect(sx + 4, sy + 2, 24, o.h * TS - 4); g.fillStyle = '#271d18'; g.fillRect(sx + 4, sy + 2, 7, o.h * TS - 4); break;
+    case 'shelf': {
+      g.fillStyle = '#26221f'; g.fillRect(sx, sy - 10, w, 40); g.fillStyle = '#171412'; g.fillRect(sx, sy + 4, w, 2); g.fillRect(sx, sy + 18, w, 2);
+      o.items.forEach((it, i) => {
+        const ix = sx + i * TS; const tag = () => { g.fillStyle = '#b9b1a1'; g.fillRect(ix + 22, sy + 8, 6, 4); };
+        if (it === 'umbrella') { g.fillStyle = '#121414'; g.fillRect(ix + 8, sy - 8, 4, 26); }
+        if (it === 'book') { g.fillStyle = '#4a5a62'; g.fillRect(ix + 8, sy - 4, 14, 8); g.fillStyle = '#39474f'; g.fillRect(ix + 8, sy + 2, 14, 2); }
+        if (it === 'key') { g.fillStyle = '#5b4a3b'; g.beginPath(); g.arc(ix + 14, sy - 1, 4, 0, 7); g.fill(); g.fillRect(ix + 14, sy - 2, 9, 2); }
+        if (it === 'shoe') { g.fillStyle = '#6a6e70'; g.fillRect(ix + 8, sy + 9, 13, 7); }
+        if (it === 'bear') { g.fillStyle = '#4a3f36'; g.beginPath(); g.arc(ix + 15, sy - 2, 6, 0, 7); g.fill(); g.fillRect(ix + 10, sy + 2, 10, 4); }
+        if (it === 'lunch') { g.fillStyle = '#556860'; g.fillRect(ix + 8, sy + 9, 14, 8); }
+        if (it === 'cloth') { g.fillStyle = '#4b4741'; g.beginPath(); g.moveTo(ix + 5, sy + 4); g.quadraticCurveTo(ix + 15, sy - 14, ix + 26, sy + 4); g.fill(); }
+        if (it === 'button' && S.f.clear) { g.fillStyle = '#d9b43c'; g.beginPath(); g.arc(ix + 15, sy + 12, 3, 0, 7); g.fill(); }
+        if (it !== 'button') tag();
+      });
+      break;
+    }
+    case 'counter': g.fillStyle = '#2b2622'; g.fillRect(sx, sy + 2, w, 26); g.fillStyle = '#36302b'; g.fillRect(sx, sy + 2, w, 4); g.fillStyle = '#6b655d'; g.fillRect(sx + 8, sy + 10, 18, 12); if (!S.f.ch1) { g.fillStyle = '#b8bcb6'; g.beginPath(); g.arc(sx + 2 * TS + 16, sy + 14, 5, 0, 7); g.fill(); g.fillStyle = '#5b5f5a'; g.fillRect(sx + 2 * TS + 9, sy + 13, 14, 2); } break;
+    case 'clerk': drawPerson(sx, sy, { coat: '#18202b', cap: '#10151d', face: '#000' }); break;
+    case 'doyun': drawPerson(sx, sy, { coat: '#22272a', pants: '#151718', face: '#050505', alpha: o.alpha }); break;
+    case 'speaker': g.fillStyle = '#1b1f1e'; g.fillRect(sx + 8, sy + 6, 16, 12); g.fillStyle = '#3e4644'; for (let i = 0; i < 3; i++) g.fillRect(sx + 10, sy + 8 + i * 3, 12, 1); break;
+    case 'crate': g.fillStyle = '#2c2621'; g.fillRect(sx + 3, sy + 6, 26, 22); g.fillStyle = '#211c18'; g.fillRect(sx + 3, sy + 14, 26, 2); g.fillStyle = '#b9b1a1'; g.fillRect(sx + 6, sy + 9, 5, 3); g.fillRect(sx + 14, sy + 18, 5, 3); break;
+    case 'shutter': g.fillStyle = '#353a38'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#262a29'; for (let i = 0; i < 8; i++) g.fillRect(sx, sy + i * 4, TS, 1); break;
+  }
+}
+function render() {
+  if (G.scene) { G.scene(); drawNoise(); return; }
+  if (!S) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); return; }
+  const mw = M.Wd * TS, mh = M.Ht * TS;
+  cam.x = mw <= W ? -(W - mw) / 2 : Math.max(0, Math.min(mw - W, P.px + 16 - W / 2));
+  cam.y = mh <= H ? -(H - mh) / 2 : Math.max(0, Math.min(mh - H, P.py + 16 - H / 2));
+  cam.x = Math.round(cam.x); cam.y = Math.round(cam.y);
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < M.Ht; y++) for (let x = 0; x < M.Wd; x++) {
+    const sx = x * TS - cam.x, sy = y * TS - cam.y; if (sx < -TS || sy < -TS || sx > W || sy > H) continue;
+    if (isWall(x, y)) wallTile(x, y, sx, sy);
+    else { floorTile(x, y, sx, sy); if (x === 0 || y === 0 || x === M.Wd - 1 || y === M.Ht - 1) { g.fillStyle = '#050707'; g.fillRect(sx + 2, sy + 2, TS - 4, TS - 4); g.fillStyle = 'rgba(160,190,180,.12)'; g.fillRect(sx + 12, sy + 14, 8, 2); } }
+  }
+  if (M.id === 'm14' && G.spill) { G.spill = Math.min(1, G.spill + 1 / 240); g.fillStyle = 'rgba(4,3,2,.85)'; g.beginPath(); g.ellipse(2 * TS + 16 - cam.x, 2 * TS + 10 - cam.y, 10 + 40 * G.spill, 6 + 22 * G.spill, 0, 0, 7); g.fill(); }
+  const list = [];
+  for (const o of M.objects) { if (!active(o)) continue; if (o.wall) drawObj(o, o.x * TS - cam.x, o.y * TS - cam.y); else list.push([o.y + o.h, 0, o]); }
+  list.push([P.py / TS + 1, 1, null]);
+  list.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  for (const [, , o] of list) { if (o) drawObj(o, o.x * TS - cam.x, o.y * TS - cam.y); else drawGirl(Math.round(P.px - cam.x), Math.round(P.py - cam.y), P.dir, P.moving ? P.phase : 0); }
+  drawLight(); drawNoise();
+}
+function drawLight() {
+  let dark = M.dark;
+  if (G.lightsOut || (M.id === 'm12' && (S.f.overtime || S.f.climax))) dark = .9;
+  if (G.flick > 0) dark = Math.min(.95, dark + (Math.floor(G.time * 14) % 2 ? .35 : 0));
+  lx.globalCompositeOperation = 'source-over'; lx.clearRect(0, 0, W, H);
+  lx.fillStyle = `rgba(2,5,5,${dark})`; lx.fillRect(0, 0, W, H);
+  lx.globalCompositeOperation = 'destination-out';
+  const glow = (x, y, r, a) => { const gr = lx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); lx.fillStyle = gr; lx.fillRect(x - r, y - r, r * 2, r * 2); };
+  if (!G.lightsOut) for (const l of M.lampState) { if (!l.on) continue; if (Math.random() < .004) l.f = .25; else l.f += (1 - l.f) * .2; glow(l.x * TS + 16 - cam.x, l.y * TS + 16 - cam.y, 150, .85 * l.f); }
+  glow(P.px + 16 - cam.x, P.py + 12 - cam.y, 90, .65);
+  if (M.id === 'm12' && (S.f.overtime || S.f.pcOpen)) for (const o of M.objects) if (o.kind === 'desk' && (S.f.overtime || o.doyun)) glow(o.x * TS + 32 - cam.x, o.y * TS + 4 - cam.y, 34, .7);
+  if (M.id === 'm11' && G.elevOpen) glow(7 * TS + 16 - cam.x, 1 * TS - cam.y, 110, .9);
+  g.drawImage(light, 0, 0);
+  g.fillStyle = 'rgba(30,70,62,.08)'; g.fillRect(0, 0, W, H);
+  g.drawImage(vig, 0, 0);
+}
+function drawNoise() {
+  if (!S) return; const s = S.v.sanity; if (s > 6) return;
+  const n = (7 - s) * 140; g.fillStyle = 'rgba(200,215,210,.10)';
+  for (let i = 0; i < n; i++) { const e = Math.random(); let x, y; if (e < .5) { x = Math.random() * W; y = Math.random() < .5 ? Math.random() * 40 : H - Math.random() * 40; } else { y = Math.random() * H; x = Math.random() < .5 ? Math.random() * 50 : W - Math.random() * 50; } g.fillRect(x, y, 2, 2); }
+}
+function sceneWindow() {
+  g.fillStyle = '#050808'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#171d1c'; g.fillRect(0, 30, W, 190);
+  g.fillStyle = '#1d2423'; for (let i = 0; i < 12; i++) g.fillRect(i * 42, 30, 1, 190);
+  g.fillStyle = '#c6cdc9'; g.globalAlpha = .55; g.fillRect(40, 38, 120, 4); g.fillRect(320, 38, 120, 4); g.globalAlpha = 1;
+  g.fillStyle = '#1c302b'; g.fillRect(160, 80, 160, 36); g.fillStyle = '#c9d1cd'; g.font = '700 17px "Gowun Batang", serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('녹하   NOKHA', 240, 99); g.textBaseline = 'alphabetic';
+  g.fillStyle = '#222827'; g.fillRect(70, 30, 28, 220); g.fillRect(382, 30, 28, 220);
+  g.fillStyle = '#272d2c'; g.fillRect(0, 220, W, 64); g.fillStyle = '#1f2423'; for (let i = 0; i < 16; i++) g.fillRect(i * 32, 220, 1, 64);
+  g.fillStyle = '#aeb5b1'; g.fillRect(0, 280, W, 4);
+  g.fillStyle = '#020303'; g.fillRect(0, 284, W, 68); g.fillStyle = '#2b2f2e'; g.fillRect(0, 312, W, 3); g.fillRect(0, 334, W, 3);
+  if (G.child === 1 || G.child === 2) {
+    const x = 330, y = 226;
+    g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.ellipse(x, y + 46, 12, 3, 0, 0, 7); g.fill();
+    g.fillStyle = '#1a1a1a'; g.fillRect(x - 7, y + 36, 5, 9); g.fillRect(x + 2, y + 36, 5, 9);
+    g.fillStyle = '#d9b43c'; g.beginPath(); g.moveTo(x - 7, y + 10); g.lineTo(x + 7, y + 10); g.lineTo(x + 11, y + 38); g.lineTo(x - 11, y + 38); g.closePath(); g.fill();
+    g.beginPath(); g.arc(x, y + 6, 8, 0, 7); g.fill();
+    g.fillStyle = '#b8962e'; g.fillRect(x - 1, y + 14, 2, 22);
+    if (G.child === 2) { g.fillStyle = '#050505'; g.beginPath(); g.ellipse(x, y + 7, 5, 6, 0, 0, 7); g.fill(); }
+  }
+  g.fillStyle = 'rgba(12,28,26,.35)'; g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(160,190,185,.10)'; for (let i = 0; i < 40; i++) { const xx = (i * 53 + G.time * 60 * (1 + i % 3)) % W; const yy = (i * 97 + G.time * 120) % H; g.fillRect(xx, yy, 1, 10); }
+  g.fillStyle = '#0c1211'; g.fillRect(0, 0, W, 16); g.fillRect(0, H - 16, W, 16); g.fillRect(0, 0, 16, H); g.fillRect(W - 16, 0, 16, H); g.fillRect(W / 2 - 4, 0, 8, H);
+  if (G.child === 3) { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); }
+  g.drawImage(vig, 0, 0);
+}
+function sceneStage() {
+  g.fillStyle = '#060606'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#2c2a28'; g.fillRect(40, 40, 400, 170);
+  g.fillStyle = '#3c3634'; g.fillRect(40, 30, 70, 190); g.fillRect(370, 30, 70, 190); g.fillRect(40, 26, 400, 22);
+  g.fillStyle = '#332f2c'; for (let i = 0; i < 6; i++) { g.fillRect(48 + i * 11, 48, 3, 170); g.fillRect(378 + i * 11, 48, 3, 170); }
+  const gr = g.createRadialGradient(240, 160, 5, 240, 160, 110); gr.addColorStop(0, 'rgba(230,226,214,.35)'); gr.addColorStop(1, 'rgba(230,226,214,0)'); g.fillStyle = gr; g.fillRect(120, 50, 240, 170);
+  g.fillStyle = '#4a4542'; g.fillRect(40, 205, 400, 12);
+  const x = 240, y = 132;
+  g.fillStyle = '#d7d3cb'; g.fillRect(x - 6, y - 26, 4, 16); g.fillRect(x + 2, y - 26, 4, 16);
+  g.fillStyle = '#c2b3a3'; g.beginPath(); g.arc(x, y - 4, 8, 0, 7); g.fill();
+  g.fillStyle = '#15120f'; g.fillRect(x - 8, y - 12, 16, 6);
+  g.fillStyle = '#8a8c94'; g.beginPath(); g.moveTo(x - 9, y + 4); g.lineTo(x + 9, y + 4); g.lineTo(x + 15, y + 44); g.lineTo(x - 15, y + 44); g.closePath(); g.fill();
+  g.fillStyle = '#d7d3cb'; g.fillRect(x - 7, y + 44, 4, 18); g.fillRect(x + 3, y + 44, 4, 18);
+  for (let i = 0; i < 9; i++) {
+    const sx = 30 + i * 48, sy = 262;
+    g.fillStyle = '#1a1817'; g.fillRect(sx, sy, 40, 70);
+    if (i !== 4) { g.fillStyle = '#050505'; g.beginPath(); g.arc(sx + 20, sy - 2, 13, 0, 7); g.fill(); g.fillRect(sx + 4, sy + 6, 32, 20); }
+    else { const s2 = g.createRadialGradient(sx + 20, sy + 20, 2, sx + 20, sy + 20, 40); s2.addColorStop(0, 'rgba(210,205,190,.18)'); s2.addColorStop(1, 'rgba(210,205,190,0)'); g.fillStyle = s2; g.fillRect(sx - 20, sy - 20, 80, 90); }
+  }
+  g.fillStyle = 'rgba(10,20,18,.25)'; g.fillRect(0, 0, W, H);
+  g.drawImage(vig, 0, 0);
+}
+function sceneBlack() { g.fillStyle = '#000'; g.fillRect(0, 0, W, H); }
+
+/* ================= LOOP ================= */
+let last = performance.now();
+function frame(t) {
+  const dt = Math.min(.05, (t - last) / 1000); last = t; G.time += dt;
+  if (D.open && D.typing) { D.shown += dt * 38; const n = Math.floor(D.shown); dTx.textContent = D.full.slice(0, n); if (n >= D.full.length) { D.typing = false; dTx.textContent = D.full; dMore.hidden = !!D.choices; } }
+  if (G.flick > 0) G.flick -= dt;
+  if (S && G.mode === 'play') { updatePlayer(dt); updateCoworkers(dt); }
+  if (A.on) ambientTick(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+/* ================= INPUT ================= */
+const KDIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right' };
+function holdDir(d, on) { G.held = G.held.filter(x => x !== d); if (on) G.held.push(d); }
+function confirmPress() {
+  if (MOD) { MOD.onKey({ key: 'Enter', code: 'Enter' }); return; }
+  if (D.open) { advance(); return; }
+  if (canControl()) interact();
+}
+function cancelPress() {
+  if (MOD) { MOD.onKey({ key: 'Escape', code: 'Escape' }); return; }
+  if (D.open) { if (D.choices && D.cancel >= 0 && D.choices.length > 1) pick(D.cancel); return; }
+  if (canControl()) openMenu();
+}
+window.addEventListener('keydown', e => {
+  if (G.mode === 'title') return;
+  const dir = KDIR[e.code];
+  if (MOD) {
+    if (MOD.nativeEnter !== false && e.target && e.target.tagName === 'BUTTON' && (e.key === 'Enter' || e.code === 'Space')) return;
+    MOD.onKey(e); if (e.key === 'Escape' || e.key === 'Enter') e.preventDefault(); return;
+  }
+  if (dir) { e.preventDefault(); if (D.open && D.choices) { if (!e.repeat) moveSel(dir === 'up' || dir === 'left' ? -1 : 1); return; } holdDir(dir, true); return; }
+  if (e.repeat) return;
+  if (e.code === 'KeyZ' || e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); confirmPress(); }
+  else if (e.code === 'KeyX' || e.key === 'Escape') { e.preventDefault(); cancelPress(); }
+  else if (e.code === 'KeyQ') { if (canControl()) openMenu('diary'); }
+});
+window.addEventListener('keyup', e => { const d = KDIR[e.code]; if (d) holdDir(d, false); });
+window.addEventListener('blur', () => { G.held = []; });
+document.querySelectorAll('.pb[data-dir]').forEach(b => {
+  const d = b.dataset.dir;
+  const on = e => { e.preventDefault(); if (D.open && D.choices) { moveSel(d === 'up' || d === 'left' ? -1 : 1); return; } holdDir(d, true); b.classList.add('on'); };
+  const off = () => { holdDir(d, false); b.classList.remove('on'); };
+  b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointerleave', off); b.addEventListener('pointercancel', off);
+});
+$('padA').addEventListener('click', () => G.mode === 'play' && confirmPress());
+$('padB').addEventListener('click', () => G.mode === 'play' && cancelPress());
+$('btnDiary').addEventListener('click', () => { if (canControl()) openMenu('diary'); });
+$('btnMenu').addEventListener('click', () => { if (canControl()) openMenu(); });
+cv.addEventListener('click', () => { if (D.open) advance(); });
+
+/* ================= BOOT ================= */
+async function newGame() {
+  clearSave(); S = newState(); G.mode = 'play'; G.scene = null; G.child = 0; G.held = []; G.cwTalk = 0; G.elevFloor = null; $('title').hidden = true; $('hud').hidden = false;
+  fader.style.transition = 'none'; fader.style.opacity = 1;
+  enterMap('hub', 6, 7, 'up'); stopBgm(.5);
+  await run(async () => {
+    await wait(400); SFX.train && A.on && SFX.train(0);
+    await nar('덜컹— 덜컹—');
+    await nar('「…이번 역은 종착역, 녹하역입니다. 이 열차는 더 이상 운행하지 않습니다.」');
+    await nar('눈을 떴을 때, 열차 안에는 나 혼자였다.\n출구는 셔터로 막혀 있었고, 불이 켜진 곳은 단 한 군데뿐이었다.');
+    await fade(0, 1600);
+    await say('찾으러 오셨군요. …아니면, 돌려주러 오셨나요?', '보관소 직원');
+    await hy('…여기가 어디예요?');
+    await say('녹하역 유실물 보관소입니다. 막차는 끊겼어요.', '보관소 직원');
+    await say('이곳에선, 잃어버린 것은 반드시 주인을 기다려요.\n주인에게 돌아가지 못한 물건은… 썩어요. 그리고 주변까지 갉아먹죠.', '보관소 직원');
+    await hy('나가는 길은요?');
+    await say('선반 위 물건들을 주인에게 돌려주시면, 길이 열릴 거예요.', '보관소 직원');
+    await say('오늘은… 카운터 위의 저 시계부터 부탁드려도 될까요?', '보관소 직원');
+    addDiary('d0', '막차에서 잠들었다 깨어났다. 녹하역. …10년 만이다.');
+    await sys('이동: 방향키 / WASD · 조사: Z / Space · 메뉴: X / Esc · 일기장: Q\n휴대폰에서는 화면 아래 버튼을 쓰세요. 스피커를 조사하면 저장됩니다.');
+  });
+}
+async function continueGame() {
+  const s = loadSave(); if (!s) return newGame();
+  S = s; S.v = Object.assign({ sanity: 10, pcFail: 0, overtime: 0 }, S.v); G.mode = 'play'; $('title').hidden = true; $('hud').hidden = false;
+  fader.style.transition = 'none'; fader.style.opacity = 1;
+  enterMap(S.map, S.x, S.y, S.dir);
+  if (S.diary.some(d => d.can && !d.doubt && !d.over)) $('btnDiary').classList.add('pulse');
+  await run(async () => { await fade(0, 800); await onEnter(S.map); });
+}
+$('btnNew').addEventListener('click', () => { audioInit(); newGame(); });
+$('btnCont').addEventListener('click', () => { audioInit(); continueGame(); });
+if (loadSave()) $('btnCont').disabled = false;
+requestAnimationFrame(frame);
+window.__LF = { get S() { return S; }, P, G, D, MAPS, get M() { return M; }, goto, run, advance, pick, confirmPress, get MOD() { return MOD; } };
+})();
+</script>
