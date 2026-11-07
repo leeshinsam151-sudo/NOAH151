@@ -738,7 +738,7 @@ async function actCopier() {
   if (best) { best.stand = true; G.cwCool = G.time + 6; }
 }
 async function actBossDoor() {
-  if (has('item', 'key')) { SFX.unlock(); await nar('열쇠를 돌렸다. 철컥.'); S.f.bossOpen = true; save(); }
+  if (has('item', 'key')) { SFX.unlock(); await nar('열쇠를 돌렸다. 철컥.'); S.f.bossOpen = true; removeItem('key'); save(); }
   else await nar('잠겨 있다. 문패: 「부장실」');
 }
 async function actProjector() {
