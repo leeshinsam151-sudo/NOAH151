@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b14">
+<title>감투와 별방울</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="screen">
+    <canvas id="game" width="320" height="240"></canvas>
+    <div id="tone" class="layer"></div>
+    <div id="fade" class="layer"></div>
+    <div id="flash" class="layer"></div>
+    <div id="banner"></div>
+    <div id="toast"></div>
+    <div id="msg">
+      <div id="msg-name"></div>
+      <canvas id="msg-face" width="48" height="48"></canvas>
+      <div id="msg-text"></div>
+      <div id="msg-next">▼</div>
+    </div>
+    <div id="choice"></div>
+    <div id="minigame" class="layer"></div>
+    <div id="caption" class="layer"></div>
+    <div id="menu" class="layer"></div>
+    <div id="title" class="layer"></div>
+  </div>
+  <div id="touch">
+    <div id="dpad"><span class="u">▲</span><span class="d">▼</span><span class="l">◀</span><span class="r">▶</span></div>
+    <div id="btns">
+      <div class="btn sw" data-act="switch">감투</div>
+      <div class="btn b" data-act="cancel">메뉴</div>
+      <div class="btn a" data-act="ok">확인</div>
+    </div>
+  </div>
+</div>
+
+<!-- 엔진 기반 -->
+<script src="js/core.js"></script>
+<!-- 데이터 (대사·맵·이벤트·음악) -->
+<script src="data/game.js"></script>
+<script src="data/music.js"></script>
+<script src="data/hints.js"></script>
+<script src="data/maps/busstop.js"></script>
+<script src="data/maps/village.js"></script>
+<script src="data/maps/house.js"></script>
+<script src="data/maps/underfloor.js"></script>
+<script src="data/maps/shop.js"></script>
+<script src="data/maps/storage.js"></script>
+<script src="data/maps/forest.js"></script>
+<script src="data/maps/valley.js"></script>
+<script src="data/maps/cave1.js"></script>
+<script src="data/maps/cave2.js"></script>
+<script src="data/maps/school.js"></script>
+<script src="data/maps/classroom.js"></script>
+<script src="data/maps/tower1.js"></script>
+<script src="data/maps/tower2.js"></script>
+<script src="data/maps/towerTop.js"></script>
+<script src="data/maps/storm.js"></script>
+<script src="data/maps/mirrorEntry.js"></script>
+<script src="data/maps/mirror1.js"></script>
+<script src="data/maps/mirror2.js"></script>
+<script src="data/maps/mirror3.js"></script>
+<script src="data/maps/mirrorHall.js"></script>
+<script src="data/maps/island.js"></script>
+<script src="data/chapters/prologue.js"></script>
+<script src="data/chapters/chapter1.js"></script>
+<script src="data/chapters/chapter2.js"></script>
+<script src="data/chapters/chapter3.js"></script>
+<script src="data/chapters/chapter4.js"></script>
+<script src="data/chapters/chapter5.js"></script>
+<script src="data/chapters/chapter6.js"></script>
+<script src="data/chapters/chapter7.js"></script>
+<script src="data/chapters/hidden.js"></script>
+<!-- 엔진 -->
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/tiles.js"></script>
+<script src="js/world.js"></script>
+<script src="js/dialog.js"></script>
+<script src="js/interp.js"></script>
+<script src="js/minigames.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
