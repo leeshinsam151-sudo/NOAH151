@@ -950,7 +950,7 @@ function floorTile(x, y, sx, sy) {
     case 'tile': g.fillStyle = (x + y) % 2 ? '#202a28' : '#1a2321'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#121a18'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS); break;
     case 'tile2': g.fillStyle = '#1d2524'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#151c1b'; g.fillRect(sx, sy + 15, TS, 1); g.fillRect(sx + 15, sy, 1, TS); g.fillStyle = 'rgba(255,255,255,.02)'; g.fillRect(sx + 2, sy + 2, 12, 12); break;
     case 'wood': g.fillStyle = '#231f1b'; g.fillRect(sx, sy, TS, TS); g.fillStyle = '#1a1714'; for (let i = 0; i < 4; i++) g.fillRect(sx, sy + i * 8 + 7, TS, 1); g.fillRect(sx + ((x * 13 + y * 7) % 4) * 8, sy, 1, TS); break;
-    default: g.fillStyle = '#1b201f'; g.fillRect(sx, sy, TS, TS); if (r < .25) { g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(sx + 16, sy + 16, 6 + r * 30, 4 + r * 16, 0, 0, 7); g.fill(); } g.fillStyle = '#161b1a'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS);
+    default: g.fillStyle = '#1b201f'; g.fillRect(sx, sy, TS, TS); if (r < .1) { g.fillStyle = 'rgba(0,0,0,.16)'; g.beginPath(); g.ellipse(sx + 16, sy + 16, 6 + r * 60, 4 + r * 30, 0, 0, 7); g.fill(); } g.fillStyle = '#161b1a'; g.fillRect(sx, sy, TS, 1); g.fillRect(sx, sy, 1, TS);
   }
 }
 function wallTile(x, y, sx, sy) {
