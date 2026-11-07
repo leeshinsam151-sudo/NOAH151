@@ -20,6 +20,33 @@ const KEY = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'Arrow
   await page.reload();
   await sleep(500);
   let shot = 0;
+  // STORY=폴더 : 이야기 핵심 장면(스크립트별 대사 두 곳)에서 게임 화면을 대화창 없이 저장 (스토리북용)
+  if (process.env.STORY) {
+    const fs = require('fs');
+    fs.mkdirSync(process.env.STORY, { recursive: true });
+    const log = [];
+    await page.exposeFunction('__storySnap', async (id, name, text) => {
+      await page.evaluate(() => { for (const s of ['#msg', '#choice', '#toast', '#banner']) document.querySelector(s).style.visibility = 'hidden'; });
+      await page.locator('#screen').screenshot({ path: `${process.env.STORY}/${id}.png` });
+      await page.evaluate(() => { for (const s of ['#msg', '#choice', '#toast', '#banner']) document.querySelector(s).style.visibility = ''; });
+      log.push({ id, name, text });
+      fs.writeFileSync(`${process.env.STORY}/log.json`, JSON.stringify(log, null, 1));
+    });
+    await page.evaluate((list) => {
+      const SAY = /^([^:\n]{1,10}): ([\s\S]*)$/;
+      const want = new Map();
+      for (const sc of list) {
+        const lines = (GameData.scripts[sc] || []).filter((c) => typeof c === 'string');
+        [0.3, 0.7].forEach((f, k) => { const l = lines[Math.floor(lines.length * f)]; if (l && !want.has(l)) want.set(l, sc + '_' + k); });
+      }
+      const orig = G.dialog.say;
+      G.dialog.say = async function (name, text, opt) {
+        const key = name ? name + ': ' + text : text;
+        if (want.has(key)) { const id = want.get(key); want.delete(key); await window.__storySnap(id, name, text); }
+        return orig.call(this, name, text, opt);
+      };
+    }, (process.env.STORY_SCRIPTS || '').split(','));
+  }
   const snap = async (name) => page.screenshot({ path: `/tmp/pt_${String(++shot).padStart(2, '0')}_${name}.png` });
 
   await page.evaluate(() => {
