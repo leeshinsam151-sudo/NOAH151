@@ -26,7 +26,7 @@ elif os.name == "nt":
     references = ["-r:" + n + ".dll" for n in ["System.Windows.Forms", "System.Drawing", "System.Core", "System.Xml"]]
 else:
     raise SystemExit("Install Mono mcs, or build on Windows with .NET Framework 4.x.")
-exe = output / "전주치이카와_2.06.exe"
+exe = output / "전주치이카와_2.06_변주.exe"
 args = compiler + ["-target:winexe", "-optimize+", "-platform:anycpu", "-out:" + str(exe),
                    "-win32icon:" + str(project / "assets/chiikawa.ico")] + references
 for path in sorted((project / "assets").iterdir()):

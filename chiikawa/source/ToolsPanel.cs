@@ -69,6 +69,7 @@ namespace WalkingFriend
             var windows = choice("열린 창 옆을 올라가고 창 위에서 걷기 · 쉬기", o.Windows);
             var idle = choice("혼자 앉아서 쉬기", o.Idle);
             var shortRest = choice("앉아있는 시간 줄이기 (기존 6~11초)", o.ShortRest);
+            var variations = choice("가끔 커지거나 작아지고, 갑자기 다다다 달리기", o.Variations);
             var escape = choice("커서가 가까이 오면 슬라이딩으로 도망가기", o.Escape);
             var follow = choice("커서를 따라오기", o.Follow);
             escape.CheckedChanged += delegate { if (escape.Checked) follow.Checked = false; };
@@ -101,7 +102,7 @@ namespace WalkingFriend
             var save = FriendUI.Button("저장", delegate
             {
                 o.Walls = walls.Checked; o.Ceiling = ceiling.Checked; o.Windows = windows.Checked; o.Idle = idle.Checked;
-                o.ShortRest = shortRest.Checked;
+                o.ShortRest = shortRest.Checked; o.Variations = variations.Checked;
                 o.Escape = escape.Checked; o.Follow = follow.Checked; o.Focus = focus.Checked; o.WorkFocus = work.Checked; o.Fullscreen = full.Checked;
                 o.ShowAffinity = affinity.Checked;
                 o.Speed = (double)speed.Value; o.FallSpeed = (double)fallSpeed.Value; o.SlideSpeed = (double)slideSpeed.Value; o.ClickMode = (ClickReaction)clickMode.SelectedIndex; o.EscapeDelay = (double)escapeDelay.Value;

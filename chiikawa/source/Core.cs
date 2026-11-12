@@ -1166,7 +1166,7 @@ namespace WalkingFriend
 		{
 			get
 			{
-				return (double)Sprites.Walk1.W * 0.36;
+				return (double)Sprites.Walk1.W * 0.36 * sizeMul;
 			}
 		}
 
@@ -1398,6 +1398,7 @@ namespace WalkingFriend
 
 		public void Update(IWorld w, double dt, List<Pet> all, double mouseX)
 		{
+			TickVariations(w, dt);
 			if (AdvanceFeatures(w, dt)) return;
 			StateT += dt;
 			animT += dt;
@@ -1515,7 +1516,7 @@ namespace WalkingFriend
 
 		private void MoveHoriz(IWorld w, double dt, double speed)
 		{
-			speed *= PlayOptions.Current.Speed;
+			speed *= PlayOptions.Current.Speed * WalkBoost;
 			if (WalkOnWindow(w, dt, speed)) return;
 			if (BoundaryFeature(w, X + Dir * speed * dt)) return;
 			double num = X + (double)Dir * speed * dt;
@@ -1682,6 +1683,7 @@ namespace WalkingFriend
 			SmoothPose(ref look2, now);
 			FeatureLook(ref look2, now);
             CompanionLook(ref look2, now);
+            VariationLook(ref look2);
 			return look2;
 		}
 
@@ -2139,6 +2141,7 @@ namespace WalkingFriend
             if (args.Length >= 2 && args[0] == "--export-assets") { StartupArt.Export(args[1]); return; }
             if (args.Length >= 2 && args[0] == "--startup-test") { StartupSmoke.Run(args[1]); Environment.Exit(0); return; }
             if (args.Length >= 2 && args[0] == "--companion-test") { CompanionChecks.Run(args[1]); Environment.Exit(0); return; }
+            if (args.Length >= 2 && args[0] == "--variation-test") { VariationChecks.Run(args[1]); Environment.Exit(0); return; }
             if (args.Length >= 2 && args[0] == "--upgrade-test") { UpgradeChecks.Run(args[1]); Environment.Exit(0); return; }
             if (args.Length >= 2 && args[0] == "--render-test") { RenderTest.Run(args[1]); return; }
             try

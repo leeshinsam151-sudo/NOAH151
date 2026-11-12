@@ -18,7 +18,7 @@ namespace WalkingFriend
         internal double Speed = 1.0;
         internal double FallSpeed = 1.2, SlideSpeed = 1.0;
         internal double EscapeDelay = .12;
-        internal bool HungerCry = true, Secrets = true, ShortRest = false, ShowAffinity = false;
+        internal bool HungerCry = true, Secrets = true, ShortRest = false, ShowAffinity = false, Variations = true;
         internal int HungerMinutes = 60;
         internal ClickReaction ClickMode = ClickReaction.Cycle;
         internal static PlayOptions Current = new PlayOptions();
@@ -57,6 +57,7 @@ namespace WalkingFriend
                         case "HungerCry": Current.HungerCry = b; break;
                         case "Secrets": Current.Secrets = b; break;
                         case "ShortRest": Current.ShortRest = b; break;
+                        case "Variations": Current.Variations = b; break;
                         case "ShowAffinity": showAffinity = b; break;
                         case "AffinityDisplayVersion": int.TryParse(v, out affinityDisplayVersion); break;
                         case "EscapeDelay":
@@ -353,6 +354,7 @@ namespace WalkingFriend
         internal void Demonstrate(IWorld w, string kind)
         {
             mouseGrace = w.Now + 8; hoverSince = -1;
+            if (DemonstrateVariation(w, kind)) return;
             if (kind == "fall")
             {
                 ReleaseFeatures(w); X = Area.Left + Area.Width * .5; Y = Area.Top + FeatureArt.Helicopter[0].H + 5; Vy = 0; SetState(PetState.Falling, w); return;
@@ -679,7 +681,7 @@ namespace WalkingFriend
                 Pet p = pet ?? windows.Select(a => a.Pet).FirstOrDefault(); if (p != null) p.Feed(this);
             }));
             var demo = new ToolStripMenuItem("동작 바로 보기");
-            foreach (var pair in new[] { new[] { "앉아서 쉬기", "sit" }, new[] { "배고플 때 우는 모습", "cry" }, new[] { "폴짝 뛰기", "hop" }, new[] { "슬라이딩", "slide" }, new[] { "어질어질", "dizzy" }, new[] { "헬리콥터 낙하", "fall" }, new[] { "벽 타기", "wall" }, new[] { "천장 타기", "ceiling" }, new[] { "창 타기", "window" } })
+            foreach (var pair in new[] { new[] { "앉아서 쉬기", "sit" }, new[] { "배고플 때 우는 모습", "cry" }, new[] { "폴짝 뛰기", "hop" }, new[] { "슬라이딩", "slide" }, new[] { "어질어질", "dizzy" }, new[] { "헬리콥터 낙하", "fall" }, new[] { "벽 타기", "wall" }, new[] { "천장 타기", "ceiling" }, new[] { "창 타기", "window" }, new[] { "쑥 커지기", "big" }, new[] { "쪼그매지기", "small" }, new[] { "다다다 달리기", "dash" } })
             {
                 string key = pair[1]; demo.DropDownItems.Add(pair[0], null, delegate { Pet p = pet ?? windows.Select(a => a.Pet).FirstOrDefault(); if (p != null) p.Demonstrate(this, key); });
             }
