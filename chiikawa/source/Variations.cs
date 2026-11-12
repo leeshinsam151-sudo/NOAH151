@@ -86,7 +86,7 @@ namespace WalkingFriend
         }
 
         // 걷기 이동 속도에 곱해지는 값
-        private double WalkBoost { get { return State == PetState.Walk ? dashMul : 1; } }
+        private double WalkBoost { get { return (State == PetState.Walk ? dashMul : 1) * (Skin != null ? Skin.WalkMul : 1); } }
 
         private void VariationLook(ref Look look)
         {

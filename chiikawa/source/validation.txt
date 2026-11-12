@@ -2,6 +2,6 @@
 companion: 91 PASS
 regression: 89 PASS
 startup: 6 PASS
-variation: 24 PASS
-Total: 210 PASS
+variation + guests: 47 PASS
+Total: 233 PASS
 Runtime: Mono / X11 virtual display. Native Windows edge-window presentation and click-through need Windows verification. Gradient textures, palettes, lifecycle, UI controls and behavior validated.

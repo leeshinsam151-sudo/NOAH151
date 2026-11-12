@@ -123,6 +123,7 @@ namespace WalkingFriend
 			lastTick = Now;
 			timer.Start();
 			Spawn();
+			RestoreGuests();
 			StartupOption.RebindIfEnabled();
 		}
 
@@ -229,6 +230,7 @@ namespace WalkingFriend
 			catch
 			{
 			}
+			if (w.Pet.Skin != null) SaveGuests();
 			UpdateMenus();
 		}
 
@@ -296,9 +298,12 @@ namespace WalkingFriend
 				Quit();
 			});
 			AddFeatureMenu(menu, null);
+			menu.Items.Insert(1, BuildGuestMenu());
 			menu.Opening += delegate
 			{
 				menu.Items[0].Enabled = windows.Count < 16;
+				menu.Items.RemoveAt(1);
+				menu.Items.Insert(1, BuildGuestMenu());
 			};
 			tray = new NotifyIcon
 			{
@@ -322,6 +327,7 @@ namespace WalkingFriend
 			});
 			toolStripMenuItem.Enabled = windows.Count < 16;
 			menu.Items.Add(toolStripMenuItem);
+			menu.Items.Add(BuildGuestMenu());
 			menu.Items.Add("이 친구 보내기", null, delegate
 			{
 				Remove(w);
@@ -1055,10 +1061,12 @@ namespace WalkingFriend
             public float SecretPhase;
             public string AffinityLabel;
             public bool AffinityOnLeft;
+            public float Beam;
+            public int BeamPhase;
 
 			public string Key()
 			{
-				return string.Format("{0}|{1}|{2:0.00}|{3:0.00}|{4:0}|{5:0}|{6:0}|{7}|{8}", Sprite.GetHashCode(), Left ? 1 : 0, Sx, Sy, Angle, Px, Py, Bubble ?? string.Empty, ZPhase) + "|" + Secret + "|" + (Secret == 0 ? 0 : (int)(SecretPhase * 16)) + "|" + AffinityLabel + "|" + AffinityOnLeft;
+				return string.Format("{0}|{1}|{2:0.00}|{3:0.00}|{4:0}|{5:0}|{6:0}|{7}|{8}", Sprite.GetHashCode(), Left ? 1 : 0, Sx, Sy, Angle, Px, Py, Bubble ?? string.Empty, ZPhase) + "|" + Secret + "|" + (Secret == 0 ? 0 : (int)(SecretPhase * 16)) + "|" + AffinityLabel + "|" + AffinityOnLeft + "|" + (int)Beam + "|" + BeamPhase;
 			}
 		}
 
@@ -1166,7 +1174,7 @@ namespace WalkingFriend
 		{
 			get
 			{
-				return (double)Sprites.Walk1.W * 0.36 * sizeMul;
+				return (double)BodySprite.W * 0.36 * sizeMul;
 			}
 		}
 
@@ -1266,6 +1274,7 @@ namespace WalkingFriend
 
 		public void SetState(PetState s, IWorld w)
 		{
+			s = GuestState(s);
 			State = s;
 			StateT = 0.0;
 			switch (s)
@@ -1399,6 +1408,7 @@ namespace WalkingFriend
 		public void Update(IWorld w, double dt, List<Pet> all, double mouseX)
 		{
 			TickVariations(w, dt);
+			TickGuest(w, dt, all);
 			if (AdvanceFeatures(w, dt)) return;
 			StateT += dt;
 			animT += dt;
@@ -1683,6 +1693,7 @@ namespace WalkingFriend
 			SmoothPose(ref look2, now);
 			FeatureLook(ref look2, now);
             CompanionLook(ref look2, now);
+            GuestLook(ref look2, now);
             VariationLook(ref look2);
 			return look2;
 		}
@@ -1758,6 +1769,7 @@ namespace WalkingFriend
             RectangleF affinityBadge = AffinityBadgeBounds(L, num, num2, scale);
             if (!affinityBadge.IsEmpty)
             { num3 = Math.Min(num3, affinityBadge.Left); num5 = Math.Max(num5, affinityBadge.Right); num4 = Math.Min(num4, affinityBadge.Top); num6 = Math.Max(num6, affinityBadge.Bottom); }
+            BeamBounds(L, matrix, scale, ref num3, ref num4, ref num5, ref num6);
 			int num12 = 3;
 			int val = (int)Math.Ceiling(num5 - num3) + num12 * 2;
 			int val2 = (int)Math.Ceiling(num6 - num4) + num12 * 2;
@@ -1792,6 +1804,7 @@ namespace WalkingFriend
 				graphics2.ResetTransform();
 				graphics2.TranslateTransform(origin.X, origin.Y);
                 DrawSecretArt(graphics2, L, num, num2, scale);
+                DrawBeam(graphics2, L, matrix, scale);
                 DrawAffinityBadge(graphics2, L, affinityBadge, scale);
 				if (L.ZPhase >= 0)
 				{

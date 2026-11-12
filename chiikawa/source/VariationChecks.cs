@@ -129,6 +129,7 @@ namespace WalkingFriend
             { w.Step(p, .02); maxSize = Math.Max(maxSize, Math.Abs(p.SizeMul - 1) + 1); maxDash = Math.Max(maxDash, p.DashMul); if (p.X < 600 || p.X > 5400) p.X = 3000; }
             Check(maxSize == 1 && maxDash == 1, "quiet mode suppresses automatic variations");
 
+            GuestChecks.Run(dir, results, fresh);
             File.WriteAllLines(Path.Combine(dir, "variation-checks.txt"), results);
             Console.WriteLine("All " + results.Count + " variation checks passed.");
         }

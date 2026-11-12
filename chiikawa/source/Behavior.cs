@@ -21,6 +21,7 @@ namespace WalkingFriend
         internal bool HungerCry = true, Secrets = true, ShortRest = false, ShowAffinity = false, Variations = true;
         internal int HungerMinutes = 60;
         internal ClickReaction ClickMode = ClickReaction.Cycle;
+        internal string Guests = "";
         internal static PlayOptions Current = new PlayOptions();
         internal static string Name = "전주치이카와_움직임.ini";
         internal static bool IsFocus(DateTime now)
@@ -58,6 +59,7 @@ namespace WalkingFriend
                         case "Secrets": Current.Secrets = b; break;
                         case "ShortRest": Current.ShortRest = b; break;
                         case "Variations": Current.Variations = b; break;
+                        case "Guests": Current.Guests = v; break;
                         case "ShowAffinity": showAffinity = b; break;
                         case "AffinityDisplayVersion": int.TryParse(v, out affinityDisplayVersion); break;
                         case "EscapeDelay":
@@ -92,6 +94,7 @@ namespace WalkingFriend
             text += "ClickMode=" + ClickMode + "\r\n";
             text += "EscapeDelay=" + EscapeDelay.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + "\r\n";
             text += "HungerMinutes=" + HungerMinutes + "\r\n";
+            text += "Guests=" + (Guests ?? "") + "\r\n";
             text += "AffinityDisplayVersion=206\r\n";
             foreach (string dir in new[] { Settings.ExeDir, Settings.AltDir })
             {
@@ -422,7 +425,7 @@ namespace WalkingFriend
             if (State == PetState.Walk || State == PetState.Pause || State == PetState.Resting)
             {
                 Point mouse = DesktopSurfaces.Mouse;
-                bool near = Math.Abs(mouse.X - X) < Sprites.Walk1.W * .9 && mouse.Y >= Y - Sprites.Walk1.H - 15 * S && mouse.Y <= Y + 8 * S;
+                bool near = Math.Abs(mouse.X - X) < BodySprite.W * .9 && mouse.Y >= Y - BodySprite.H - 15 * S && mouse.Y <= Y + 8 * S;
                 if (near && !hadNearMouse) hoverSince = w.Now;
                 if (!near) hoverSince = -1;
                 hadNearMouse = near;
@@ -443,7 +446,7 @@ namespace WalkingFriend
                     else SetState(PetState.Resting, w);
                     DelayIdle(w);
                 }
-                if (!focus && opts.Windows && State == PetState.Walk && SupportWindow == IntPtr.Zero && w.Now > nextClimb)
+                if (!focus && Skin == null && opts.Windows && State == PetState.Walk && SupportWindow == IntPtr.Zero && w.Now > nextClimb)
                 {
                     nextClimb = w.Now + 35 + w.Rng.NextDouble() * 30;
                     var possible = DesktopSurfaces.Cached.Where(a => a.Bounds.Top >= Area.Top + 70 * S && a.Bounds.Top < Area.Bottom - 70 * S && a.Bounds.IntersectsWith(Area)).ToList();
@@ -532,7 +535,7 @@ namespace WalkingFriend
         }
         internal bool BoundaryFeature(IWorld w, double nextX)
         {
-            if (!PlayOptions.Current.Walls || PlayOptions.IsFocus(DateTime.Now) || State != PetState.Walk || SupportWindow != IntPtr.Zero || approachWindow != IntPtr.Zero) return false;
+            if (Skin != null || !PlayOptions.Current.Walls || PlayOptions.IsFocus(DateTime.Now) || State != PetState.Walk || SupportWindow != IntPtr.Zero || approachWindow != IntPtr.Zero) return false;
             bool hit = Dir > 0 ? nextX + HalfW >= Area.Right : nextX - HalfW <= Area.Left;
             if (!hit) return false;
             double outside = Dir > 0 ? Area.Right + 1 : Area.Left - 1;
