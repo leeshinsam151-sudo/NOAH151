@@ -298,12 +298,14 @@ namespace WalkingFriend
 				Quit();
 			});
 			AddFeatureMenu(menu, null);
-			menu.Items.Insert(1, BuildGuestMenu());
+			int guestMenus = 0;
+			foreach (var g in BuildGuestMenus()) menu.Items.Insert(1 + guestMenus++, g);
 			menu.Opening += delegate
 			{
 				menu.Items[0].Enabled = windows.Count < 16;
-				menu.Items.RemoveAt(1);
-				menu.Items.Insert(1, BuildGuestMenu());
+				for (int i = 0; i < guestMenus; i++) menu.Items.RemoveAt(1);
+				int at = 1;
+				foreach (var g in BuildGuestMenus()) menu.Items.Insert(at++, g);
 			};
 			tray = new NotifyIcon
 			{
@@ -327,7 +329,7 @@ namespace WalkingFriend
 			});
 			toolStripMenuItem.Enabled = windows.Count < 16;
 			menu.Items.Add(toolStripMenuItem);
-			menu.Items.Add(BuildGuestMenu());
+			menu.Items.AddRange(BuildGuestMenus());
 			menu.Items.Add("이 친구 보내기", null, delegate
 			{
 				Remove(w);
@@ -1063,10 +1065,12 @@ namespace WalkingFriend
             public bool AffinityOnLeft;
             public float Beam;
             public int BeamPhase;
+            public int BeamKind;
+            public float BeamOx, BeamOy;
 
 			public string Key()
 			{
-				return string.Format("{0}|{1}|{2:0.00}|{3:0.00}|{4:0}|{5:0}|{6:0}|{7}|{8}", Sprite.GetHashCode(), Left ? 1 : 0, Sx, Sy, Angle, Px, Py, Bubble ?? string.Empty, ZPhase) + "|" + Secret + "|" + (Secret == 0 ? 0 : (int)(SecretPhase * 16)) + "|" + AffinityLabel + "|" + AffinityOnLeft + "|" + (int)Beam + "|" + BeamPhase;
+				return string.Format("{0}|{1}|{2:0.00}|{3:0.00}|{4:0}|{5:0}|{6:0}|{7}|{8}", Sprite.GetHashCode(), Left ? 1 : 0, Sx, Sy, Angle, Px, Py, Bubble ?? string.Empty, ZPhase) + "|" + Secret + "|" + (Secret == 0 ? 0 : (int)(SecretPhase * 16)) + "|" + AffinityLabel + "|" + AffinityOnLeft + "|" + (int)Beam + "|" + BeamPhase + "|" + BeamKind;
 			}
 		}
 

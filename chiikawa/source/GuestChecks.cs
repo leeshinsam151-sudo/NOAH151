@@ -129,9 +129,42 @@ namespace WalkingFriend
             }
             finally { if (backup != null) File.WriteAllText(ini, backup); else File.Delete(ini); }
 
+            // 포켓몬 친구
+            PlayOptions.Current = fresh(); PlayOptions.Current.Variations = false;
+            foreach (var key in new[] { "pikachu", "gengar", "squirtle", "charmander" })
+            {
+                var skin = GuestArt.Get(key);
+                Check(skin.Normal.H > Sprites.Walk1.H * 1.1 && skin.Normal.H < ultra.Normal.H, key + " is a little bigger than the small friend and smaller than ultraman");
+                s = new Stage(13); var att = s.Add(key, 2600, PetState.Pause); var tgt = s.Add(key == "squirtle" ? "charmander" : "squirtle", 3050, PetState.Pause);
+                att.DemoBeam(s, s.Pets);
+                Check(att.Specialing && att.Dir == 1 && att.Bubble == skin.MoveName, key + " calls out " + skin.MoveName + " and faces the target");
+                double hit = key == "gengar" ? 1.35 : 1.05; s.Step(hit - .02);
+                var lk = att.GetLook(s.Now);
+                Check(lk.Beam > 250 && lk.BeamKind == (int)skin.Move.Value, key + " move reaches across to the target");
+                PointF origin2; using (var b = Pet.Render(lk, out origin2)) Check(b.Width > skin.Normal.W + 250, key + " move is drawn beyond the body");
+                Scene(s, Path.Combine(dir, "move-" + key + ".png"));
+                s.Step(.06);
+                Check(tgt.State == PetState.Squish && tgt.Bubble == tgt.Skin.HitWord, key + " move makes the target flinch with its own cry");
+                s.Step(3); Check(!att.Specialing, key + " goes back to normal after the move");
+            }
+            s = new Stage(21); var gengar = s.Add("gengar", 3000, PetState.Walk);
+            Check(gengar.GetLook(s.Now).HopY < -6, "gengar floats above the floor");
+            s = new Stage(31); var pika = s.Add("pikachu", 3000, PetState.Walk); friend = s.Add(null, 3300, PetState.Walk);
+            bool friendHit = false, pikaUsed = false;
+            s.Step(150, delegate { if (pika.Specialing) pikaUsed = true; if (friend.Bubble == "으앗!") friendHit = true; foreach (var q in s.Pets) if (q.X < 2600 || q.X > 3700) q.X = 3150; });
+            Check(!friendHit, "pokemon never aim at the small friend");
+            s = new Stage(32); pika = s.Add("pikachu", 2800, PetState.Walk); var squirt = s.Add("squirtle", 3250, PetState.Walk);
+            bool squirtHit = false;
+            s.Step(150, delegate { if (squirt.Bubble == squirt.Skin.HitWord) squirtHit = true; foreach (var q in s.Pets) { if (q.X < 2500 || q.X > 3600) q.X = 3050; if (q.State == PetState.Walk && q.StateT > 1.5) q.SetState(PetState.Pause, s); } });
+            Check(squirtHit, "pokemon battle each other on their own");
+            s = new Stage(33); u = s.Add("ultraman", 2800, PetState.Walk); s.Add("pikachu", 3250, PetState.Walk);
+            fired = false; s.Step(60, delegate { if (u.Specialing) fired = true; foreach (var q in s.Pets) if (q.X < 2500 || q.X > 3600) q.X = 3050; });
+            Check(!fired, "ultraman saves the beam for the kaiju");
+
             // 장면 그림
             PlayOptions.Current = fresh();
             s = new Stage(2); s.Add(null, 2850, PetState.Pause); s.Add("ultraman", 3000, PetState.Pause); s.Add("kaiju", 3250, PetState.Pause);
+            s.Add("pikachu", 3450, PetState.Pause); s.Add("gengar", 3600, PetState.Pause); s.Add("squirtle", 3750, PetState.Pause); s.Add("charmander", 3900, PetState.Pause);
             Scene(s, Path.Combine(dir, "guest-lineup.png"));
         }
     }
