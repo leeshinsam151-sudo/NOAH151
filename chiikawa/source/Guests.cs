@@ -9,9 +9,9 @@ using System.Reflection;
 
 namespace WalkingFriend
 {
-    // 손님 친구: 울트라 친구(울트라맨·괴수)와 포켓몬 친구(피카츄·팬텀·꼬부기·파이리).
+    // 손님 친구: 울트라 친구(울트라맨·괴수), 포켓몬 친구(피카츄·팬텀·꼬부기·파이리), 메이플 친구(히어로·팔라딘·주황버섯·흑발 소녀).
     // 그림은 assets/guest_*.png 로 넣는다(저작권 때문에 저장소에는 올리지 않음).
-    internal enum MoveKind { Specium, Thunder, Shadow, Water, Fire }
+    internal enum MoveKind { Specium, Thunder, Shadow, Water, Fire, Slash, Holy }
 
     internal sealed class GuestSkin
     {
@@ -19,7 +19,9 @@ namespace WalkingFriend
         public string[] Cries = new string[0];
         public Sprite Normal, Special;
         public double WalkMul = 1;
-        public bool Floats;
+        public bool Floats, Bouncy;
+        // 노리는 상대(null이면 다른 손님 친구 누구나). 치이카와는 언제나 제외.
+        public string[] Prey;
         public MoveKind? Move;
         // 기술이 나가는 곳: 왼쪽을 볼 때 그림 가운데에서의 가로 비율, 발밑에서의 높이 비율
         public float MoveX, MoveY;
@@ -38,6 +40,7 @@ namespace WalkingFriend
         {
             new GuestGroup { Title = "울트라 친구 부르기", DemoTitle = "스페시움 광선 보기", Keys = new[] { "ultraman", "kaiju" } },
             new GuestGroup { Title = "포켓몬 친구 부르기", DemoTitle = "기술 보기", Keys = new[] { "pikachu", "gengar", "squirtle", "charmander" } },
+            new GuestGroup { Title = "메이플 친구 부르기", DemoTitle = "스킬 보기", Keys = new[] { "hero", "paladin", "mushroom", "girl" } },
         };
         internal static readonly string[] Keys = Groups.SelectMany(g => g.Keys).ToArray();
         private static readonly Dictionary<string, GuestSkin> cache = new Dictionary<string, GuestSkin>();
@@ -52,6 +55,10 @@ namespace WalkingFriend
                 case "gengar": return "팬텀";
                 case "squirtle": return "꼬부기";
                 case "charmander": return "파이리";
+                case "hero": return "히어로";
+                case "paladin": return "팔라딘";
+                case "mushroom": return "주황버섯";
+                case "girl": return "흑발 소녀";
                 default: return key;
             }
         }
@@ -72,7 +79,7 @@ namespace WalkingFriend
                 case "ultraman":
                     skin = Make(key, "guest_ultraman.png", 1.7, true, .266f, .178f);
                     skin.Special = Load("guest_ultraman_beam.png", 3.0, true);
-                    skin.Move = MoveKind.Specium; skin.MoveName = "스페시움 광선!"; skin.Cries = new[] { "슈왓!", "헤악!" };
+                    skin.Move = MoveKind.Specium; skin.MoveName = "스페시움 광선!"; skin.Cries = new[] { "슈왓!", "헤악!" }; skin.Prey = new[] { "kaiju" };
                     break;
                 case "kaiju":
                     skin = Make(key, "guest_kaiju.png", 2.8, true, .5f, .5f);
@@ -93,6 +100,25 @@ namespace WalkingFriend
                 case "charmander":
                     skin = Make(key, "guest_charmander.png", 1.25, true, .12f, .33f);
                     skin.Move = MoveKind.Fire; skin.MoveName = "불꽃세례!"; skin.HitWord = "파이?!"; skin.Cries = new[] { "파이리!", "파이파이!" };
+                    break;
+                case "hero":
+                    skin = Make(key, "guest_hero.png", 1.6, true, .12f, .42f);
+                    skin.Move = MoveKind.Slash; skin.MoveName = "레이징 블로우!"; skin.HitWord = "윽!"; skin.Cries = new[] { "덤벼라!", "가자!" }; skin.Prey = new[] { "mushroom" };
+                    break;
+                case "paladin":
+                    // 스킬을 쓸 때는 황금빛 수호자 그림으로 바뀐다. 두 그림의 머리 크기가 같도록 1.73배.
+                    skin = Make(key, "guest_paladin.png", 1.6, true, .5f, .5f);
+                    skin.Special = Load("guest_paladin_aura.png", 1.6 * 1.73, true);
+                    skin.MoveX = .47f - .5f; skin.MoveY = 1 - .9f;
+                    skin.WalkMul = .85; skin.Move = MoveKind.Holy; skin.MoveName = "블래스트!"; skin.HitWord = "윽!"; skin.Cries = new[] { "빛이 함께하길.", "물러서지 않겠다!" }; skin.Prey = new[] { "mushroom" };
+                    break;
+                case "mushroom":
+                    skin = Make(key, "guest_mushroom.png", 1.1, true, .5f, .5f);
+                    skin.WalkMul = .6; skin.Bouncy = true; skin.HitWord = "꾸엑!"; skin.Cries = new[] { "버섯버섯!", "뿅!" };
+                    break;
+                case "girl":
+                    skin = Make(key, "guest_girl.png", 1.6, true, .5f, .5f);
+                    skin.HitWord = "꺅!"; skin.Cries = new[] { "안녕!", "♪", "오늘도 화이팅!" };
                     break;
                 default: return null;
             }
@@ -201,15 +227,15 @@ namespace WalkingFriend
             }
         }
 
-        // 울트라맨은 괴수만, 포켓몬은 같은 바닥의 다른 손님 친구를 노린다. 치이카와는 노리지 않는다.
+        // 울트라맨은 괴수만, 히어로·팔라딘은 주황버섯만, 포켓몬은 같은 바닥의 다른 손님 친구를 노린다. 치이카와는 노리지 않는다.
         private Pet FindTarget(List<Pet> all)
         {
             Pet best = null; double bestD = double.MaxValue;
-            double max = (Skin.IsUltraman ? 900 : 750) * S;
+            double max = (Skin.Prey != null ? 900 : 750) * S;
             foreach (var p in all)
             {
                 if (p == this || p.Skin == null || p.Hidden) continue;
-                if (Skin.IsUltraman && !p.Skin.IsKaiju) continue;
+                if (Skin.Prey != null && !Skin.Prey.Contains(p.Skin.Key)) continue;
                 if (Math.Abs(p.Y - Y) > 6 || !(p.State == PetState.Walk || p.State == PetState.Pause || p.State == PetState.Resting)) continue;
                 double d = Math.Abs(p.X - X);
                 if (d < 130 * S || d > max) continue;
@@ -250,7 +276,7 @@ namespace WalkingFriend
         }
 
         // 섀도볼은 천천히 날아가서 맞는다.
-        private double GrowTime { get { return Skin != null && Skin.Move == MoveKind.Shadow ? .55 : .22; } }
+        private double GrowTime { get { return Skin == null ? .22 : Skin.Move == MoveKind.Shadow ? .55 : Skin.Move == MoveKind.Slash ? .4 : .22; } }
         private double HitTime { get { return Math.Max(BeamHitAt, BeamCharge + GrowTime + .03); } }
 
         // 기술 길이(px). 목표가 없으면 허공에 쏜다.
@@ -285,6 +311,9 @@ namespace WalkingFriend
                 look.BeamOx = Skin.MoveX; look.BeamOy = Skin.MoveY;
             }
             else look.Sprite = Skin.Normal;
+            // 주황버섯은 통통 튀며 걷는다.
+            if (Skin.Bouncy && State == PetState.Walk && specialStart < 0)
+                look.HopY -= (float)(Math.Abs(Math.Sin(animT * 7)) * 8 * S);
             // 팬텀은 둥실둥실 떠다닌다.
             if (Skin.Floats && State != PetState.Drag)
                 look.HopY += (float)((-12 + Math.Sin(now * 2.4) * 4) * S);
@@ -299,7 +328,15 @@ namespace WalkingFriend
         }
 
         private static float BeamRadius(Look L, float scale)
-        { return (L.BeamKind == (int)MoveKind.Fire || L.BeamKind == (int)MoveKind.Shadow ? 28 : 14) * scale; }
+        {
+            switch ((MoveKind)L.BeamKind)
+            {
+                case MoveKind.Fire: case MoveKind.Shadow: return 28 * scale;
+                case MoveKind.Slash: return 34 * scale;
+                case MoveKind.Holy: return 22 * scale;
+                default: return 14 * scale;
+            }
+        }
 
         internal static void BeamBounds(Look L, Matrix m, float scale, ref float minX, ref float minY, ref float maxX, ref float maxY)
         {
@@ -326,6 +363,8 @@ namespace WalkingFriend
                 case MoveKind.Shadow: DrawShadow(g, a, b, flick, scale); break;
                 case MoveKind.Water: DrawWater(g, a, b, side, L.BeamPhase, flick, scale); break;
                 case MoveKind.Fire: DrawFire(g, a, b, flick, scale); break;
+                case MoveKind.Slash: DrawSlash(g, a, b, side, scale); break;
+                case MoveKind.Holy: DrawHoly(g, a, b, L.BeamPhase, flick, scale); break;
                 default: DrawSpecium(g, a, b, flick, scale); break;
             }
             g.SmoothingMode = old;
@@ -387,6 +426,43 @@ namespace WalkingFriend
                     float d = (4 + 5 * ((i + phase) % 3)) * scale, s = (5 - i) * scale;
                     g.FillEllipse(drop, b.X + side * d - s / 2, b.Y + (i - 1) * 7 * scale - s / 2, s, s);
                 }
+        }
+
+        // 레이징 블로우: 초승달 검기가 날아간다
+        private static void DrawSlash(Graphics g, PointF a, PointF b, float side, float scale)
+        {
+            using (var trail = RoundPen(Color.FromArgb(110, 90, 170, 255), 5 * scale)) g.DrawLine(trail, a, b);
+            float R = 30 * scale;
+            for (int i = 2; i >= 0; i--)
+            {
+                float cx = b.X - side * (R * .55f + i * 14 * scale);
+                var rect = new RectangleF(cx - R, b.Y - R, R * 2, R * 2);
+                float start = side > 0 ? -65 : 115;
+                int alpha = 255 - i * 75;
+                using (var glow = new Pen(Color.FromArgb(alpha / 2, 40, 120, 255), 16 * scale) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                using (var edge = new Pen(Color.FromArgb(alpha, 90, 190, 255), 7 * scale) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                using (var shine = new Pen(Color.FromArgb(alpha, 255, 255, 255), 2.5f * scale) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+                { g.DrawArc(glow, rect, start, 130); g.DrawArc(edge, rect, start, 130); g.DrawArc(shine, rect, start + 10, 110); }
+            }
+        }
+
+        // 블래스트: 망치에서 뻗는 황금빛 충격파와 반짝임
+        private static void DrawHoly(Graphics g, PointF a, PointF b, int phase, float flick, float scale)
+        {
+            using (var glow = RoundPen(Color.FromArgb(80, 255, 210, 80), 26 * scale * flick))
+            using (var mid = RoundPen(Color.FromArgb(200, 255, 220, 110), 12 * scale))
+            using (var core = RoundPen(Color.FromArgb(240, 255, 252, 225), 4 * scale))
+            { g.DrawLine(glow, a, b); g.DrawLine(mid, a, b); g.DrawLine(core, a, b); }
+            using (var star = new SolidBrush(Color.FromArgb(235, 255, 250, 200)))
+            {
+                int n = Math.Max(3, (int)(Math.Abs(b.X - a.X) / (40 * scale)));
+                for (int i = 0; i < n; i++)
+                {
+                    float t = (i + .5f + phase * .33f) / n; if (t > 1) t -= 1;
+                    float x = a.X + (b.X - a.X) * t, y = a.Y + ((i % 2) * 2 - 1) * 16 * scale, s = (i % 3 == 0 ? 6 : 4) * scale;
+                    g.FillPolygon(star, new[] { new PointF(x, y - s * 2), new PointF(x + s * .5f, y - s * .5f), new PointF(x + s * 2, y), new PointF(x + s * .5f, y + s * .5f), new PointF(x, y + s * 2), new PointF(x - s * .5f, y + s * .5f), new PointF(x - s * 2, y), new PointF(x - s * .5f, y - s * .5f) });
+                }
+            }
         }
 
         // 불꽃세례: 입에서 점점 커지는 불덩이

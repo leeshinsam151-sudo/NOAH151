@@ -161,10 +161,41 @@ namespace WalkingFriend
             fired = false; s.Step(60, delegate { if (u.Specialing) fired = true; foreach (var q in s.Pets) if (q.X < 2500 || q.X > 3600) q.X = 3050; });
             Check(!fired, "ultraman saves the beam for the kaiju");
 
+            // 메이플 친구
+            PlayOptions.Current = fresh(); PlayOptions.Current.Variations = false;
+            var paladinSkin = GuestArt.Get("paladin");
+            Check(paladinSkin.Special != paladinSkin.Normal && paladinSkin.Special.H > paladinSkin.Normal.H * 1.6, "paladin switches to the golden guardian artwork at the same body scale");
+            foreach (var key in new[] { "hero", "paladin" })
+            {
+                var skin = GuestArt.Get(key);
+                s = new Stage(41); var att = s.Add(key, 2600, PetState.Pause); var mush = s.Add("mushroom", 3050, PetState.Pause);
+                att.DemoBeam(s, s.Pets);
+                Check(att.Specialing && att.Dir == 1 && att.Bubble == skin.MoveName, key + " shouts its skill and faces the mushroom");
+                s.Step(key == "hero" ? 1.18 : 1.03);
+                var lk = att.GetLook(s.Now);
+                Check(lk.Beam > 250 && lk.Sprite == skin.Special, key + " skill reaches the mushroom");
+                Scene(s, Path.Combine(dir, "skill-" + key + ".png"));
+                s.Step(.08);
+                Check(mush.State == PetState.Squish && mush.Bubble == "꾸엑!", key + " skill makes the mushroom flinch");
+                s.Step(3); Check(!att.Specialing && att.GetLook(s.Now).Sprite == skin.Normal, key + " returns to its usual pose");
+            }
+            s = new Stage(42); var hero = s.Add("hero", 2800, PetState.Walk); var pal = s.Add("paladin", 3300, PetState.Walk);
+            fired = false; s.Step(80, delegate { if (hero.Specialing || pal.Specialing) fired = true; foreach (var q in s.Pets) if (q.X < 2500 || q.X > 3600) q.X = 3050; });
+            Check(hero.Bubble != "윽!" && pal.Bubble != "윽!", "warriors never hit each other");
+            s = new Stage(43); var shroom = s.Add("mushroom", 3000, PetState.Walk); float lowest = 0;
+            s.Step(3, delegate { if (shroom.State == PetState.Walk) lowest = Math.Min(lowest, shroom.GetLook(s.Now).HopY); });
+            Check(lowest < -5, "orange mushroom bounces while walking");
+            s = new Stage(44); var girl = s.Add("girl", 3000, PetState.Pause); girl.DemoBeam(s, s.Pets);
+            Check(!girl.Specialing, "the girl has no attack skill");
+            s = new Stage(45); hero = s.Add("hero", 2800, PetState.Walk); var buddy = s.Add(null, 3200, PetState.Walk); var lady = s.Add("girl", 3400, PetState.Walk);
+            bool wrongHit = false; s.Step(150, delegate { if (buddy.Bubble == "으앗!" || lady.Bubble == "꺅!") wrongHit = true; foreach (var q in s.Pets) if (q.X < 2500 || q.X > 3700) q.X = 3100; });
+            Check(!wrongHit, "warriors leave the small friend and the girl alone");
+
             // 장면 그림
             PlayOptions.Current = fresh();
             s = new Stage(2); s.Add(null, 2850, PetState.Pause); s.Add("ultraman", 3000, PetState.Pause); s.Add("kaiju", 3250, PetState.Pause);
             s.Add("pikachu", 3450, PetState.Pause); s.Add("gengar", 3600, PetState.Pause); s.Add("squirtle", 3750, PetState.Pause); s.Add("charmander", 3900, PetState.Pause);
+            s.Add("hero", 4080, PetState.Pause); s.Add("paladin", 4260, PetState.Pause); s.Add("mushroom", 4420, PetState.Pause); s.Add("girl", 4560, PetState.Pause);
             Scene(s, Path.Combine(dir, "guest-lineup.png"));
         }
     }
