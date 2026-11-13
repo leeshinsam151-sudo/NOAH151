@@ -69,7 +69,7 @@ namespace WalkingFriend
             var windows = choice("열린 창 옆을 올라가고 창 위에서 걷기 · 쉬기", o.Windows);
             var idle = choice("혼자 앉아서 쉬기", o.Idle);
             var shortRest = choice("앉아있는 시간 줄이기 (기존 6~11초)", o.ShortRest);
-            var variations = choice("가끔 커지거나 작아지고, 갑자기 다다다 달리기", o.Variations);
+            var variations = choice("가끔 확 커지거나 작아지고, 다다다 질주하고, 빙글 돌기", o.Variations);
             var escape = choice("커서가 가까이 오면 슬라이딩으로 도망가기", o.Escape);
             var follow = choice("커서를 따라오기", o.Follow);
             escape.CheckedChanged += delegate { if (escape.Checked) follow.Checked = false; };

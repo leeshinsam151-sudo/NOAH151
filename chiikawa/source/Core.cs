@@ -1698,7 +1698,7 @@ namespace WalkingFriend
 			FeatureLook(ref look2, now);
             CompanionLook(ref look2, now);
             GuestLook(ref look2, now);
-            VariationLook(ref look2);
+            VariationLook(ref look2, now);
 			return look2;
 		}
 

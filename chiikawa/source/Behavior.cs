@@ -684,7 +684,7 @@ namespace WalkingFriend
                 Pet p = pet ?? windows.Select(a => a.Pet).FirstOrDefault(); if (p != null) p.Feed(this);
             }));
             var demo = new ToolStripMenuItem("동작 바로 보기");
-            foreach (var pair in new[] { new[] { "앉아서 쉬기", "sit" }, new[] { "배고플 때 우는 모습", "cry" }, new[] { "폴짝 뛰기", "hop" }, new[] { "슬라이딩", "slide" }, new[] { "어질어질", "dizzy" }, new[] { "헬리콥터 낙하", "fall" }, new[] { "벽 타기", "wall" }, new[] { "천장 타기", "ceiling" }, new[] { "창 타기", "window" }, new[] { "쑥 커지기", "big" }, new[] { "쪼그매지기", "small" }, new[] { "다다다 달리기", "dash" } })
+            foreach (var pair in new[] { new[] { "앉아서 쉬기", "sit" }, new[] { "배고플 때 우는 모습", "cry" }, new[] { "폴짝 뛰기", "hop" }, new[] { "슬라이딩", "slide" }, new[] { "어질어질", "dizzy" }, new[] { "헬리콥터 낙하", "fall" }, new[] { "벽 타기", "wall" }, new[] { "천장 타기", "ceiling" }, new[] { "창 타기", "window" }, new[] { "쑥 커지기", "big" }, new[] { "쪼그매지기", "small" }, new[] { "다다다 달리기", "dash" }, new[] { "폴짝 한 바퀴", "spin" }, new[] { "빙글빙글 회오리", "twirl" } })
             {
                 string key = pair[1]; demo.DropDownItems.Add(pair[0], null, delegate { Pet p = pet ?? windows.Select(a => a.Pet).FirstOrDefault(); if (p != null) p.Demonstrate(this, key); });
             }

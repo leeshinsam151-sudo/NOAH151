@@ -271,7 +271,7 @@ namespace WalkingFriend
             StartSquish(w, .5, .3, PetState.Walk, false);
             Bubble = Skin != null ? Skin.HitWord : "으앗!"; BubbleUntil = w.Now + 2.2;
             // 맞으면 다다다 도망간다
-            dashPeak = 4.2; dashUntil = w.Now + 2.4; demoUntil = Math.Max(demoUntil, w.Now + 4);
+            dashPeak = 6; dashUntil = w.Now + 2.4; demoUntil = Math.Max(demoUntil, w.Now + 4);
             nextDashAt = Math.Max(nextDashAt, w.Now + 20);
         }
 
