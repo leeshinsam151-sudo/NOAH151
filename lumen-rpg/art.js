@@ -265,7 +265,8 @@ EXT.ambient.push(dt=>{
 });
 
 /* ---------- 시작 화면 그림 ---------- */
-{const a=sceneArt(320,180,{t:'spire',mood:'night',spireX:0.3,beacon:'lit',bx:0.12}),x=a.getContext('2d');x.imageSmoothingEnabled=false;
- x.drawImage(bustCv('me'),70,116);x.drawImage(bustCv('owl'),118,128,40,40);
+{const a=sceneArt(480,270,{t:'spire',mood:'night',spireX:0.3,beacon:'lit',bx:0.12}),x=a.getContext('2d');x.imageSmoothingEnabled=false;
+ /* 전신 그림: 캐릭터 화면의 일러스트를 그대로 세운다 */
+ if(typeof heroArt==='function'){const HX=96,HY=84;for(let j=0;j<160;j++)for(let i=0;i<128;i++){const c=heroArt(i,j);if(c){x.fillStyle=c;x.fillRect(HX+i,HY+j,1,1)}}}
  const g=x.createRadialGradient(60,150,2,60,150,70);g.addColorStop(0,'rgba(255,180,90,0.45)');g.addColorStop(1,'rgba(255,180,90,0)');x.globalCompositeOperation='lighter';x.fillStyle=g;x.fillRect(0,80,140,100);x.globalCompositeOperation='source-over';
  $('title').style.backgroundImage=`linear-gradient(90deg,rgba(7,6,12,0) 30%,rgba(7,6,12,0.7)),url(${a.toDataURL()})`;{const ts=$('title').style;ts.backgroundSize='cover';ts.backgroundPosition='center';ts.backgroundRepeat='no-repeat';ts.imageRendering='pixelated'}}
