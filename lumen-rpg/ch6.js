@@ -257,7 +257,7 @@ function actorPos(a){let x=a.x,y=a.y;if(a.orbit){x+=Math.cos(time*0.9+a.ph)*a.or
 function playEpilogue(n,done){
   const shots=EPI[n];let i=-1,at=0;setHud(false);mode='cine';E=[];PROJ=[];HAZ=[];const lab=typeof n==='string'?'막간':'에필로그';
   const finish=()=>{CINE=null;cineNext=()=>{};cineSkip=()=>{};$('dialog').hidden=true;$('portrait').classList.remove('none');setArea(areaAt(P.x));setHud(true);blackout=1;mode='play';if(done)done()};
-  cineNext=()=>{if(performance.now()-at<700)return;at=performance.now();i++;if(i>=shots.length)return finish();const s=shots[i]();blackout=1;CINE={x:s.x,y:s.y+26,dark:s.dark,stars:!!s.stars,night:!!s.night,actors:s.actors||[],t:0};darkCur=s.dark;setArea(areaAt(s.x));PARTS=[];
+  cineNext=()=>{if(performance.now()-at<700)return;at=performance.now();i++;if(i>=shots.length)return finish();const s=shots[i]();blackout=1;CINE={x:s.x,y:s.y+26,dark:s.dark,stars:!!s.stars,night:!!s.night,key:n,idx:i,actors:s.actors||[],t:0};darkCur=s.dark;setArea(areaAt(s.x));PARTS=[];
     $('dialog').hidden=false;$('portrait').classList.add('none');$('dName').textContent=`${lab} ${i+1} / ${shots.length}`;$('dText').textContent=s.cap};
   cineSkip=finish;at=-9999;cineNext();
 }
