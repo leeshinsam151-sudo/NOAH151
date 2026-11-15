@@ -148,7 +148,7 @@ ENEMY_DRAW.pilgrim=e=>{const d=e.dir||'down',s=PILGRIM[d][e.st?0:Math.floor(e.t*
 const STAKE_HP=170,STAKE_X=[-24,-4,16];
 function spawnWhale(){BOSS={kind:'whale',name:'모래 고래 바하르',cam:true,x:295*16,y:12*16,ang:1.5,hp:STAKE_HP*3,max:STAKE_HP*3,st:'swim',t:0,cd:3.5,flash:0,stakes:[STAKE_HP,STAKE_HP,STAKE_HP],shield:true,under:true,stun:0,hw:34,hh:13,hcy:30,gx:0,gy:0,sx:0,sy:0,phase:0,label:'모래 속'}}
 function whaleDone(){
-  const b=BOSS;BOSS=null;DPROJ=[];HAZ=[];shake=8;flash=1;sfx('fire');
+  const b=BOSS;BOSS=null;DPROJ=[];HAZ=[];shake=8;flash=1;sfx('bossdown');
   for(let k=0;k<70;k++)PARTS.push({x:b.x+rand(-40,40),y:b.y-rand(0,40),vx:rand(-80,80),vy:rand(-120,10),life:rand(0.8,1.6),max:1.6,col:k%3?'#c8a868':'#ffe08a',sz:k%4?1:2});
   for(let k=0;k<5;k++)dropItem('shard',b.x+rand(-30,30),b.y+14);for(let k=0;k<8;k++)dropItem('coin',b.x+rand(-30,30),b.y+14,22);
   S.boss4=1;S.ash=(S.ash||0)+2;gainXP(520);setGate4(true);
@@ -170,9 +170,9 @@ BOSSES.whale={
       if(Math.random()<0.8)PARTS.push({x:b.x+rand(-5,5),y:b.y+rand(-2,2),vx:-Math.cos(b.ang)*30+rand(-20,20),vy:rand(-30,-5),life:0.5,max:0.5,col:'#dcc084',sz:k2()});
       if(Math.hypot(P.x-b.x,P.y-4-b.y)<12)hurtPlayer(12,b.x,b.y);
       b.cd-=dt;if(b.cd<=0){b.t=0;if(b.phase>=1&&Math.random()<0.4)b.st='spout';else{b.st='warn';b.gx=clamp(P.x,X0,X1);b.gy=clamp(P.y,Y0,Y1)}}}
-    else if(b.st==='warn'){if(b.t>(b.phase>=2?0.8:1.05)){b.st='jump';b.t=0;b.sx=b.x;b.sy=b.y;sfx('boss')}}
+    else if(b.st==='warn'){if(b.t>(b.phase>=2?0.8:1.05)){b.st='jump';b.t=0;b.sx=b.x;b.sy=b.y;sfx('whaleJump')}}
     else if(b.st==='jump'){const k=Math.min(1,b.t/0.6);b.x=b.sx+(b.gx-b.sx)*k;b.y=b.sy+(b.gy-b.sy)*k;
-      if(k>=1){b.st='beached';b.t=0;b.under=false;b.label='좌초!';b.y=b.gy+12;shake=8;sfx('rock');if(((P.x-b.gx)/46)**2+((P.y-b.gy)/30)**2<1)hurtPlayer(20,b.gx,b.gy);
+      if(k>=1){b.st='beached';b.t=0;b.under=false;b.label='좌초!';b.y=b.gy+12;shake=8;sfx('whaleLand');if(((P.x-b.gx)/46)**2+((P.y-b.gy)/30)**2<1)hurtPlayer(20,b.gx,b.gy);
         for(let i=0;i<40;i++){const a=i/40*6.283;PARTS.push({x:b.gx,y:b.gy,vx:Math.cos(a)*150,vy:Math.sin(a)*90,life:0.45,max:0.45,col:'#dcc084',sz:2})}}}
     else if(b.st==='beached'){if(b.t>5.6-b.phase*0.8){b.st='dive';b.t=0;b.under=true;b.label='모래 속'}}
     else if(b.st==='dive'){if(b.t>0.6){b.st='swim';b.cd=rand(2.6,4)-b.phase*0.4;b.ang=Math.atan2(P.y-b.y,P.x-b.x)+Math.PI}}
@@ -184,7 +184,7 @@ BOSSES.whale={
     if(i===2&&b.shield){FLOATS.push({x:sx,y:sy-8,n:0,col:'#a99cc2',t:0});tone('square',1400,900,0.05,0.03);if(!b.hinted){b.hinted=1;toast('마지막 말뚝은 재에 싸여 있다! 등불 섬광(D)으로 태우자','gold')}return}
     b.stakes[i]-=r.d;b.hp=b.stakes.reduce((a,h)=>a+Math.max(0,h),0);b.flash=0.12;hitstop=0.05;shake=2;sfx('hit');
     FLOATS.push({x:sx,y:sy-8,n:r.d,col:r.crit?'#ffd36b':'#fff',t:0});for(let k=0;k<6;k++)PARTS.push({x:sx,y:sy,vx:rand(-60,60),vy:rand(-70,10),life:0.3,max:0.3,col:'#8a7a9a',sz:1});
-    if(b.stakes[i]<=0){b.phase++;shake=7;sfx('rock');for(let k=0;k<30;k++)PARTS.push({x:sx,y:sy,vx:rand(-90,90),vy:rand(-130,0),life:rand(0.5,1),max:1,col:k%2?'#4a4252':'#c8b0d0',sz:2});
+    if(b.stakes[i]<=0){b.phase++;shake=7;sfx('stake');for(let k=0;k<30;k++)PARTS.push({x:sx,y:sy,vx:rand(-90,90),vy:rand(-130,0),life:rand(0.5,1),max:1,col:k%2?'#4a4252':'#c8b0d0',sz:2});
       if(b.phase>=3)return whaleDone();toast(`말뚝을 뽑았다! (${b.phase}/3)`,'gold');b.st='dive';b.t=0;b.under=true}
   },
   flare(b){if(!b.under&&b.shield&&b.stakes[0]<=0&&b.stakes[1]<=0){b.shield=false;toast('말뚝을 감싼 재가 타 버렸다! 지금이야!','gold')}},
@@ -229,8 +229,8 @@ TALK.harin=function(){
   say([['harin','모닥불 곁에서 쉬어 가거라. 오아시스 근처에서는 더위도 금방 가신단다.']]);
 };
 function jetiShop(){choose('상인 재티',`가진 은화 ${S.coins} · 회복약 ${S.potions||0}개 · 재 수정 ${S.ash||0}개`,[
-  {label:'회복약 (은화 25) · 체력 40% 회복',fn:()=>{if((S.potions||0)>=5)toast('회복약은 5개까지 들 수 있어요');else if(S.coins<25)toast('은화가 부족해요');else{S.coins-=25;S.potions=(S.potions||0)+1;sfx('pick')}jetiShop()}},
-  {label:'재 수정 (은화 70) · +6, +7 강화 재료',fn:()=>{if(S.coins<70)toast('은화가 부족해요');else{S.coins-=70;S.ash=(S.ash||0)+1;sfx('pick')}jetiShop()}},
+  {label:'회복약 (은화 25) · 체력 40% 회복',fn:()=>{if((S.potions||0)>=5)toast('회복약은 5개까지 들 수 있어요');else if(S.coins<25)toast('은화가 부족해요');else{S.coins-=25;S.potions=(S.potions||0)+1;sfx('coin')}jetiShop()}},
+  {label:'재 수정 (은화 70) · +6, +7 강화 재료',fn:()=>{if(S.coins<70)toast('은화가 부족해요');else{S.coins-=70;S.ash=(S.ash||0)+1;sfx('coin')}jetiShop()}},
   {label:'그만두기',fn:saveGame}])}
 TALK.jeti=function(){if(!S.flags.jeti){S.flags.jeti=1;return say([['jeti','어서 와! 가면을 벗고 장사꾼이 된 재티야. 재를 뒤집어쓰는 것보다 은화를 세는 게 훨씬 즐겁더라고.'],['jeti','회복약은 Q로 마시면 돼. 재 수정은 솜씨 좋은 대장장이한테 가져가 봐.']],jetiShop)}jetiShop()};
 TALK.orban=function(){};
@@ -276,7 +276,7 @@ EXT.update.push((dt,tx,ty)=>{
   if(!shade)for(let y=-2;y<=2&&!shade;y++)for(let x=-2;x<=2;x++){const t=tile(tx+x,ty+y);if(t===T.SROCK||t===T.RUIN||t===T.PALM||t===T.SGATE||t===T.WATER){shade=true;break}}
   heat=clamp(heat+(shade?-dt/5:dt/26),0,1);
   if(heat>=1){heatTick-=dt;if(heatTick<=0){heatTick=1.6;if(S.hp>1){S.hp=Math.max(1,S.hp-1);FLOATS.push({x:P.x,y:P.y-26,n:1,col:'#ffb44a',t:0})}if(!S.flags.heatTip){S.flags.heatTip=1;toast('더위를 먹었다! 바위나 야자수 그늘에서 쉬자','gold')}}}
-  if(S.q===21&&inBasin(tx,ty)&&ty<BASIN.y1-3){S.q=22;setGate4(false);E=E.filter(e=>e.wave!==null);storm=0;spawnWhale();sfx('boss');shake=6;
+  if(S.q===21&&inBasin(tx,ty)&&ty<BASIN.y1-3){S.q=22;setGate4(false);E=E.filter(e=>e.wave!==null);storm=0;spawnWhale();sfx('omen');shake=6;
     say([['sys','발밑의 모래가 크게 출렁인다…'],['seha','바하르야! 등에 말뚝 세 개가 박혀 있어. 뛰어올랐다가 떨어진 뒤 지쳐 누워 있을 때가 기회야!'],['owl','땅에 그림자가 커지면 바로 도망쳐! 등지느러미에 닿아도 다쳐!']])}
   if(S.q===24&&mode==='play'&&Math.hypot(P.x-PLAZA.x,P.y-PLAZA.y)<56)orbanScene();
 });

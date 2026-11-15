@@ -1000,7 +1000,7 @@ function sehaEvent(i){
 function openBramble(){
   if(brambleOn)return;brambleOn=true;
   say([['moru','여기야! 이 가시덤불만 넘으면 안개 숲이야. 뒤로 물러서, 하나… 둘…'],['sys','쾅! 모루의 망치가 가시덤불을 산산이 부쉈다.']],()=>{
-    setThorns(true);shake=7;sfx('boss');
+    setThorns(true);shake=7;sfx('smash');
     for(let k=0;k<40;k++)PARTS.push({x:95*16+rand(-10,10),y:31*16+rand(-14,14),vx:rand(-90,90),vy:rand(-90,30),life:rand(0.4,0.9),max:0.9,col:k%2?'#4a2e52':'#7a5634',sz:k%3?1:2});
     S.q=8;banner('안개 숲','2장');saveGame();
     setTimeout(()=>{const f=()=>say([['owl','안개가 짙어… 등불 빛이 금방 흩어지는 것 같아.'],['owl','이 숲 어딘가에 숲지기 오두막이 있다고 들었어. 불빛을 찾아보자!']]);if(mode==='play')f();else pendingStory=f},1500);
@@ -1039,7 +1039,7 @@ function enterMine(){
 function exitMine(){blackout=1;P.x=MINE_DOOR.tx*16+16;P.y=(MINE_DOOR.ty+2)*16+10;P.dir='down';rally();E=[];ITEMS=[];PROJ=[];HAZ=[];setArea(areaAt(P.x));lastRegion='';saveGame()}
 function breakCrack(ci){
   if(!moruOn())return say([['sys','금이 간 벽. 단단한 망치가 있으면 부술 수 있을 것 같다.']]);
-  say([['moru','금 간 벽이네? 맡겨 줘!'],['sys','쾅! 모루가 벽을 부쉈다.']],()=>{S.cracks|=1<<ci;for(const[x,y]of CRACKS[ci]){setT(x,y,T.CFLOOR)}for(const[x,y]of CRACKS[ci])repaintArea(x,y,1);shake=6;sfx('rock');const[x,y]=CRACKS[ci][1];for(let k=0;k<30;k++)PARTS.push({x:x*16+8+rand(-8,8),y:y*16+8+rand(-8,8),vx:rand(-80,80),vy:rand(-80,20),life:rand(0.4,0.9),max:0.9,col:k%2?'#5a4e66':'#9a8a72',sz:k%3?1:2});saveGame()});
+  say([['moru','금 간 벽이네? 맡겨 줘!'],['sys','쾅! 모루가 벽을 부쉈다.']],()=>{S.cracks|=1<<ci;for(const[x,y]of CRACKS[ci]){setT(x,y,T.CFLOOR)}for(const[x,y]of CRACKS[ci])repaintArea(x,y,1);shake=6;sfx('smash');const[x,y]=CRACKS[ci][1];for(let k=0;k<30;k++)PARTS.push({x:x*16+8+rand(-8,8),y:y*16+8+rand(-8,8),vx:rand(-80,80),vy:rand(-80,20),life:rand(0.4,0.9),max:0.9,col:k%2?'#5a4e66':'#9a8a72',sz:k%3?1:2});saveGame()});
 }
 const PAGE_TEXT=[
   ['— 별등지기 일지, 첫째 조각 —','별등의 빛이 해마다 약해진다. 탑의 장인들은 말했다. “그림자를 땔감으로 쓰면 빛이 영원하리라.”'],
@@ -1259,7 +1259,7 @@ function beaconTalk(i){
   if(BEACONS[i].req&&S.q<BEACONS[i].req)return say([['sys','차갑게 식은 등대. 아직은 불을 붙일 때가 아닌 것 같다.']]);
   if(BEACONS[i].ch===3&&S.q<14)return say([['sys','녹슨 화로. 오래된 석탄이 굳어 있다.'],['owl','먼저 안쪽 불빛이 있는 곳으로 가 보자!']]);
   if(BEACONS[i].ch===2&&S.q<9)return say([['sys','안개에 젖은 봉화. 불씨 받침이 축축하다.'],['owl','숲지기 오두막부터 찾아가 보자!']]);
-  b.state='wave';sfx('fire');shake=3;
+  b.state='wave';sfx('ignite');shake=3;
   const bx=BEACONS[i].tx*16+8,by=BEACONS[i].ty*16+8;
   say([['sys','등불의 불씨를 봉화에 옮겼다. 불길이 천천히 번지기 시작한다…'],['owl','그림자가 몰려온다! 불이 다 붙을 때까지 버텨!']],()=>{
     for(let k=0;k<BEACONS[i].wave;k++){
@@ -1270,7 +1270,7 @@ function beaconTalk(i){
   });
 }
 function lightBeacon(i){
-  BS[i].state='lit';S.beacons[i]=1;sfx('fire');shake=5;flash=0.6;
+  BS[i].state='lit';S.beacons[i]=1;sfx('beaconLit');shake=5;flash=0.6;
   const bx=BEACONS[i].tx*16+8,by=BEACONS[i].ty*16;
   for(let k=0;k<50;k++)PARTS.push({x:bx+rand(-4,4),y:by,vx:rand(-70,70),vy:rand(-120,-20),life:rand(0.6,1.4),max:1.4,col:k%3?'#ffb44a':'#fff2b0',sz:k%5?1:2});
   for(let k=0;k<3;k++)dropItem('shard',bx+rand(-10,10),by+16);
@@ -1300,7 +1300,7 @@ function updMole(dt){
   if(b.hp<=0)return moleDefeated();
   if(b.st==='dizzy'){b.dizzy-=dt;if(b.dizzy<=0){b.st='idle';b.cd=1.2}return}
   if(b.stun>0){b.stun-=dt;return}
-  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('두더지왕이 분노했다!','gold');sfx('boss')}
+  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('두더지왕이 분노했다!','gold');sfx('rage')}
   const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
   if(b.st==='rise'){if(b.t>1.4){b.st='idle';b.t=0}return}
   if(b.st==='idle'){moveBody(b,dx/d*22*dt,dy/d*22*dt,12,6,false);b.cd-=dt;
@@ -1309,19 +1309,19 @@ function updMole(dt){
   else if(b.st==='charge'){const ox=b.x,oy=b.y;moveBody(b,b.vx*dt,b.vy*dt,12,6,false);const stuck=Math.hypot(b.x-ox,b.y-oy)<0.4;
     if(Math.random()<0.5)PARTS.push({x:b.x+rand(-8,8),y:b.y,vx:rand(-20,20),vy:rand(-20,-5),life:0.4,max:0.4,col:'#5a5064',sz:2});
     if(stuck||b.t>1.6){let hit=null;const cx=Math.floor(b.x/16),cy=Math.floor((b.y-3)/16);for(let yy=-1;yy<=1;yy++)for(let xx=-1;xx<=1;xx++)if(tile(cx+xx,cy+yy)===T.CRYSTAL&&PILLARS.some(([a,c])=>a===cx+xx&&c===cy+yy))hit=[cx+xx,cy+yy];
-      if(stuck&&hit){setT(hit[0],hit[1],T.CFLOOR);repaintArea(hit[0],hit[1],1);for(let k=0;k<30;k++)PARTS.push({x:hit[0]*16+8,y:hit[1]*16+8,vx:rand(-90,90),vy:rand(-90,20),life:rand(0.4,0.9),max:0.9,col:k%2?'#8ae0f4':'#e8fcff',sz:k%3?1:2});b.st='dizzy';b.dizzy=3.2;shake=7;sfx('rock');toast('두더지왕이 수정 기둥에 부딪혀 비틀거린다!','gold')}
-      else if(stuck){b.st='dizzy';b.dizzy=0.9;shake=4;sfx('rock')}
+      if(stuck&&hit){setT(hit[0],hit[1],T.CFLOOR);repaintArea(hit[0],hit[1],1);for(let k=0;k<30;k++)PARTS.push({x:hit[0]*16+8,y:hit[1]*16+8,vx:rand(-90,90),vy:rand(-90,20),life:rand(0.4,0.9),max:0.9,col:k%2?'#8ae0f4':'#e8fcff',sz:k%3?1:2});b.st='dizzy';b.dizzy=3.2;shake=7;sfx('shatter');toast('두더지왕이 수정 기둥에 부딪혀 비틀거린다!','gold')}
+      else if(stuck){b.st='dizzy';b.dizzy=0.9;shake=4;sfx('thud')}
       else{b.st='idle';b.cd=1.4}b.t=0}}
   else if(b.st==='dig'){if(b.t>0.6){b.st='under';b.t=0;b.under=true}}
   else if(b.st==='under'){moveBody(b,dx/d*92*dt,dy/d*92*dt,6,4,false);if(Math.random()<0.7)PARTS.push({x:b.x+rand(-8,8),y:b.y-2,vx:rand(-30,30),vy:rand(-50,-10),life:0.5,max:0.5,col:'#6e5a46',sz:k2()});if(b.t>1.8||d<6){b.st='emerge';b.t=0}}
-  else if(b.st==='emerge'){if(b.t>0.7){b.under=false;b.st='idle';b.cd=rand(1.4,2.2);shake=5;sfx('rock');if(Math.hypot(P.x-b.x,P.y-b.y)<28)hurtPlayer(18,b.x,b.y);for(let k=0;k<26;k++){const a=k/26*6.283;PARTS.push({x:b.x,y:b.y-4,vx:Math.cos(a)*110,vy:Math.sin(a)*70-30,life:0.5,max:0.5,col:'#6e5a46',sz:2})}}}
-  else if(b.st==='quake'){if(b.t>0.55){for(let k=0;k<7;k++){const a=Math.random()*6.283,r=k===0?0:rand(16,70),hx=P.x+Math.cos(a)*r,hy=P.y+Math.sin(a)*r;if(!solidAt(hx,hy))HAZ.push({kind:'rock',x:hx,y:hy,t:-k*0.12,warn:0.9,dur:0.25,hit:false,dmg:12})}b.st='idle';b.cd=2.2;shake=6;sfx('boss')}}
+  else if(b.st==='emerge'){if(b.t>0.7){b.under=false;b.st='idle';b.cd=rand(1.4,2.2);shake=5;sfx('burst');if(Math.hypot(P.x-b.x,P.y-b.y)<28)hurtPlayer(18,b.x,b.y);for(let k=0;k<26;k++){const a=k/26*6.283;PARTS.push({x:b.x,y:b.y-4,vx:Math.cos(a)*110,vy:Math.sin(a)*70-30,life:0.5,max:0.5,col:'#6e5a46',sz:2})}}}
+  else if(b.st==='quake'){if(b.t>0.55){for(let k=0;k<7;k++){const a=Math.random()*6.283,r=k===0?0:rand(16,70),hx=P.x+Math.cos(a)*r,hy=P.y+Math.sin(a)*r;if(!solidAt(hx,hy))HAZ.push({kind:'rock',x:hx,y:hy,t:-k*0.12,warn:0.9,dur:0.25,hit:false,dmg:12})}b.st='idle';b.cd=2.2;shake=6;sfx('quake')}}
   if(!b.under&&b.st!=='dig'&&b.st!=='emerge'&&overlap(P.x,P.y-8,5,7,b.x,b.y-12,14,10))hurtPlayer(b.st==='charge'?20:13,b.x,b.y);
 }
 const k2=()=>Math.random()<0.3?2:1;
 function moleDefeated(){
   const b=BOSS;BOSS=null;HAZ=[];PROJ=[];E=E.filter(e=>e.wave!=='boss');
-  shake=8;flash=1;sfx('fire');S.flags.moleX=b.x;S.flags.moleY=b.y;
+  shake=8;flash=1;sfx('bossdown');S.flags.moleX=b.x;S.flags.moleY=b.y;
   for(let k=0;k<60;k++)PARTS.push({x:b.x+rand(-14,14),y:b.y-rand(0,30),vx:rand(-80,80),vy:rand(-120,10),life:rand(0.8,1.6),max:1.6,col:k%3?'#5a5064':'#ffe08a',sz:k%4?1:2});
   for(let k=0;k<5;k++)dropItem('shard',b.x+rand(-20,20),b.y+12);
   for(let k=0;k<8;k++)dropItem('coin',b.x+rand(-20,20),b.y+12,18);
@@ -1340,25 +1340,25 @@ function updRoot(dt){
   const b=BOSS;b.t+=dt;if(b.flash>0)b.flash-=dt;if(b.exposed>0)b.exposed-=dt;b.sweepCd-=dt;
   if(b.hp<=0)return rootDefeated();
   if(b.stun>0){b.stun-=dt;return}
-  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('울림뿌리가 몸부림친다!','gold');sfx('boss')}
+  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('울림뿌리가 몸부림친다!','gold');sfx('rage')}
   const dx=P.x-b.x,dy=P.y-b.y,el=(dx/54)**2+(dy/34)**2;
   if(b.st==='rise'){if(b.t>1.6){b.st='idle';b.t=0}return}
   if(b.st==='idle'){b.cd-=dt;
     if(el<1&&b.sweepCd<=0){b.st='sweepW';b.t=0}
     else if(b.cd<=0){b.st=Math.random()<0.55?'spikes':'volleyW';b.t=0}}
-  else if(b.st==='spikes'){const n=b.phase===2?5:3;for(let k=0;k<n;k++){const a=Math.random()*6.283,r=k===0?0:rand(18,42);HAZ.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:0.85,dur:0.35,hit:false})}b.st='idle';b.cd=rand(1.8,2.6)/(b.phase===2?1.3:1);sfx('boss')}
+  else if(b.st==='spikes'){const n=b.phase===2?5:3;for(let k=0;k<n;k++){const a=Math.random()*6.283,r=k===0?0:rand(18,42);HAZ.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:0.85,dur:0.35,hit:false})}b.st='idle';b.cd=rand(1.8,2.6)/(b.phase===2?1.3:1);sfx('tele')}
   else if(b.st==='volleyW'){if(b.t>0.6){const n=b.phase===2?12:8;for(let k=0;k<n;k++){const a=k/n*6.283+b.t;PROJ.push({kind:'spore',x:b.x,y:b.y-30,vx:Math.cos(a)*60,vy:Math.sin(a)*60,life:3.4,t:0,dmg:12})}b.st='idle';b.cd=rand(2,2.8)/(b.phase===2?1.3:1);sfx('spore')}}
   else if(b.st==='sweepW'){if(b.t>0.65){if(el<1)hurtPlayer(16,b.x,b.y-4);shake=4;for(let k=0;k<36;k++){const a=k/36*6.283;PARTS.push({x:b.x,y:b.y-2,vx:Math.cos(a)*150,vy:Math.sin(a)*90,life:0.35,max:0.35,col:'#7a5634',sz:2})}b.st='idle';b.sweepCd=3;b.cd=Math.max(b.cd,1)}}
   if(b.phase===2){b.summon-=dt;if(b.summon<=0){b.summon=12;for(let k=0;k<2;k++){const e=spawnEnemy('spore',b.x+rand(-50,50),b.y+rand(24,50),7,'boss');e.born=0.6}}}
 }
 function rootDefeated(){
   const b=BOSS;BOSS=null;HAZ=[];PROJ=[];E=E.filter(e=>e.wave!=='boss');
-  shake=8;flash=1;sfx('fire');
+  shake=8;flash=1;sfx('bossdown');
   for(let k=0;k<80;k++)PARTS.push({x:b.x+rand(-14,14),y:b.y-rand(0,40),vx:rand(-80,80),vy:rand(-120,10),life:rand(0.8,1.6),max:1.6,col:k%3?'#564474':'#ffd6f0',sz:k%4?1:2});
   for(let k=0;k<5;k++)dropItem('shard',b.x+rand(-20,20),b.y+14);
   for(let k=0;k<6;k++)dropItem('coin',b.x+rand(-20,20),b.y+14,15);
   S.boss2=1;gainXP(260);setGate2(true);
-  setTimeout(()=>{rootLight=0.01;sfx('fire');banner('울림뿌리','안개가 걷히다');revealCircle(ROOT.tx,ROOT.ty,14);
+  setTimeout(()=>{rootLight=0.01;sfx('beaconLit');banner('울림뿌리','안개가 걷히다');revealCircle(ROOT.tx,ROOT.ty,14);
     say([
       ['root','…아… 따뜻하다. 오랜만에… 숨이 쉬어지는구나.'],
       ['root','작은 등불지기여. 잿빛 가면을 쓴 자들이 내 뿌리에 재를 부었다. 빛을 미워하는 재였지.'],
@@ -1375,7 +1375,7 @@ function updBoss(dt){
   if(BOSS.kind==='root')return updRoot(dt);
   if(BOSS.kind==='mole')return updMole(dt);
   const b=BOSS;b.t+=dt;if(b.flash>0)b.flash-=dt;if(b.stun>0){b.stun-=dt;return}
-  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('허수아비가 분노했다!','gold');sfx('boss')}
+  if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('허수아비가 분노했다!','gold');sfx('rage')}
   const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
   if(b.st==='rise'){if(b.t>1.4){b.st='move';b.t=0}return}
   if(b.st==='move'){const sp=b.phase===2?34:24;moveBody(b,dx/d*sp*dt,dy/d*sp*dt,9,4,false);b.cd-=dt;
@@ -1385,19 +1385,19 @@ function updBoss(dt){
     if(Math.random()<0.6)PARTS.push({x:b.x+rand(-6,6),y:b.y-rand(0,30),vx:0,vy:-10,life:0.4,max:0.4,col:'#2e2448',sz:2})}
   else if(b.st==='crowW'){if(b.t>0.55){const n=b.phase===2?10:6;for(let k=0;k<n;k++){const a=k/n*6.283+b.t;PROJ.push({x:b.x,y:b.y-20,vx:Math.cos(a)*62,vy:Math.sin(a)*62,life:3.2,t:0})}
       const a=Math.atan2(P.y-8-(b.y-20),P.x-b.x);for(const o of[-0.2,0.2])PROJ.push({x:b.x,y:b.y-20,vx:Math.cos(a+o)*90,vy:Math.sin(a+o)*90,life:3,t:0});
-      b.st='move';b.cd=rand(1.6,2.4)/(b.phase===2?1.4:1);sfx('boss')}}
+      b.st='move';b.cd=rand(1.6,2.4)/(b.phase===2?1.4:1);sfx('caw')}}
   if(b.phase===2){b.summon-=dt;if(b.summon<=0){b.summon=11;for(let k=0;k<2;k++){const e=spawnEnemy('rat',b.x+rand(-30,30),b.y+rand(-10,20),3,'boss');e.born=0.5}}}
   if(overlap(P.x,P.y-8,5,8,b.x,b.y-14,9,14))hurtPlayer(b.st==='charge'?16:11,b.x,b.y);
   if(b.hp<=0)bossDefeated();
 }
 function bossDefeated(){
   const b=BOSS;BOSS=null;E=E.filter(e=>e.wave!=='boss');PROJ=[];
-  shake=8;flash=1;sfx('fire');
+  shake=8;flash=1;sfx('bossdown');
   for(let k=0;k<70;k++)PARTS.push({x:b.x+rand(-10,10),y:b.y-rand(0,30),vx:rand(-80,80),vy:rand(-120,10),life:rand(0.8,1.6),max:1.6,col:k%3?'#3d2a5c':'#ffb44a',sz:k%4?1:2});
   for(let k=0;k<5;k++)dropItem('shard',b.x+rand(-14,14),b.y);
   for(let k=0;k<5;k++)dropItem('coin',b.x+rand(-14,14),b.y,10);
   S.boss=1;gainXP(150);setGate(true);
-  setTimeout(()=>{greatLight=0.01;sfx('fire');banner('재울의 큰 봉화','점화');revealCircle(GREAT.tx,GREAT.ty,12);
+  setTimeout(()=>{greatLight=0.01;sfx('beaconLit');banner('재울의 큰 봉화','점화');revealCircle(GREAT.tx,GREAT.ty,12);
     say([
       ['owl','허수아비 속에서 어둠이 빠져나갔어… 그냥 낡은 허수아비로 돌아왔네.'],
       ['owl','발밑에 이게 떨어져 있었어. 재로 만든 가면 조각이야. 누가 일부러 허수아비에 어둠을 불어넣은 거야.'],
@@ -1428,18 +1428,18 @@ function update(dt){
   revealT-=dt;if(revealT<=0){revealT=0.25;revealCircle(Math.floor(P.x/16),Math.floor(P.y/16),Math.ceil(LAN_R[lanLv()]/16)+1)}
   const tx=Math.floor(P.x/16),ty=Math.floor(P.y/16),rg=regionAt(tx,ty);if(rg!==lastRegion){if(lastRegion)banner(rg);lastRegion=rg}
   if(S.q===4&&inArena(tx,ty)&&ty<ARENA.y1-1){
-    S.q=5;setGate(false);E=E.filter(e=>e.wave!==null);spawnBoss();sfx('boss');shake=5;
+    S.q=5;setGate(false);E=E.filter(e=>e.wave!==null);spawnBoss();sfx('omen');shake=5;
     say([['boss','…빛… 싫다… 빛을… 이리… 내놔라…'],['owl','허수아비가 어둠을 먹었어! 몸이 떨리면 돌진이나 까마귀 공격이 와. 조심해!']]);
   }
   if(S.q===7&&Math.hypot(P.x-95*16,P.y-31*16)<70)openBramble();
   if(curArea.id==='mine'&&!BOSS&&S.q>=13&&!inSafeLight(P.x,P.y)&&tile(tx,ty)!==T.WATER){rockT-=dt;if(rockT<=0){rockT=rand(5,9);const n=1+Math.floor(Math.random()*3);for(let k=0;k<n;k++){const a=Math.random()*6.283,r=k?rand(16,40):rand(0,8),hx=P.x+Math.cos(a)*r,hy=P.y+Math.sin(a)*r;if(!solidAt(hx,hy))HAZ.push({kind:'rock',x:hx,y:hy,t:-k*0.25,warn:1.05,dur:0.25,hit:false,dmg:10})}}}
   PAGES.forEach((q,i)=>{if(S.pages&(1<<i))return;if(Math.hypot(P.x-(q.tx*16+8),P.y-(q.ty*16+12))<12&&mode==='play')pickPage(i)});
   if(S.q===15&&tx>=LAIR.x0&&tx<=LAIR.x1&&ty>=51&&ty<=LAIR.y1){
-    S.q=16;setGate3(false);E=E.filter(e=>e.wave!==null);spawnMole();sfx('boss');shake=6;
+    S.q=16;setGate3(false);E=E.filter(e=>e.wave!==null);spawnMole();sfx('omen');shake=6;
     say([['boss3','…크르르… 누구냐… 또 재를 뿌리러 왔느냐…'],['moru','두더지왕! 우린 적이 아니야!'],['owl','눈이 잿빛이야… 아무것도 못 보는 거야! 돌진할 때 수정 기둥 뒤로 유인해서 부딪히게 하자!'],['seha','땅이 들썩이면 그 자리를 벗어나! 땅속에 있을 땐 화살도 안 통해.']]);
   }
   if(S.q===10&&inArena2(tx,ty)&&ty<ARENA2.y1-1){
-    S.q=11;setGate2(false);E=E.filter(e=>e.wave!==null);spawnRoot();sfx('boss');shake=5;
+    S.q=11;setGate2(false);E=E.filter(e=>e.wave!==null);spawnRoot();sfx('omen');shake=5;
     say([['boss2','…아프다… 빛이… 뜨겁다… 오지… 마라…'],['owl','울림뿌리가 어둠에 먹혔어! 껍질이 너무 단단해. 등불 섬광(D)으로 껍질을 벗긴 다음 공격해!'],['moru','내 망치도 보탤게! 땅이 보랏빛으로 빛나면 피해!']]);
   }
   for(const f of EXT.update)f(dt,tx,ty);
@@ -1457,7 +1457,7 @@ function updPlayer(dt){
   if(il>0.25&&P.atkT<=0&&P.dashT<=0){P.dir=Math.abs(ix)>Math.abs(iy)?(ix<0?'left':'right'):(iy<0?'up':'down')}
   P.atkCd-=dt;P.dashCd-=dt;P.inv-=dt;P.flareCd-=dt;if(flareGlow>0)flareGlow=Math.max(0,flareGlow-dt*2);
   if(want.attack&&P.atkCd<=0&&P.dashT<=0){P.atkT=WPN.dur;P.atkCd=WPN.cd;P.hitSet=new Set();sfx('swing')}
-  {const held=keys.a||keys[' ']||hold.attack;if(held&&P.dashT<=0){P.chg=(P.chg||0)+dt;if(P.chg>=0.55&&!P.chgReady){P.chgReady=true;sfx('pick')}}else{if(P.chgReady&&!held&&typeof chargeAttack==='function')chargeAttack();if(!held||P.dashT>0){P.chg=0;P.chgReady=false}}}
+  {const held=keys.a||keys[' ']||hold.attack;if(held&&P.dashT<=0){P.chg=(P.chg||0)+dt;if(P.chg>=0.55&&!P.chgReady){P.chgReady=true;sfx('charge')}}else{if(P.chgReady&&!held&&typeof chargeAttack==='function')chargeAttack();if(!held||P.dashT>0){P.chg=0;P.chgReady=false}}}
   if(want.dash&&P.dashCd<=0){const v=il>0.25?[ix/Math.max(il,1),iy/Math.max(il,1)]:DIRV[P.dir];const l=Math.hypot(v[0],v[1])||1;P.dvx=v[0]/l;P.dvy=v[1]/l;P.dashT=0.17*MOD.dash;P.dashCd=0.65;P.atkT=0;sfx('dash')}
   if(want.flare)doFlare();
   if(want.interact)doInteract();
@@ -1577,7 +1577,7 @@ function updItems(dt){
     it.x+=it.vx*dt;it.y+=it.vy*dt;
     const d=Math.hypot(P.x-it.x,P.y-6-it.y);
     if(it.t>0.5&&d<40){it.x+=(P.x-it.x)/d*130*dt;it.y+=(P.y-6-it.y)/d*130*dt}
-    if(it.t>0.5&&d<8){it.dead=true;sfx('pick');
+    if(it.t>0.5&&d<8){it.dead=true;sfx(it.kind==='coin'?'coin':'pick');
       if(it.kind==='shard'){const before=lanLv();S.shards++;if(lanLv()>before){toast(`등불이 밝아졌다! 등불 Lv ${lanLv()}`,'gold');flareGlow=1;sfx('lvl')}}
       else if(it.kind==='coin'){S.coins+=Math.round((it.v||1)*MOD.coin)}
       else{const h=15;S.hp=Math.min(st.maxHp(),S.hp+h);FLOATS.push({x:P.x,y:P.y-30,txt:'+'+h,col:'#9be07a',t:0})}}}
@@ -1921,7 +1921,7 @@ function choose(title,text,opts){mode='choice';choiceOpts=opts;choiceAt=performa
 function pickChoice(i){if(mode!=='choice'||performance.now()-choiceAt<500||!choiceOpts||!choiceOpts[i])return;const o=choiceOpts[i];$('choice').hidden=true;mode='play';choiceOpts=null;if(o.fn)o.fn()}
 function travelMenu(i){
   const opts=[];
-  BEACONS.forEach((b,k)=>{if(k===i||BS[k].state!=='lit')return;opts.push({label:b.name,fn:()=>{let x=b.tx*16+8,y=b.ty*16+28;if(solidAt(x,y-3)){y=b.ty*16-6}warp(x,y,'down');banner(b.name,'봉화 이동');sfx('fire');saveGame()}})});
+  BEACONS.forEach((b,k)=>{if(k===i||BS[k].state!=='lit')return;opts.push({label:b.name,fn:()=>{let x=b.tx*16+8,y=b.ty*16+28;if(solidAt(x,y-3)){y=b.ty*16-6}warp(x,y,'down');banner(b.name,'봉화 이동');sfx('warp');saveGame()}})});
   if(!opts.length||BOSS||BS.some(b=>b.state==='wave'))return say([['sys',BEACONS[i].name+'가 따뜻하게 타오른다. 근처에 있으면 그림자가 다가오지 못한다.']]);
   opts.push({label:'그만두기'});choose(BEACONS[i].name,'불빛을 타고 다른 봉화로 이동할 수 있어요.',opts);
 }
@@ -2019,6 +2019,7 @@ function boot(data){
 <script src="ch6.js"></script>
 <script src="extras.js"></script>
 <script src="art.js"></script>
+<script src="audio.js"></script>
 <script>
 try{window.claude?.hot?.snapshot?.(()=>({save:mode==='title'?loadSave():exportSave(),mode}))}catch(e){}
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});

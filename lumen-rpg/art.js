@@ -250,7 +250,7 @@ function showSplash(o){
   const cv=$('splashCv'),sp=$('splash');sp.classList.toggle('chap',!!o.chap);cv.width=o.art.width;cv.height=o.art.height;const x=cv.getContext('2d');x.imageSmoothingEnabled=false;
   if(!o.chap){x.fillStyle=o.bg||'#241a2e';x.fillRect(0,0,cv.width,cv.height);const g=x.createRadialGradient(32,30,2,32,30,46);g.addColorStop(0,'rgba(255,120,80,0.4)');g.addColorStop(1,'rgba(255,120,80,0)');x.fillStyle=g;x.fillRect(0,0,64,64)}
   x.drawImage(o.art,0,0);$('spK').textContent=o.k;$('spT').textContent=o.t;$('spS').textContent=o.s||'';$('spS').hidden=!o.s;
-  sp.hidden=false;mode='splash';splashT=o.dur||2.8;splashAt=performance.now();sfx(o.chap?'lvl':'boss');
+  sp.hidden=false;mode='splash';splashT=o.dur||2.8;splashAt=performance.now();sfx(o.snd||(o.chap?'chapter':'impact'));
 }
 function endSplash(){if(mode!=='splash'||performance.now()-splashAt<500)return;$('splash').hidden=true;mode='play'}
 {const ep0=extPress;extPress=function(a){if(mode==='splash'){if(a==='attack'||a==='interact'||a==='pause')endSplash();return true}return ep0(a)}}
@@ -259,7 +259,7 @@ let seenBoss=null,lastCine=null;
 EXT.ambient.push(dt=>{
   if(mode==='splash'){splashT-=dt;if(splashT<=0){splashAt=0;endSplash()}}
   if(!BOSS)seenBoss=null;
-  else if(BOSS!==seenBoss&&mode==='play'){seenBoss=BOSS;const A=BOSS_ART[BOSS.kind];if(A)showSplash({art:BOSS.kind==='ashgiant'?AG[0]:bustCv(A[0]),k:'그림자가 깨어난다',t:A[1],s:A[2]})}
+  else if(BOSS!==seenBoss&&mode==='play'){seenBoss=BOSS;const A=BOSS_ART[BOSS.kind];if(A)showSplash({art:BOSS.kind==='ashgiant'?AG[0]:bustCv(A[0]),k:'그림자가 깨어난다',t:A[1],s:A[2],snd:'roar_'+BOSS.kind})}
   if(CINE!==lastCine){lastCine=CINE;$('dialog').classList.toggle('cine',!!CINE);const cv=$('cineArt'),sp=CINE&&SHOT_ART[CINE.key]&&SHOT_ART[CINE.key][CINE.idx];
     if(sp){const spec=Object.assign({},sp);if(CINE.key===3&&CINE.idx===2&&S.flags.spareOrban!==1)spec.cast=['harin','jeti'];const a=composeShot(192,108,spec);cv.getContext('2d').drawImage(a,0,0);cv.hidden=false}else cv.hidden=true}
 });

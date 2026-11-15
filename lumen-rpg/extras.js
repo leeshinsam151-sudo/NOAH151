@@ -23,7 +23,7 @@ st.atk=()=>Math.round(st0.atk()*(has('mask')&&darkCur>0.6?1.15:1));
 st.maxHp=()=>st0.maxHp()+(has('button')?25:0);
 function recalcMod(){MOD.dash=has('ribbon')?1.3:1;MOD.crit=0.1+(has('fang')?0.1:0);MOD.mp=has('teabag')?2:1;MOD.lan=has('minerlamp')?1.15:1;MOD.coin=has('scale')?1.5:1;MOD.xp=has('feather')?1.2:1}
 function giveTrinket(id){if(S.trk.includes(id))return;S.trk.push(id);if(S.eq.length<2)S.eq.push(id);recalcMod();sfx('lvl');toast(`장신구 ‘${TRK[id].n}’을(를) 얻었다! (K키로 확인)`,'gold')}
-function toggleTrinket(id){const i=S.eq.indexOf(id);if(i>=0)S.eq.splice(i,1);else{if(S.eq.length>=2){toast('장신구는 2개까지 낄 수 있어요. 하나를 먼저 빼 주세요');return}S.eq.push(id)}recalcMod();S.hp=Math.min(S.hp,st.maxHp());sfx('pick');saveGame()}
+function toggleTrinket(id){const i=S.eq.indexOf(id);if(i>=0)S.eq.splice(i,1);else{if(S.eq.length>=2){toast('장신구는 2개까지 낄 수 있어요. 하나를 먼저 빼 주세요');return}S.eq.push(id)}recalcMod();S.hp=Math.min(S.hp,st.maxHp());sfx('equip');saveGame()}
 
 /* ---------- 무기: 검 · 창 ---------- */
 function drawThrust(){
@@ -36,7 +36,7 @@ const WEAPONS={
   spear:{kind:'spear',name:'창',desc:'길고 느리다 · 피해 +45% · 폭이 좁다',dur:0.34,cd:0.56,reach:20,box:dx=>dx?[18,5]:[5,18],mul:1.45,draw:drawThrust},
 };
 const spearOK=()=>S.q>=7;
-function setWeapon(k,quiet){if(k==='spear'&&!spearOK())k='sword';S.wpn=k;WPN=WEAPONS[k];if(!quiet){sfx('pick');toast(`무기를 ${WEAPONS[k].name}(으)로 바꿨다 · ${WEAPONS[k].desc}`)}}
+function setWeapon(k,quiet){if(k==='spear'&&!spearOK())k='sword';S.wpn=k;WPN=WEAPONS[k];if(!quiet){sfx('equip');toast(`무기를 ${WEAPONS[k].name}(으)로 바꿨다 · ${WEAPONS[k].desc}`)}}
 
 /* ---------- 모아 베기 ---------- */
 function chargeAttack(){
@@ -67,7 +67,7 @@ function castSkill(sk){
   S.mp-=sk.mp;const v=DIRV[P.dir],lp=lanternPos();
   if(sk.k==='ember'){skCd.ember=0.45;EMB.push({x:lp.x,y:lp.y,vx:v[0]*210,vy:v[1]*210,life:0.9});sfx('spore')}
   else if(sk.k==='shield'){skCd.shield=6;P.shield=2.2;sfx('heal');for(let k=0;k<20;k++){const a=k/20*6.283;PARTS.push({x:P.x+Math.cos(a)*10,y:P.y-8+Math.sin(a)*10,vx:Math.cos(a)*30,vy:Math.sin(a)*30,life:0.4,max:0.4,col:'#fff2b0',sz:1})}}
-  else{skCd.plant=8;PLANT={x:P.x+v[0]*10,y:P.y+v[1]*8,t:25};if(solidAt(PLANT.x,PLANT.y-3)){PLANT.x=P.x;PLANT.y=P.y}sfx('fire')}
+  else{skCd.plant=8;PLANT={x:P.x+v[0]*10,y:P.y+v[1]*8,t:25};if(solidAt(PLANT.x,PLANT.y-3)){PLANT.x=P.x;PLANT.y=P.y}sfx('plant')}
 }
 EXT.player.push(dt=>{for(const k in skCd)if(skCd[k]>0)skCd[k]-=dt;if(P.shield>0)P.shield-=dt;if(P.fxT>0)P.fxT-=dt;for(const sk of SKILLS)if(want[sk.k])castSkill(sk)});
 EXT.update.push(dt=>{

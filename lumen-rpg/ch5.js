@@ -106,7 +106,7 @@ ROUTES.tiny={'*':()=>({x:THOLE.tx*16+8,y:THOLE.ty*16+20})};ROUTES.room={'*':()=>
 
 /* ---------- 오브젝트 ---------- */
 OBJK.gflower={draw:(o,ox,oy)=>ctx.drawImage(GFLOWER,ox-7,oy-26),y:o=>o.ty*16+14};
-OBJK.perch={draw:(o,ox,oy)=>ctx.drawImage(TWIG,ox+1,oy-3),act:o=>({x:o.tx*16+8,y:o.ty*16+14,fn:()=>say([['owl','횃대다! 꽉 잡아, 날아간다!']],()=>{sfx('dash');P.auto={x0:P.x,y0:P.y,x1:o.to[0]*16+8,y1:o.to[1]*16+8,t:0,dur:2.6,draw:drawOwlRide,done:()=>{sfx('pick');saveGame()}}})})};
+OBJK.perch={draw:(o,ox,oy)=>ctx.drawImage(TWIG,ox+1,oy-3),act:o=>({x:o.tx*16+8,y:o.ty*16+14,fn:()=>say([['owl','횃대다! 꽉 잡아, 날아간다!']],()=>{sfx('dash');P.auto={x0:P.x,y0:P.y,x1:o.to[0]*16+8,y1:o.to[1]*16+8,t:0,dur:2.6,draw:drawOwlRide,done:()=>{sfx('land');saveGame()}}})})};
 OBJK.hole={draw:(o,ox,oy)=>{ctx.fillStyle='#07060c';ctx.fillRect(ox-6,oy+4,28,12);ctx.fillRect(ox-3,oy,22,5);ctx.fillRect(ox+1,oy-3,14,4)},y:o=>o.ty*16+17,act:o=>({x:o.tx*16+8,y:o.ty*16+22,fn:()=>say([['sys','문 밑의 틈으로 기어 들어간다.']],()=>{warp(RENTRY.x,RENTRY.y,'up');
   if(S.q===26){S.q=27;saveGame();say([['owl','스승님 방이야! 저 위 산처럼 높은 게 침대고… 별의 이슬은 머리맡에 있을 거야.'],['owl','쉿. 탁자 밑에서 뭔가 긁는 소리가 들려…']])}})})};
 OBJK.holeOut={draw:(o,ox,oy)=>{ctx.fillStyle='#07060c';ctx.fillRect(ox-6,oy-2,28,10);ctx.fillRect(ox-2,oy-6,20,5)},y:o=>o.ty*16-20,act:o=>({x:o.tx*16+8,y:o.ty*16-4,fn:()=>{if(BOSS)return;say([['sys','문 밑의 틈으로 밖에 나간다.']],()=>warp(THOLE.tx*16+8,THOLE.ty*16+26,'down'))}})};
@@ -125,7 +125,7 @@ BOSSES.ratking={
     if(b.hp<=0)return ratDone();
     if(b.st==='dizzy'){b.label='비틀거림!';b.dizzy-=dt;if(b.dizzy<=0){b.st='idle';b.cd=1;b.label=''}return}
     if(b.stun>0){b.stun-=dt;return}
-    if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('찍찍왕이 화가 났다!','gold');sfx('boss')}
+    if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=6;toast('찍찍왕이 화가 났다!','gold');sfx('rage')}
     const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
     if(b.st==='rise'){if(b.t>1.2){b.st='idle';b.t=0}return}
     if(b.st==='idle'){b.fx=dx>0?1:-1;moveBody(b,dx/d*30*dt,dy/d*30*dt,12,6,false);b.cd-=dt;b.squeak-=dt;
@@ -135,9 +135,9 @@ BOSSES.ratking={
     else if(b.st==='tele'){if(b.t>0.65){b.st='charge';b.t=0;const s=b.phase===2?215:185;b.vx=dx/d*s;b.vy=dy/d*s;b.fx=dx>0?1:-1;sfx('dash')}}
     else if(b.st==='charge'){const ox=b.x,oy=b.y;moveBody(b,b.vx*dt,b.vy*dt,12,6,false);const stuck=Math.hypot(b.x-ox,b.y-oy)<0.4;
       if(stuck||b.t>1.3){let leg=false;const cx=Math.floor(b.x/16),cy=Math.floor((b.y-3)/16);for(let yy=-2;yy<=2;yy++)for(let xx=-2;xx<=2;xx++){const X=cx+xx-RX0,Y=cy+yy;if(tile(cx+xx,cy+yy)===T.WALLBIG&&X>4&&X<44&&Y>10&&Y<40)leg=true}
-        if(stuck){b.st='dizzy';b.dizzy=leg?2.8:0.8;shake=leg?7:3;sfx('rock');if(leg)toast('찍찍왕이 탁자 다리에 머리를 박았다!','gold')}else{b.st='idle';b.cd=1.3}b.t=0}}
+        if(stuck){b.st='dizzy';b.dizzy=leg?2.8:0.8;shake=leg?7:3;sfx('thud');if(leg)toast('찍찍왕이 탁자 다리에 머리를 박았다!','gold')}else{b.st='idle';b.cd=1.3}b.t=0}}
     else if(b.st==='tailW'){if(b.t>0.5){if(Math.hypot(P.x-b.x,P.y-b.y)<46)hurtPlayer(14,b.x,b.y);for(let k=0;k<24;k++){const a=k/24*6.283;PARTS.push({x:b.x,y:b.y-4,vx:Math.cos(a)*130,vy:Math.sin(a)*80,life:0.3,max:0.3,col:'#6a5a90',sz:2})}b.st='idle';b.cd=1.4;sfx('swing')}}
-    else if(b.st==='squeak'){if(b.t>0.6){sfx('boss');for(let k=0;k<3;k++){const e=spawnEnemy('rat',b.x+rand(-40,40),b.y+rand(-30,30),Math.max(3,tinyLv()-3),'boss');e.born=0.4+k*0.2}b.st='idle';b.cd=1.5}}
+    else if(b.st==='squeak'){if(b.t>0.6){sfx('squeak');for(let k=0;k<3;k++){const e=spawnEnemy('rat',b.x+rand(-40,40),b.y+rand(-30,30),Math.max(3,tinyLv()-3),'boss');e.born=0.4+k*0.2}b.st='idle';b.cd=1.5}}
     if(b.st!=='rise'&&overlap(P.x,P.y-8,5,7,b.x,b.y-10,16,9))hurtPlayer(b.st==='charge'?18:11,b.x,b.y);
   },
   draw(b){const s=b.fx>0?RATKING:RATKINGL;let x=Math.round(b.x-23-cam.x),y=Math.round(b.y-27-cam.y);if(b.st==='tele'||b.st==='tailW'||b.st==='squeak')x+=Math.round(rand(-1,1));
@@ -149,7 +149,7 @@ BOSSES.ratking={
     if(b.st==='dizzy'){ctx.fillStyle='#ffe08a';for(let k=0;k<3;k++){const a=time*5+k*2.1;ctx.fillRect(Math.round(b.x+b.fx*12-cam.x+Math.cos(a)*8),Math.round(b.y-30-cam.y+Math.sin(a)*3),2,2)}}}
 };
 function ratDone(){
-  const b=BOSS;BOSS=null;E=E.filter(e=>e.wave!=='boss');shake=7;flash=0.8;sfx('fire');
+  const b=BOSS;BOSS=null;E=E.filter(e=>e.wave!=='boss');shake=7;flash=0.8;sfx('bossdown');
   for(let k=0;k<50;k++)PARTS.push({x:b.x+rand(-14,14),y:b.y-rand(0,20),vx:rand(-80,80),vy:rand(-110,10),life:rand(0.6,1.3),max:1.3,col:k%3?'#3d2a5c':'#e8c45a',sz:k%4?1:2});
   for(let k=0;k<6;k++)dropItem('coin',b.x+rand(-16,16),b.y+8,15);
   S.boss5=1;gainXP(420);
@@ -191,13 +191,13 @@ ENDS[5]=['5장 완료','작은 세계','콩알만 해진 몸으로 재울 마을
 /* ---------- 매 프레임 ---------- */
 EXT.update.push((dt,tx,ty)=>{
   const id=curArea.id;
-  if(id==='room'){if(S.q===27&&ty<=34&&mode==='play'){S.q=28;spawnRatKing();sfx('boss');shake=5;say([['ratking','찍찍찍! 감히 콩알만 한 것이 내 구역에 들어와?!'],['owl','그림자 쥐 우두머리야! 지금은 쟤가 우리보다 스무 배는 커! 돌진을 탁자 다리 쪽으로 유인해!']])}return}
+  if(id==='room'){if(S.q===27&&ty<=34&&mode==='play'){S.q=28;spawnRatKing();sfx('omen');shake=5;say([['ratking','찍찍찍! 감히 콩알만 한 것이 내 구역에 들어와?!'],['owl','그림자 쥐 우두머리야! 지금은 쟤가 우리보다 스무 배는 커! 돌진을 탁자 다리 쪽으로 유인해!']])}return}
   if(id!=='tiny'){STOMP=null;return}
   if(S.q<26)return;
   if(!STOMP)STOMP={i:0,dir:1,foot:0,t:0,st:'wait',x:0,y:0};
   const s=STOMP;s.t+=dt;
   if(s.st==='wait'&&s.t>0.7){s.i+=s.dir;if(s.i>=5||s.i<=0)s.dir*=-1;s.foot^=1;s.x=(TX0+40)*16+(s.foot?16:-16);s.y=(6+s.i*10.5)*16;s.st='warn';s.t=0}
-  else if(s.st==='warn'&&s.t>1.35){s.st='down';s.t=0;const on=Math.abs(s.x-P.x)<240&&Math.abs(s.y-P.y)<150;if(on){shake=5;sfx('rock')}if(((P.x-s.x)/19)**2+((P.y-4-s.y)/27)**2<1&&!P.auto)hurtPlayer(24,s.x,s.y);for(const e of E.slice())if(((e.x-s.x)/19)**2+((e.y-s.y)/27)**2<1)killEnemy(e,false);
+  else if(s.st==='warn'&&s.t>1.35){s.st='down';s.t=0;const on=Math.abs(s.x-P.x)<240&&Math.abs(s.y-P.y)<150;if(on){shake=5;sfx('stomp')}if(((P.x-s.x)/19)**2+((P.y-4-s.y)/27)**2<1&&!P.auto)hurtPlayer(24,s.x,s.y);for(const e of E.slice())if(((e.x-s.x)/19)**2+((e.y-s.y)/27)**2<1)killEnemy(e,false);
     if(on&&!S.flags.stompTip){S.flags.stompTip=1;toast('쿵! 꼬마 콩이 지나간다. 그림자를 보고 피하자','gold')}}
   else if(s.st==='down'&&s.t>0.9){s.st='wait';s.t=0}
 });

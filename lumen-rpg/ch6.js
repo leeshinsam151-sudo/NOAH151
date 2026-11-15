@@ -51,7 +51,7 @@ function enterTower(){
   if(S.q===30){S.q=31;banner('별등탑','6장');saveGame();say([['seha','여기가 별등탑… 백 년 동안 아무도 오르지 못한 곳이야.'],['moru','바닥이 끊겨 있어! 저 건너로 어떻게 가지?'],['owl','양쪽 구석에 화로가 있어. 둘 다 밝히면 뭔가 일어날 것 같아!']])}else banner('별등탑');
 }
 OBJK.texit={draw:(o,ox,oy)=>{ctx.fillStyle='#05040c';ctx.fillRect(ox-8,oy-6,32,10)},y:o=>o.ty*16-20,act:o=>({x:o.tx*16,y:o.ty*16-4,fn:()=>{if(BOSS)return;say([['sys','탑 밖으로 나간다.']],()=>{warp(330*16,35*16+8,'left');banner('폐허 도시')})}})};
-OBJK.tsw={draw:(o,ox,oy)=>drawBeacon(BEACON,ox+8,oy+16,(S.sw>>o.i)&1?'lit':'off',6,9),y:o=>o.ty*16+15,act:o=>((S.sw>>o.i)&1)?null:{x:o.tx*16+8,y:o.ty*16+14,fn:()=>{S.sw|=1<<o.i;sfx('fire');shake=3;if(S.sw===3){setBridge();flash=0.5;say([['sys','두 화로의 빛이 만나 허공에 빛의 다리가 놓였다!']],saveGame)}else say([['sys','화로에 불을 붙였다. 반대쪽 화로도 밝혀야 할 것 같다.']],saveGame)}}};
+OBJK.tsw={draw:(o,ox,oy)=>drawBeacon(BEACON,ox+8,oy+16,(S.sw>>o.i)&1?'lit':'off',6,9),y:o=>o.ty*16+15,act:o=>((S.sw>>o.i)&1)?null:{x:o.tx*16+8,y:o.ty*16+14,fn:()=>{S.sw|=1<<o.i;sfx('ignite');shake=3;if(S.sw===3){setBridge();flash=0.5;say([['sys','두 화로의 빛이 만나 허공에 빛의 다리가 놓였다!']],saveGame)}else say([['sys','화로에 불을 붙였다. 반대쪽 화로도 밝혀야 할 것 같다.']],saveGame)}}};
 OBJK.tstair={draw:(o,ox,oy)=>{if(o.up)ctx.drawImage(STAIR,ox,oy+10);else{ctx.fillStyle='#05040c';ctx.fillRect(ox-4,oy-4,24,8)}},y:o=>o.up?o.ty*16+12:o.ty*16-20,act:o=>({x:o.tx*16+8,y:o.up?o.ty*16+20:o.ty*16-4,fn:()=>{
   if(BOSS||P.giant)return;
   if(o.up&&o.room===2&&S.q<34)return say([['sys','재의 장막이 계단을 막고 있다.']]);
@@ -65,7 +65,7 @@ function updGiant(dt){
   if(il>0.25)P.dir=Math.abs(ix)>Math.abs(iy)?(ix<0?'left':'right'):(iy<0?'up':'down');
   P.atkCd-=dt;P.inv-=dt;P.flareCd-=dt;if(flareGlow>0)flareGlow=Math.max(0,flareGlow-dt*2);if(P.atkT>0)P.atkT-=dt;
   P.gT-=dt;if(P.gT<=0){P.giant=false;toast('별빛이 다했다…');S.hp=0;die();return}
-  if(want.attack&&P.atkCd<=0){P.atkT=0.3;P.atkCd=0.7;sfx('rock');shake=5;const v=DIRV[P.dir],cx=P.x+v[0]*24,cy=P.y-6+v[1]*20;
+  if(want.attack&&P.atkCd<=0){P.atkT=0.3;P.atkCd=0.7;sfx('slam');shake=5;const v=DIRV[P.dir],cx=P.x+v[0]*24,cy=P.y-6+v[1]*20;
     for(let k=0;k<26;k++){const a=k/26*6.283;PARTS.push({x:cx,y:cy,vx:Math.cos(a)*140,vy:Math.sin(a)*90,life:0.35,max:0.35,col:k%2?'#fff2b0':'#ffb44a',sz:2})}
     if(BOSS&&!BOSS.under&&Math.hypot(BOSS.x-cx,BOSS.y-BOSS.hcy-cy)<48+BOSS.hw){hitBoss(rollDmg(st.atk()*1.6));P.gT=Math.min(90,P.gT+6)}
     for(const e of E.slice())if(Math.hypot(e.x-cx,e.y-cy)<52)hitEnemy(e,{d:Math.round(st.atk()*2.5),crit:false},v[0],v[1])}
@@ -89,13 +89,13 @@ function ashBolts(b,n,sp){const a0=Math.atan2(P.y-8-(b.y-b.hcy),P.x-b.x);for(let
 function spawnOrban(){BOSS={kind:'orban',name:'재의 사제 오르반',music:'final',x:ARC.x,y:ARC.y-20,hp:800,max:800,st:'rise',t:0,cd:1.5,flash:0,stun:0,hw:7,hh:10,hcy:10,under:false,phase:1}}
 BOSSES.orban={
   upd(b,dt){b.t+=dt;if(b.flash>0)b.flash-=dt;if(b.hp<=0)return orbanFalls();if(b.stun>0){b.stun-=dt;return}
-    if(b.phase===1&&b.hp<b.max/2){b.phase=2;toast('오르반의 재가 거세게 휘몰아친다!','gold');sfx('boss')}
+    if(b.phase===1&&b.hp<b.max/2){b.phase=2;toast('오르반의 재가 거세게 휘몰아친다!','gold');sfx('rage')}
     const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
     if(b.st==='rise'){if(b.t>1){b.st='idle';b.t=0}return}
     if(b.st==='idle'){const s=d<60?-26:(d>100?24:0);moveBody(b,dx/d*s*dt-dy/d*18*dt,dy/d*s*dt+dx/d*18*dt,5,3,false);b.cd-=dt;
       if(b.cd<=0){const r=Math.random();b.st=r<0.4?'bolt':(r<0.7?'pillar':'blink');b.t=0}}
     else if(b.st==='bolt'){if(b.t>0.45){ashBolts(b,b.phase===2?7:5,95);b.st='idle';b.cd=rand(1.1,1.8)/b.phase}}
-    else if(b.st==='pillar'){if(b.t>0.4){for(let k=0;k<(b.phase===2?5:3);k++){const a=Math.random()*6.283,r=k?rand(18,44):0;HAZ.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:-k*0.15,warn:0.8,dur:0.35,hit:false})}b.st='idle';b.cd=rand(1.2,1.9)/b.phase;sfx('boss')}}
+    else if(b.st==='pillar'){if(b.t>0.4){for(let k=0;k<(b.phase===2?5:3);k++){const a=Math.random()*6.283,r=k?rand(18,44):0;HAZ.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:-k*0.15,warn:0.8,dur:0.35,hit:false})}b.st='idle';b.cd=rand(1.2,1.9)/b.phase;sfx('tele')}}
     else if(b.st==='blink'){if(b.t>0.35){for(let k=0;k<14;k++)PARTS.push({x:b.x+rand(-6,6),y:b.y-rand(0,20),vx:rand(-30,30),vy:rand(-40,0),life:0.5,max:0.5,col:'#8a8490',sz:1});const q=rpos(2,rand(4,21),rand(4,13));b.x=q.x;b.y=q.y;b.st='idle';b.cd=0.5}}},
   draw(b){const x=Math.round(b.x-8-cam.x),y=Math.round(b.y-22-cam.y+Math.sin(time*3)*2);if(b.st==='blink')ctx.globalAlpha=Math.max(0.1,1-b.t*3);if(b.st==='rise')ctx.globalAlpha=clamp(b.t,0,1);
     ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(Math.round(b.x-5-cam.x),Math.round(b.y-1-cam.y),10,2);ctx.drawImage(NPCSPR.orban,x,y);
@@ -110,11 +110,11 @@ function orbanFalls(){
 }
 BOSSES.ashgiant={
   upd(b,dt){b.t+=dt;if(b.flash>0)b.flash-=dt;if(b.hp<=0)return giantFalls();if(b.stun>0){b.stun-=dt;return}
-    if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=7;sfx('boss')}
+    if(b.phase===1&&b.hp<b.max/2){b.phase=2;shake=7;sfx('rage')}
     const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
     if(b.st==='rise'){if(b.t>1.5){b.st='idle';b.t=0}return}
     if(b.st==='idle'){moveBody(b,dx/d*20*dt,dy/d*20*dt,12,6,false);b.cd-=dt;if(b.cd<=0){b.t=0;if(Math.random()<0.55){b.st='slamW';b.gx=P.x;b.gy=P.y}else b.st='wave'}}
-    else if(b.st==='slamW'){if(b.t>0.95){shake=7;sfx('rock');if(((P.x-b.gx)/44)**2+((P.y-b.gy)/28)**2<1)hurtPlayer(22,b.gx,b.gy);for(let k=0;k<30;k++){const a=k/30*6.283;PARTS.push({x:b.gx,y:b.gy,vx:Math.cos(a)*140,vy:Math.sin(a)*90,life:0.4,max:0.4,col:'#8a8490',sz:2})}b.st='idle';b.cd=rand(1.2,1.9)/(b.phase===2?1.3:1)}}
+    else if(b.st==='slamW'){if(b.t>0.95){shake=7;sfx('slam');if(((P.x-b.gx)/44)**2+((P.y-b.gy)/28)**2<1)hurtPlayer(22,b.gx,b.gy);for(let k=0;k<30;k++){const a=k/30*6.283;PARTS.push({x:b.gx,y:b.gy,vx:Math.cos(a)*140,vy:Math.sin(a)*90,life:0.4,max:0.4,col:'#8a8490',sz:2})}b.st='idle';b.cd=rand(1.2,1.9)/(b.phase===2?1.3:1)}}
     else if(b.st==='wave'){if(b.t>0.6){ashBolts(b,b.phase===2?9:6,80);b.st='idle';b.cd=rand(1.4,2)}}
     if(overlap(P.x,P.y-12,9,12,b.x,b.y-24,14,20))hurtPlayer(14,b.x,b.y)},
   draw(b){const x=Math.round(b.x-24-cam.x),y=Math.round(b.y-60-cam.y+Math.sin(time*2)*2);if(b.st==='rise')ctx.globalAlpha=clamp(b.t/1.5,0,1);
@@ -126,7 +126,7 @@ BOSSES.ashgiant={
     if(b.st==='slamW'){const gx=Math.round(b.gx-cam.x),gy=Math.round(b.gy-cam.y);ctx.fillStyle=`rgba(0,0,0,${0.2+b.t*0.35})`;ctx.beginPath();ctx.ellipse(gx,gy,44*b.t,28*b.t,0,0,6.283);ctx.fill();ctx.fillStyle=Math.floor(time*12)%2?'#ffb44a':'#8a5a2a';for(let a=0;a<6.28;a+=0.1)ctx.fillRect(Math.round(gx+Math.cos(a)*44),Math.round(gy+Math.sin(a)*28),1,1)}}
 };
 function giantFalls(){
-  const b=BOSS;BOSS=null;HAZ=[];DPROJ=[];E=[];P.giant=false;shake=9;flash=1;sfx('fire');gainXP(900);
+  const b=BOSS;BOSS=null;HAZ=[];DPROJ=[];E=[];P.giant=false;shake=9;flash=1;sfx('bossdown');gainXP(900);
   for(let k=0;k<90;k++)PARTS.push({x:b.x+rand(-20,20),y:b.y-rand(0,50),vx:rand(-90,90),vy:rand(-130,10),life:rand(0.8,1.8),max:1.8,col:k%3?'#6a6470':'#ffe08a',sz:k%4?1:2});
   setTimeout(()=>say([
     ['sys','재가 흩어진다. 몸이 원래 크기로 돌아왔다. 무너진 재 더미 한가운데 오르반이 무릎을 꿇고 있다.'],
@@ -148,7 +148,7 @@ function starChoice(){
     o.push({label:'조금 더 생각한다'});choose('별의 선택','별등 앞에서',o)});
 }
 function ending(n){
-  S.ending=n;S.q=35;flash=1;shake=4;sfx('fire');saveGame();
+  S.ending=n;S.q=35;flash=1;shake=4;sfx('ending');saveGame();
   const T3=[null,
    [['sys','등불의 불을 별등에 옮겼다. 눈부신 빛이 탑에서 쏟아져 온 세상을 덮는다.'],['sys','재울 마을에서 스승 호롱이 눈을 뜬다. 사람들이 창문을 열고 환호한다.'],['seha','…들판이 조용해. 그림자들의 소리가, 하나도 안 들려.'],['sys','세상은 다시 밝아졌다. 그리고 땅은 더 이상 꿈을 꾸지 않는다.']],
    [['sys','별등에서 손을 뗐다. 탑 꼭대기 위로, 백 년 만에 진짜 별들이 보인다.'],['moru','안 켜는 거야? …그래. 봉화랑 등불이면 충분할지도 몰라.'],['sys','사람들은 마을마다 작은 불을 켜고 어둠과 함께 사는 법을 배웠다. 그림자들은 불빛 가장자리에서 조용히 지켜본다.'],['sys','스승 호롱은 여전히 잠들어 있다. 하지만 그 숨결은 어느 때보다 평온하다.']],
@@ -171,7 +171,7 @@ EXT.update.push((dt,tx,ty)=>{
     if(windT>0.4&&windT<3.2&&Math.random()<0.6)PARTS.push({x:cam.x+(windDir>0?-4:VW+4),y:cam.y+rand(0,VH),vx:windDir*rand(160,240),vy:rand(-8,8),life:1.6,max:1.6,col:windT<1.4?'#5e5866':'#a09aa8',sz:windT<1.4?1:2});
     if(tile(tx,ty)===T.PIT&&P.dashT<=0&&!P.auto&&mode==='play'){S.hp-=15;sfx('hurt');blackout=0.8;const p=rpos(1,13,15);P.x=p.x;P.y=p.y;P.kx=P.ky=0;rally();toast('허공으로 떨어졌다! 바람이 멎을 때 건너자');if(S.hp<=0){S.hp=0;die()}}}
   else P.wx=0;
-  if(k===2&&S.q===31&&ty<=13&&mode==='play'&&!towerBusy){towerBusy=true;S.q=32;E=[];sfx('boss');
+  if(k===2&&S.q===31&&ty<=13&&mode==='play'&&!towerBusy){towerBusy=true;S.q=32;E=[];sfx('omen');
     say([['orban','…원래 크기로 돌아왔구나. 호롱의 꿈에 다녀온 얼굴이로군.'],['orban','나는 이 탑을 무너뜨린다. 막고 싶다면, 그 작은 등불로 나를 넘어 보거라.'],['seha','오르반은 순식간에 자리를 옮겨! 바닥이 보랏빛으로 빛나면 피해!']],()=>{towerBusy=false;spawnOrban()})}
 });
 EXT.lights.push((L,warm)=>{
