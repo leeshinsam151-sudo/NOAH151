@@ -175,7 +175,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <dt>회복약</dt><dd>Q (4장부터)</dd>
           <dt>모아 베기</dt><dd>A를 길게 눌렀다 떼기</dd>
           <dt>등불 기술</dt><dd>Z · X · C (장마다 하나씩 배움)</dd>
-          <dt>가방 / 무기 바꾸기</dt><dd>I / R</dd>
+          <dt>캐릭터 / 가방</dt><dd>K / I</dd>
+          <dt>무기 바꾸기</dt><dd>R</dd>
         </dl>
       </div>
     </div>
@@ -196,7 +197,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <dt>회복약</dt><dd>Q (4장부터)</dd>
           <dt>모아 베기</dt><dd>A를 길게 눌렀다 떼기</dd>
           <dt>등불 기술</dt><dd>Z · X · C (장마다 하나씩 배움)</dd>
-          <dt>가방 / 무기 바꾸기</dt><dd>I / R</dd>
+          <dt>캐릭터 / 가방</dt><dd>K / I</dd>
+          <dt>무기 바꾸기</dt><dd>R</dd>
           <dt>저장</dt><dd>자동 저장 (메뉴에서 직접 저장도 가능)</dd>
           <dt>음악</dt><dd>메뉴에서 켜고 끄기</dd>
         </dl>
@@ -1926,6 +1928,7 @@ function travelMenu(i){
 function press(a){
   if(mode==='cine'){if(a==='attack'||a==='interact')cineNext();else if(a==='pause')cineSkip();return}
   if(mode==='dialog'){if(a==='attack'||a==='interact')advanceDialog();return}
+  if(mode==='scr'&&typeof extPress==='function'&&extPress(a))return;
   if(a==='pause'){togglePause();return}
   if(a==='forge'&&mode==='play'){openForge();return}
   if(a==='potion'){if(mode==='play')usePotion();return}
