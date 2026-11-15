@@ -220,6 +220,7 @@ function sceneArt(W,H,o){
 /* 인물과 작은 생물을 풍경 위에 세운다 */
 function composeShot(W,H,spec){
   const c=sceneArt(W,H,spec),x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  if(spec.props&&typeof SHOTPROP!=='undefined')for(const p of spec.props)SHOTPROP[p]&&SHOTPROP[p](x,W,H,spec);
   const cast=spec.cast||[],big=cast.filter(k=>bustCv(k)),small=cast.filter(k=>!bustCv(k)),n=big.length,step=Math.min(50,(W-30)/Math.max(1,n)),x0=W/2-step*(n-1)/2-32+(spec.shift||0);
   big.forEach((k,i)=>{const bx=Math.round(x0+i*step),by=H-72+(i%2?2:0);x.drawImage(bustCv(k),bx,by)});
   const SM={rat:RAT[0],slime:SLIME,spore:SPORE,wolf:WOLF[0]};

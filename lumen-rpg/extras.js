@@ -161,7 +161,7 @@ function sideTalk(id,orig){
   const ready=mine.find(q=>S.sq[q.id]===1&&sqDone(q));
   if(ready)return say(ready.done,()=>sqReward(ready));
   const act=mine.find(q=>S.sq[q.id]===1);
-  if(act)return say(act.hint,orig);
+  if(act){if(act.talk)return act.talk();return say(act.hint,orig)}
   const nw=mine.find(q=>!S.sq[q.id]);
   if(nw)return say(nw.offer,()=>{S.sq[nw.id]=1;S.sqn[nw.id]=0;toast(`새 부탁: ${nw.title} (I키로 확인)`,'good');saveGame()});
   orig();

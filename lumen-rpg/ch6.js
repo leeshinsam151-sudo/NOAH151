@@ -19,7 +19,7 @@ TRACKS.final={name:'별의 선택',bpm:84,wave:'triangle',mel:[69,72,74,76,79,81
 
 const TW0=AR.tower.x0;AR.tower.h=18;
 const rox=k=>TW0+k*26,rpos=(k,x,y)=>({x:(rox(k)+x)*16+8,y:y*16+8});
-const roomOf=px=>clamp(Math.floor((px/16-TW0)/26),0,3);
+const roomOf=px=>clamp(Math.floor((px/16-TW0)/26),0,4);
 const SW=[[0,5,13],[0,20,13]],ARC=rpos(2,12.5,8),TOP=rpos(3,12.5,7);
 let windT=0,windDir=1,towerBusy=false;
 
@@ -31,14 +31,16 @@ EXT.build.push(MB=>{
   for(let y=4;y<=13;y++)for(let x=1;x<=24;x++)if(!safe(x,y))setT(rox(1)+x,y,T.PIT);
   for(const[k,x,y]of SW)MB.place({k:'tsw',tx:rox(k)+x,ty:y,i:SW.findIndex(q=>q[1]===x)});
   MB.place({k:'texit',tx:rox(0)+13,ty:17});
-  for(let k=0;k<3;k++){const ux=k===1?19:13;MB.place({k:'tstair',tx:rox(k)+ux,ty:0,up:1,room:k});MB.place({k:'tstair',tx:rox(k+1)+13,ty:17,up:0,room:k+1,back:ux})}
+  /* 방 순서: 0(빛의 다리) → 1(재바람) → 4(별의 인력, more.js) → 2(옥좌) → 3(꼭대기) */
+  for(const[k,ux,to]of[[0,13,1],[1,19,4],[2,13,3]])MB.place({k:'tstair',tx:rox(k)+ux,ty:0,up:1,room:k,to});
+  for(const[k,to,bx]of[[1,0,13],[2,4,13],[3,2,13]])MB.place({k:'tstair',tx:rox(k)+13,ty:17,up:0,room:k,to,back:bx});
   MB.place({k:'starlamp',tx:rox(3)+12,ty:6},2,1);
 });
 function setBridge(){const on=S.sw===3;for(let y=7;y<=10;y++)for(const x of[12,13])setT(rox(0)+x,y,on?T.LBRIDGE:T.VOIDB);repaintArea(rox(0)+12,8,3)}
 Object.assign(AR.tower,{noOwl:false,
-  music:()=>S.q>=35?'village':(roomOf(P.x)>=2?'final':'tower'),
-  dark:()=>roomOf(P.x)===3?(S.ending===2?0.9:(S.ending?0.25:0.8)):0.86,
-  region:(tx,ty)=>['별등탑 1층 · 빛의 다리','별등탑 2층 · 재바람 회랑','별등탑 3층 · 재의 옥좌','별등탑 꼭대기'][clamp(Math.floor((tx-TW0)/26),0,3)],
+  music:()=>{const k=roomOf(P.x);return S.q>=35?'village':(k===2||k===3?'final':'tower')},
+  dark:()=>roomOf(P.x)===3?(S.ending===2?0.9:(S.ending?0.25:0.8)):(roomOf(P.x)===4?0.55:0.86),
+  region:(tx,ty)=>['별등탑 1층 · 빛의 다리','별등탑 2층 · 재바람 회랑','별등탑 4층 · 재의 옥좌','별등탑 꼭대기','별등탑 3층 · 별의 인력'][clamp(Math.floor((tx-TW0)/26),0,4)],
   spawn:()=>null,
   cam:()=>{const k=roomOf(P.x);return{x0:rox(k)*16,x1:(rox(k)+26)*16,y0:0,y1:18*16}},
   respawn:()=>{const p=rpos(0,12.5,15);return{x:p.x,y:p.y,msg:'탑 입구에서 정신을 차렸다'}}});
@@ -48,14 +50,15 @@ function enterTower(){
   if(S.q<30)return say([['sys','별등탑으로 가는 거대한 문. 오르반의 재가 문틈을 메우고 있다.']]);
   const p=rpos(0,12.5,15);warp(p.x,p.y,'up');E=[];
   if(S.q<34)for(const[x,y]of[[6,4],[19,4],[12,3]])spawnEnemy('pilgrim',(rox(0)+x)*16,y*16,16);
-  if(S.q===30){S.q=31;banner('별등탑','6장');saveGame();say([['seha','여기가 별등탑… 백 년 동안 아무도 오르지 못한 곳이야.'],['moru','바닥이 끊겨 있어! 저 건너로 어떻게 가지?'],['owl','양쪽 구석에 화로가 있어. 둘 다 밝히면 뭔가 일어날 것 같아!']])}else banner('별등탑');
+  if(S.q===30){S.q=31;banner('별등탑','6장');saveGame();say([['seha','여기가 별등탑… 백 년 동안 아무도 오르지 못한 곳이야.'],['moru','바닥이 끊겨 있어! 저 건너로 어떻게 가지?'],['owl','양쪽 구석에 화로가 있어. 둘 다 밝히면 뭔가 일어날 것 같아! 건너편에는 거울도 보여.']])}else banner('별등탑');
 }
 OBJK.texit={draw:(o,ox,oy)=>{ctx.fillStyle='#05040c';ctx.fillRect(ox-8,oy-6,32,10)},y:o=>o.ty*16-20,act:o=>({x:o.tx*16,y:o.ty*16-4,fn:()=>{if(BOSS)return;say([['sys','탑 밖으로 나간다.']],()=>{warp(330*16,35*16+8,'left');banner('폐허 도시')})}})};
 OBJK.tsw={draw:(o,ox,oy)=>drawBeacon(BEACON,ox+8,oy+16,(S.sw>>o.i)&1?'lit':'off',6,9),y:o=>o.ty*16+15,act:o=>((S.sw>>o.i)&1)?null:{x:o.tx*16+8,y:o.ty*16+14,fn:()=>{S.sw|=1<<o.i;sfx('ignite');shake=3;if(S.sw===3){setBridge();flash=0.5;say([['sys','두 화로의 빛이 만나 허공에 빛의 다리가 놓였다!']],saveGame)}else say([['sys','화로에 불을 붙였다. 반대쪽 화로도 밝혀야 할 것 같다.']],saveGame)}}};
 OBJK.tstair={draw:(o,ox,oy)=>{if(o.up)ctx.drawImage(STAIR,ox,oy+10);else{ctx.fillStyle='#05040c';ctx.fillRect(ox-4,oy-4,24,8)}},y:o=>o.up?o.ty*16+12:o.ty*16-20,act:o=>({x:o.tx*16+8,y:o.up?o.ty*16+20:o.ty*16-4,fn:()=>{
   if(BOSS||P.giant)return;
   if(o.up&&o.room===2&&S.q<34)return say([['sys','재의 장막이 계단을 막고 있다.']]);
-  const p=o.up?rpos(o.room+1,13,15):rpos(o.room-1,o.back,2);blackout=1;P.x=p.x;P.y=p.y;P.dir=o.up?'up':'down';rally();E=[];HAZ=[];DPROJ=[];lastRegion=regionAt(Math.floor(P.x/16),8);banner(lastRegion.split(' · ')[1]||lastRegion)}})};
+  if(o.up&&o.room===0&&!S.flags.mir)return say([['sys','빛의 봉인이 계단을 막고 있다. 화로에서 나오는 빛줄기를 거울로 꺾어 수정까지 이어야 할 것 같다.']]);
+  const p=o.up?rpos(o.to,13,15):rpos(o.to,o.back,2);blackout=1;P.x=p.x;P.y=p.y;P.dir=o.up?'up':'down';rally();E=[];HAZ=[];DPROJ=[];lastRegion=regionAt(Math.floor(P.x/16),8);banner(lastRegion.split(' · ')[1]||lastRegion)}})};
 OBJK.starlamp={draw:(o,ox,oy)=>drawBeacon(GREATB,ox+16,oy+16,S.ending===1||S.ending===3?'lit':'off',13,S.ending===3?12:20),y:o=>o.ty*16+15,act:o=>({x:o.tx*16+16,y:o.ty*16+20,fn:starChoice})};
 
 /* ---------- 거인 모드 ---------- */

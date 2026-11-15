@@ -12,22 +12,23 @@ function aout(){
   return AC;
 }
 /* 잡음: 필터를 쓸어내리며 포효·충격·바람을 만든다 */
+const SV=()=>(S.svol===undefined?1:S.svol);
 function noise(o){
-  const a=aout();if(!a)return;const t=a.currentTime+(o.delay||0),s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+  const a=aout();if(!a)return;OUT.gain.value=SV();const t=a.currentTime+(o.delay||0),s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
   s.buffer=NBUF;s.loop=true;f.type=o.type||'lowpass';f.Q.value=o.q||0.7;f.frequency.setValueAtTime(o.f1,t);f.frequency.exponentialRampToValueAtTime(Math.max(30,o.f2||o.f1),t+o.dur);
   g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(o.vol,t+(o.att||0.01));g.gain.exponentialRampToValueAtTime(0.0001,t+o.dur);
   s.connect(f);f.connect(g);g.connect(OUT);s.start(t,Math.random()*1.5);s.stop(t+o.dur+0.05);
 }
 /* 으르렁: 톱니파에 떨림을 걸어 거친 목소리를 만든다 */
 function growl(o){
-  const a=aout();if(!a)return;const t=a.currentTime+(o.delay||0),os=a.createOscillator(),lp=a.createBiquadFilter(),g=a.createGain(),tg=a.createGain(),lfo=a.createOscillator(),ld=a.createGain();
+  const a=aout();if(!a)return;OUT.gain.value=SV();const t=a.currentTime+(o.delay||0),os=a.createOscillator(),lp=a.createBiquadFilter(),g=a.createGain(),tg=a.createGain(),lfo=a.createOscillator(),ld=a.createGain();
   os.type=o.type||'sawtooth';os.frequency.setValueAtTime(o.f1,t);os.frequency.exponentialRampToValueAtTime(Math.max(20,o.f2),t+o.dur);
   lp.type='lowpass';lp.frequency.value=o.lp||600;lfo.frequency.value=o.trem||20;ld.gain.value=0.45;tg.gain.value=0.6;lfo.connect(ld);ld.connect(tg.gain);
   g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(o.vol,t+Math.min(0.12,o.dur*0.25));g.gain.setValueAtTime(o.vol,t+o.dur*0.6);g.gain.exponentialRampToValueAtTime(0.0001,t+o.dur);
   os.connect(lp);lp.connect(tg);tg.connect(g);g.connect(OUT);os.start(t);lfo.start(t);os.stop(t+o.dur+0.05);lfo.stop(t+o.dur+0.05);
 }
 function ping(type,f1,f2,dur,vol,delay){ // 맑은 음 (OUT으로 보낸다)
-  const a=aout();if(!a)return;const t=a.currentTime+(delay||0),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);
+  const a=aout();if(!a)return;OUT.gain.value=SV();const t=a.currentTime+(delay||0),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);
   g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(vol,t+0.008);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(OUT);o.start(t);o.stop(t+dur+0.03);
 }
 function duck(sec){if(!MUS||!AC)return;const g=MUS.master.gain,t=AC.currentTime,v=MUS.vol>0?MUS.vol:0;g.cancelScheduledValues(t);g.setTargetAtTime(v*0.22,t,0.06);g.setTargetAtTime(v,t+sec,0.5)}
@@ -98,7 +99,7 @@ EXT.ambient.push(dt=>{
   const on=S.sound&&mode!=='title'&&!CINE,id=curArea.id,forest=id==='over'&&P.x>=FX*16,village=id==='over'&&inRect(VILLAGE,Math.floor(P.x/16),Math.floor(P.y/16));
   ambT-=dt;if(ambT<=0){ambT=0.3;const w=windNode();if(w){let v=0,fq=500;
       if(on){if(id==='desert'){const st=typeof storm!=='undefined'&&storm>0;v=st?0.11:0.03;fq=st?1000:560}else if(id==='tower'){v=0.014;fq=1500}else if(id==='mine'){v=0.012;fq=140}else if(forest){v=0.014;fq=340}else if(id==='over'&&!village){v=0.007;fq=420}}
-      const t=AC.currentTime;w.g.gain.setTargetAtTime(v*(0.8+Math.sin(time*0.7)*0.2),t,0.4);w.f.frequency.setTargetAtTime(fq*(1+Math.sin(time*0.31)*0.2),t,0.5)}}
+      const t=AC.currentTime;OUT.gain.value=SV();w.g.gain.setTargetAtTime(v*(0.8+Math.sin(time*0.7)*0.2),t,0.4);w.f.frequency.setTargetAtTime(fq*(1+Math.sin(time*0.31)*0.2),t,0.5)}}
   if(!on)return;
   evT-=dt;if(evT<=0){
     if(id==='mine'){evT=rand(1.8,4.5);const f=rand(900,1500);ping('sine',f,f*0.6,0.09,0.035);ping('sine',f*0.98,f*0.6,0.09,0.012,0.17)}
