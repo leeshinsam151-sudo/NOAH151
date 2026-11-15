@@ -268,4 +268,4 @@ EXT.ambient.push(dt=>{
 {const a=sceneArt(320,180,{t:'spire',mood:'night',spireX:0.3,beacon:'lit',bx:0.12}),x=a.getContext('2d');x.imageSmoothingEnabled=false;
  x.drawImage(bustCv('me'),70,116);x.drawImage(bustCv('owl'),118,128,40,40);
  const g=x.createRadialGradient(60,150,2,60,150,70);g.addColorStop(0,'rgba(255,180,90,0.45)');g.addColorStop(1,'rgba(255,180,90,0)');x.globalCompositeOperation='lighter';x.fillStyle=g;x.fillRect(0,80,140,100);x.globalCompositeOperation='source-over';
- $('title').style.backgroundImage=`linear-gradient(90deg,rgba(7,6,12,0) 30%,rgba(7,6,12,0.7)),url(${a.toDataURL()})`;}
+ $('title').style.backgroundImage=`linear-gradient(90deg,rgba(7,6,12,0) 30%,rgba(7,6,12,0.7)),url(${a.toDataURL()})`;{const ts=$('title').style;ts.backgroundSize='cover';ts.backgroundPosition='center';ts.backgroundRepeat='no-repeat';ts.imageRendering='pixelated'}}
