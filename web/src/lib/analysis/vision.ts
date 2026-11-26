@@ -2,21 +2,47 @@
 
 import type { FaceLandmarker, ImageSegmenter } from "@mediapipe/tasks-vision";
 
-const BASE = "/mediapipe";
+let config = {
+  base: "/mediapipe",
+  /** Optional: segmenter model split into parts (hosts with a per-file size limit). */
+  segmenterParts: null as string[] | null,
+  /** Optional: face landmarker model URL (defaults to `${base}/face_landmarker.task`). */
+  faceModel: null as string | null,
+};
+
+/** Override where the MediaPipe runtime and models are served from (call before loadVision). */
+export function configureVision(c: Partial<typeof config>) {
+  config = { ...config, ...c };
+}
+
+async function fetchParts(parts: string[]) {
+  const bufs = await Promise.all(parts.map(async (u) => new Uint8Array(await (await fetch(u)).arrayBuffer())));
+  const out = new Uint8Array(bufs.reduce((n, b) => n + b.length, 0));
+  let o = 0;
+  for (const b of bufs) {
+    out.set(b, o);
+    o += b.length;
+  }
+  return out;
+}
 
 let loading: Promise<{ landmarker: FaceLandmarker; segmenter: ImageSegmenter }> | null = null;
 
 async function create(delegate: "GPU" | "CPU") {
   const { FaceLandmarker, FilesetResolver, ImageSegmenter } = await import("@mediapipe/tasks-vision");
+  const BASE = config.base;
   const fileset = await FilesetResolver.forVisionTasks(`${BASE}/wasm`);
+  const segmenterModel = config.segmenterParts
+    ? { modelAssetBuffer: await fetchParts(config.segmenterParts) }
+    : { modelAssetPath: `${BASE}/selfie_multiclass_256x256.tflite` };
   const [landmarker, segmenter] = await Promise.all([
     FaceLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: `${BASE}/face_landmarker.task`, delegate },
+      baseOptions: { modelAssetPath: config.faceModel ?? `${BASE}/face_landmarker.task`, delegate },
       runningMode: "IMAGE",
       numFaces: 4,
     }),
     ImageSegmenter.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: `${BASE}/selfie_multiclass_256x256.tflite`, delegate },
+      baseOptions: { ...segmenterModel, delegate },
       runningMode: "IMAGE",
       outputCategoryMask: true,
       outputConfidenceMasks: false,

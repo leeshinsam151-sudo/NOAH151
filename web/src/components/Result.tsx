@@ -29,6 +29,7 @@ function Axis({ left, right, value, gradient }: { left: string; right: string; v
 export default function Result({ result, onRetry }: { result: AnalysisResult; onRetry: () => void }) {
   const { prediction, measurement, axes, quality, display, confidence } = result;
   const [sharing, setSharing] = useState(false);
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
   if (!prediction || !measurement || !axes) return null;
 
   const top = prediction.tones[0];
@@ -191,6 +192,17 @@ export default function Result({ result, onRetry }: { result: AnalysisResult; on
         </p>
       </section>
 
+      {cardUrl && (
+        <section className="card">
+          <h2>결과 카드</h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="preview" src={cardUrl} alt={`퍼스널 컬러 결과 카드: ${tone.ko}`} />
+          <p className="note" style={{ marginBottom: 0 }}>
+            이미지를 길게 누르거나(휴대폰) 오른쪽 클릭해서(PC) 저장하세요.
+          </p>
+        </section>
+      )}
+
       <div className="btn-row">
         <button
           className="btn btn-primary"
@@ -198,7 +210,7 @@ export default function Result({ result, onRetry }: { result: AnalysisResult; on
           onClick={async () => {
             setSharing(true);
             try {
-              await shareResultCard(tone, season);
+              setCardUrl(await shareResultCard(tone, season));
             } finally {
               setSharing(false);
             }

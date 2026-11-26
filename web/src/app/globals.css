@@ -30,6 +30,7 @@
     --error-bg: #3d1e20;
     --error-ink: #ffaaa6;
     --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
   }
 }
 
@@ -47,6 +48,7 @@
   --error-bg: #3d1e20;
   --error-ink: #ffaaa6;
   --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * {

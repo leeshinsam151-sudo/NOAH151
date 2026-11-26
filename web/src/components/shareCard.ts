@@ -52,23 +52,26 @@ export function drawResultCard(tone: ToneInfo, season: SeasonInfo): HTMLCanvasEl
   return c;
 }
 
-export async function shareResultCard(tone: ToneInfo, season: SeasonInfo) {
+/**
+ * Shares the card through the Web Share API when available. Otherwise returns a data URL so the
+ * page can show the image for the user to long-press / right-click and save (downloads are blocked
+ * in some embedded viewers).
+ */
+export async function shareResultCard(tone: ToneInfo, season: SeasonInfo): Promise<string | null> {
   const canvas = drawResultCard(tone, season);
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
-  if (!blob) return;
-  const file = new File([blob], `personal-color-${tone.en.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
-  if (navigator.canShare?.({ files: [file] })) {
+  if (blob) {
+    const file = new File([blob], `personal-color-${tone.en.replace(/\s+/g, "-").toLowerCase()}.png`, {
+      type: "image/png",
+    });
     try {
-      await navigator.share({ files: [file], title: `나의 퍼스널 컬러: ${tone.ko}` });
-      return;
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `나의 퍼스널 컬러: ${tone.ko}` });
+        return null;
+      }
     } catch (e) {
-      if ((e as Error).name === "AbortError") return;
+      if ((e as Error).name === "AbortError") return null;
     }
   }
-  const url = URL.createObjectURL(file);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = file.name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return canvas.toDataURL("image/png");
 }
