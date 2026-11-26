@@ -3,6 +3,7 @@
 import { createRoot } from "react-dom/client";
 import PersonalColorApp from "@/components/PersonalColorApp";
 import { configureVision } from "@/lib/analysis/vision";
+import { configureContributions } from "@/lib/contribute/store";
 
 configureVision({
   base: "./mediapipe",
@@ -11,5 +12,8 @@ configureVision({
   faceModel: "./mediapipe/face_landmarker.model.wasm",
   segmenterParts: ["./mediapipe/segmenter.part1.model.wasm", "./mediapipe/segmenter.part2.model.wasm"],
 });
+
+// Contributions go to the artifact's own database (owner exports them from #admin).
+configureContributions("artifact-db");
 
 createRoot(document.getElementById("root")!).render(<PersonalColorApp />);

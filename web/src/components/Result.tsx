@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { AnalysisResult } from "@/lib/analysis/analyze";
 import { MODEL } from "@/lib/analysis/classifier";
 import { labToHex } from "@/lib/analysis/color";
 import { SEASONS, TONES } from "@/lib/tones";
+import { canContribute } from "@/lib/contribute/store";
+import ContributeForm from "./ContributeForm";
 import Draping from "./Draping";
+import MyContributions from "./MyContributions";
 import { shareResultCard } from "./shareCard";
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
@@ -30,6 +33,11 @@ export default function Result({ result, onRetry }: { result: AnalysisResult; on
   const { prediction, measurement, axes, quality, display, confidence } = result;
   const [sharing, setSharing] = useState(false);
   const [cardUrl, setCardUrl] = useState<string | null>(null);
+  const [contribOk, setContribOk] = useState(false);
+  const [contribOpen, setContribOpen] = useState(false);
+  useEffect(() => {
+    canContribute().then(setContribOk).catch(() => setContribOk(false));
+  }, []);
   if (!prediction || !measurement || !axes) return null;
 
   const top = prediction.tones[0];
@@ -185,12 +193,29 @@ export default function Result({ result, onRetry }: { result: AnalysisResult; on
       <section className="card">
         <h2>진단 방식 안내</h2>
         <p className="note" style={{ margin: 0 }}>
-          퍼스널 컬러 전문가가 진단한 얼굴 사진 4,920장(Deep Armocromia 데이터셋)으로 학습한 모델이에요. 테스트 결과 계절
+          퍼스널 컬러 전문가가 진단한 데이터({MODEL.dataDescription ?? "Deep Armocromia 4,920장"})로 학습한 모델이에요. 테스트 결과 계절
           1순위 적중률은 {pct(metrics.season_top1)}, 상위 2개 안에 정답이 있을 확률은 {pct(metrics.season_top2)}였어요. 12톤
           기준으로는 상위 3개 안에 정답이 있을 확률이 {pct(metrics.tone_top3)}예요. 조명과 카메라에 따라 결과가 달라질 수 있으니
           다른 사진으로도 진단해 보고, 가상 드레이핑으로 직접 비교해 보세요.
         </p>
       </section>
+
+      {contribOk && (
+        <section className="card">
+          <h2>전문가에게 진단받은 적 있나요?</h2>
+          <p className="note" style={{ marginTop: 0 }}>
+            그 결과를 알려주시면 한국인 셀카에 맞는 AI를 만드는 데 쓰여요. 사진은 보내지 않고 색 수치만 보내요.
+          </p>
+          {contribOpen ? (
+            <ContributeForm result={result} source="user" />
+          ) : (
+            <button className="btn btn-secondary" onClick={() => setContribOpen(true)}>
+              진단 결과 알려주기
+            </button>
+          )}
+        </section>
+      )}
+      <MyContributions />
 
       {cardUrl && (
         <section className="card">

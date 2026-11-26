@@ -15,6 +15,9 @@ export interface Layer {
 }
 
 export interface Model {
+  version?: string;
+  /** Korean summary of the training data, shown on the result page. */
+  dataDescription?: string;
   featureNames: string[];
   fill: number[];
   mean: number[];

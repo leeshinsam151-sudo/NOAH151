@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AnalysisResult } from "@/lib/analysis/analyze";
+import ConsultantMode from "./ConsultantMode";
+import MyContributions from "./MyContributions";
+import OwnerPanel from "./OwnerPanel";
 import Result from "./Result";
 
 type Stage =
@@ -20,8 +23,19 @@ const GUIDE = [
 
 const HERO_STRIP = ["#FFB7A5", "#FFD966", "#B5E3A1", "#9FD8E8", "#B7A9C9", "#C4A4A7", "#CC5500", "#808000", "#0F52BA", "#C71585"];
 
+type Mode = "diagnose" | "consultant" | "admin";
+const modeFromHash = (): Mode =>
+  typeof location === "undefined" ? "diagnose" : location.hash === "#consultant" ? "consultant" : location.hash === "#admin" ? "admin" : "diagnose";
+
 export default function PersonalColorApp() {
   const [stage, setStage] = useState<Stage>({ kind: "intro" });
+  const [mode, setMode] = useState<Mode>("diagnose");
+  useEffect(() => {
+    const sync = () => setMode(modeFromHash());
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
   const cameraRef = useRef<HTMLInputElement>(null);
   const albumRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<string | null>(null);
@@ -103,11 +117,16 @@ export default function PersonalColorApp() {
   return (
     <main className="app">
       <header className="brand">
-        <span>톤픽</span>
-        <small>AI 퍼스널 컬러 · 12톤</small>
+        <a href="#" className="brand-link" onClick={() => setStage({ kind: "intro" })}>
+          톤픽
+        </a>
+        <small>{mode === "consultant" ? "컨설턴트 모드" : mode === "admin" ? "관리자" : "AI 퍼스널 컬러 · 12톤"}</small>
       </header>
 
-      {stage.kind === "intro" && (
+      {mode === "consultant" && <ConsultantMode />}
+      {mode === "admin" && <OwnerPanel />}
+
+      {mode === "diagnose" && stage.kind === "intro" && (
         <>
           <section className="card hero">
             <h1>셀카 한 장으로 찾는 나의 퍼스널 컬러</h1>
@@ -142,10 +161,15 @@ export default function PersonalColorApp() {
             <br />
             결과는 참고용 자가 진단이며 전문가 진단을 대체하지 않아요.
           </p>
+          <MyContributions />
+          <p className="privacy">
+            퍼스널 컬러 컨설턴트이신가요? <a href="#consultant">컨설턴트 모드</a>로 고객 진단 결과를 기록해 AI 학습에 참여할 수
+            있어요.
+          </p>
         </>
       )}
 
-      {stage.kind === "analyzing" && (
+      {mode === "diagnose" && stage.kind === "analyzing" && (
         <section className="card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="preview" src={stage.preview} alt="업로드한 사진" />
@@ -161,7 +185,7 @@ export default function PersonalColorApp() {
         </section>
       )}
 
-      {stage.kind === "rejected" && (
+      {mode === "diagnose" && stage.kind === "rejected" && (
         <>
           <section className="card">
             <h2>사진을 다시 찍어주세요</h2>
@@ -183,7 +207,7 @@ export default function PersonalColorApp() {
         </>
       )}
 
-      {stage.kind === "result" && <Result result={stage.result} onRetry={reset} />}
+      {mode === "diagnose" && stage.kind === "result" && <Result result={stage.result} onRetry={reset} />}
     </main>
   );
 }
