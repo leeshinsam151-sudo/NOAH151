@@ -1,0 +1,515 @@
+:root {
+  --bg: #fbf8f5;
+  --surface: #ffffff;
+  --surface-2: #f4efea;
+  --text: #221f24;
+  --muted: #6f6870;
+  --line: #e7e0da;
+  --primary: #d9636b;
+  --primary-ink: #ffffff;
+  --warn-bg: #fff5e0;
+  --warn-ink: #8a5a00;
+  --error-bg: #fde8e8;
+  --error-ink: #a12c2c;
+  --shadow: 0 6px 24px rgba(60, 40, 30, 0.08);
+  --radius: 18px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17151a;
+    --surface: #221f26;
+    --surface-2: #2b2730;
+    --text: #f1ecf0;
+    --muted: #a69fa8;
+    --line: #3a3540;
+    --primary: #ef7f86;
+    --primary-ink: #1b1214;
+    --warn-bg: #3a2f15;
+    --warn-ink: #f3cf7a;
+    --error-bg: #3d1e20;
+    --error-ink: #ffaaa6;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #17151a;
+  --surface: #221f26;
+  --surface-2: #2b2730;
+  --text: #f1ecf0;
+  --muted: #a69fa8;
+  --line: #3a3540;
+  --primary: #ef7f86;
+  --primary-ink: #1b1214;
+  --warn-bg: #3a2f15;
+  --warn-ink: #f3cf7a;
+  --error-bg: #3d1e20;
+  --error-ink: #ffaaa6;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic",
+    system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.brand small {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 {
+  font-size: 28px;
+  line-height: 1.3;
+  margin: 4px 0 8px;
+  letter-spacing: -0.03em;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.swatch-strip {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 16px 0 4px;
+}
+
+.swatch-strip span {
+  flex: 1;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.checklist li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.checklist .icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+}
+
+.checklist b {
+  display: block;
+  font-size: 15px;
+}
+
+.checklist span.desc {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 0 16px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.btn-row {
+  display: grid;
+  gap: 10px;
+}
+
+.privacy {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.preview {
+  width: 100%;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.progress {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+  padding: 28px 20px;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid var(--surface-2);
+  border-top-color: var(--primary);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.issue {
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.issue.warn {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.issue.error {
+  background: var(--error-bg);
+  color: var(--error-ink);
+}
+
+.issues {
+  display: grid;
+  gap: 8px;
+}
+
+.result-hero {
+  text-align: center;
+  padding: 28px 20px 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-hero .season {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.result-hero h1 {
+  font-size: 34px;
+  margin: 6px 0 4px;
+  letter-spacing: -0.03em;
+}
+
+.result-hero .en {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.chip {
+  font-size: 13px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.meter {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.rank {
+  display: grid;
+  gap: 10px;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 96px 1fr 44px;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.rank-row .pct {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.palette button,
+.palette .sw {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0;
+}
+
+.palette button[aria-pressed="true"] {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+.palette.small {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.worst .sw {
+  position: relative;
+}
+
+.worst .sw::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - 1.5px), rgba(255, 255, 255, 0.85) 50%, transparent calc(50% + 1.5px));
+  border-radius: 12px;
+}
+
+.drape {
+  display: grid;
+  gap: 12px;
+}
+
+.drape canvas {
+  width: 100%;
+  border-radius: 14px;
+  display: block;
+  background: var(--surface-2);
+}
+
+.drape-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.drape-compare figure {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.drape-compare figcaption {
+  margin-top: 6px;
+}
+
+.seg {
+  display: inline-flex;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.seg button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.axes {
+  display: grid;
+  gap: 16px;
+}
+
+.axis-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.axis-labels .on {
+  font-weight: 700;
+}
+
+.axis-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.axis-dot {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--text);
+  transform: translate(-50%, -50%);
+}
+
+.measured {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.measured .dot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin: 0 auto 6px;
+  border: 1px solid var(--line);
+}
+
+.reco {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.reco div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reco dt {
+  color: var(--muted);
+}
+
+.reco dd {
+  margin: 0;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.tip {
+  margin-top: 14px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.muted {
+  color: var(--muted);
+}
